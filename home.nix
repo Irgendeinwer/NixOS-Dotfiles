@@ -21,7 +21,7 @@
   		syntaxHighlighting.enable = true;
 
 		shellAliases = {
-    			rebuild = "sudo nixos-rebuild switch --flake ~/dotfiles/#junixos";
+    			rebuild = "~/dotfiles/scripts/rebuild.sh";
   		};
   		history = {
     			size = 10000;
