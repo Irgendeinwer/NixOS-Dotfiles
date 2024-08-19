@@ -55,6 +55,7 @@
 	mako
 	libnotify
 	dunst
+	wl-clipboard
 	xdg-desktop-portal-hyprland
 	xdg-desktop-portal-gtk
 	dconf
