@@ -6,7 +6,6 @@
 	home.packages = with pkgs; [
 		signal-desktop
 		signal-cli
-		protonup
 	];
 
 	gtk = {

@@ -9,6 +9,7 @@
 	./modules/greetd.nix
 	./modules/sound.nix
 	./modules/fonts.nix
+	./modules/gaming.nix
 	./modules/flexing.nix
 	./modules/streaming.nix
     ];
@@ -95,8 +96,6 @@ programs.zsh.enable = true;
 
 programs = {
 	hyprland.enable = true;
-	steam.enable = true;
-	gamemode.enable = true;
 	neovim = {
 		enable = true;
 		defaultEditor = true;
