@@ -85,7 +85,7 @@
 	#polkit-kde-agent
 	thefuck
 	bat
-	python311	
+	python3
 ];
 
 users.defaultUserShell = pkgs.zsh;
