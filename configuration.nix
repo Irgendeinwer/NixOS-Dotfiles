@@ -10,6 +10,7 @@
 	./modules/sound.nix
 	./modules/fonts.nix
 	./modules/flexing.nix
+	./modules/streaming.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
