@@ -94,7 +94,7 @@ programs.zsh.enable = true;
 #services.hardware.openrgb.enable = true;
 
 xdg.portal.enable = true;
-#xdg.portal.extraPortals = [ xdg-desktop-portal-hyprland ];
+xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
 
 programs = {
 	hyprland.enable = true;
