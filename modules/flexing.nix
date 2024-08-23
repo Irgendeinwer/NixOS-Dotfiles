@@ -9,6 +9,7 @@
 		cava
 		figlet
 		lolcat
+		fortune
 		neo-cowsay
 	];
 }
