@@ -9,5 +9,6 @@
 		cava
 		figlet
 		lolcat
+		neo-cowsay
 	];
 }
