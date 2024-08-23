@@ -87,6 +87,7 @@
 	bat
 	python3
 	yt-dlp
+	youtube-music
 ];
 
 users.defaultUserShell = pkgs.zsh;
