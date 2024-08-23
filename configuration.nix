@@ -86,6 +86,7 @@
 	thefuck
 	bat
 	python3
+	yt-dlp
 ];
 
 users.defaultUserShell = pkgs.zsh;
