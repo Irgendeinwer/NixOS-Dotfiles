@@ -59,6 +59,7 @@
 	dunst
 	wl-clipboard
 	xdg-desktop-portal-hyprland
+	xdg-desktop-portal-gtk
 	dconf
 	firefox
 	obsidian
@@ -93,8 +94,16 @@ programs.zsh.enable = true;
 
 #services.hardware.openrgb.enable = true;
 
-xdg.portal.enable = true;
-xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
+xdg = {
+	portal = {
+		enable = true;
+		xdgOpenUsePortal = true;
+		extraPortals = [
+			pkgs.xdg-desktop-portal-hyprland
+			pkgs.xdg-desktop-portal-gtk
+		];
+	};
+};
 
 programs = {
 	hyprland.enable = true;
