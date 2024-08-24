@@ -10,6 +10,7 @@
 	./modules/sound.nix
 	./modules/fonts.nix
 	./modules/gaming.nix
+	./modules/samba.nix
 	./modules/flexing.nix
 	./modules/streaming.nix
     ];
