@@ -88,6 +88,7 @@
 	python3
 	yt-dlp
 	youtube-music
+	obs-studio
 ];
 
 users.defaultUserShell = pkgs.zsh;
