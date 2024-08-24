@@ -70,7 +70,7 @@
 	easyeffects
 	openrgb
 	gparted
-	# vlc
+	vlc
 	celluloid
 	prismlauncher
 	zip
