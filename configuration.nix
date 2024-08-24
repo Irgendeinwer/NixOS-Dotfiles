@@ -62,6 +62,7 @@
 	xdg-desktop-portal-gtk
 	dconf
 	firefox
+	tor-browser
 	obsidian
 	waybar
 	swww
