@@ -89,7 +89,6 @@
 	bat
 	python3
 	yt-dlp
-	youtube-music
 	obs-studio
 ];
 
