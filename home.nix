@@ -55,6 +55,8 @@
 		enable = true;
 	};
 
+	services.kdeconnect.enable = true;
+
 	home.sessionVariables = {
 		EDITOR = "nvim";
 		# SHELL = "/home/julian/.nix-profile/bin/zsh";
