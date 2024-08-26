@@ -90,6 +90,7 @@
 	python3
 	yt-dlp
 	obs-studio
+	element-desktop
 ];
 
 users.defaultUserShell = pkgs.zsh;
