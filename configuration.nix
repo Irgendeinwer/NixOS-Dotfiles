@@ -117,7 +117,7 @@ programs = {
 		enable = true;
 		defaultEditor = true;
 	};
-	kdeconnect.enable = true;
+	# kdeconnect.enable = true;
 };
 
 security.polkit.enable = true;
