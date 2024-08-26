@@ -91,6 +91,7 @@
 	yt-dlp
 	obs-studio
 	element-desktop
+	vesktop
 ];
 
 users.defaultUserShell = pkgs.zsh;
