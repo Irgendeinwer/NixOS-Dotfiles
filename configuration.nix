@@ -92,6 +92,8 @@
 	obs-studio
 	element-desktop
 	vesktop
+	whatsapp-for-linux
+	zathura
 ];
 
 users.defaultUserShell = pkgs.zsh;
@@ -113,6 +115,7 @@ xdg = {
 
 programs = {
 	hyprland.enable = true;
+	hyprlock.enable = true;
 	neovim = {
 		enable = true;
 		defaultEditor = true;
