@@ -3,10 +3,25 @@
 	home.username = "julian";
 	home.homeDirectory = "/home/julian";
 
+	imports = [
+		./modules/home-manager/hyprland.nix
+	];
+
 	home.packages = with pkgs; [
 		signal-desktop
-		signal-cli
 	];
+
+	# wayland.windowManager.hyprland = {
+	#	enable = true;
+	#	plugins = [];
+	#	systemd.variables = ["--all"];
+	#	#settings = {
+	#	#	bind = []
+	#	#};
+	#	extraConfig = ''
+	#		$terminal = kitty
+	#	'';
+	# };
 
 	gtk = {
 		enable = true;
