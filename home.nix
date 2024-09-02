@@ -5,6 +5,7 @@
 
 	imports = [
 		./modules/home-manager/hyprland.nix
+		./modules/home-manager/hyprlock.nix
 	];
 
 	home.packages = with pkgs; [
