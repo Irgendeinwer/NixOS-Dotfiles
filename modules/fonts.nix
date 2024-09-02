@@ -6,7 +6,7 @@ fonts= {
 		noto-fonts
 		noto-fonts-cjk
 		noto-fonts-emoji
-
+		vegur
 		(nerdfonts.override { fonts = [ "FiraCode" ]; })
 	];
 	fontconfig = {
