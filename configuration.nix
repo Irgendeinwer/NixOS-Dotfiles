@@ -94,6 +94,7 @@
 	vesktop
 	whatsapp-for-linux
 	zathura
+	inkscape
 ];
 
 users.defaultUserShell = pkgs.zsh;
