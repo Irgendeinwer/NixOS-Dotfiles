@@ -29,7 +29,7 @@
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
 			font_size = 25;
-			#font_family = "Noto Sans Mono";
+			font_family = "Noto Sans Mono";
 			rotate = 0;
 			
 			position = "0, 80";
@@ -38,7 +38,7 @@
 		  }
 		];
 
-		Time = [
+		label2 = [
 		  {
 			monitor = "";
 			text = "<span><b>$TIME</b></span>";
@@ -58,6 +58,8 @@
   	  	  {
       			size = "225, 75";
       			position = "-100, 0";
+			text = "$ATTEMPTS";
+			text_align = "right";
       			monitor = "";
       			dots_center = true;
       			fade_on_empty = true;
