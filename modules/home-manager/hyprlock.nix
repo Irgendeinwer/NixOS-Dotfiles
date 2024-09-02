@@ -28,11 +28,11 @@
     			text = "Hallo $USER :)";
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
-			font_size = 25;
+			font_size = 55;
 			font_family = "Noto Sans Mono";
 			rotate = 0;
 			
-			position = "0, 100";
+			position = "0, 130";
 			halign = "center";
 			valign = "center";
 		  }
@@ -41,11 +41,11 @@
 			text = "$TIME";
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
-			font_size = 42;
+			font_size = 45;
 			font_family = "Noto Sans Mono";
 			rotate = 0;
 
-			position = "0, -100";
+			position = "0, -125";
 			halign = "center";
 			valign = "center";
 		  }
