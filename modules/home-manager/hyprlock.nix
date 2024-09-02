@@ -17,14 +17,14 @@
 		background = [
 	  	  {
 			path = "~/wallpapers/nix-glow-black.png";
-			blur_passes = 2;
-			blur_size = 10;
+			blur_passes = 4;
+			blur_size = 3;
 	    	  }
 		];
 
 		input-field = [
   	  	  {
-      			size = "175, 75";
+      			size = "225, 75";
       			position = "-100, 0";
       			monitor = "";
       			dots_center = true;
@@ -34,8 +34,8 @@
       			outer_color = "rgb(24, 25, 38)";
       			outline_thickness = 5;
       			placeholder_text = "Try: UwU";
-      			shadow_passes = 10;
-			shadow_size = 10;
+      			shadow_passes = 5;
+			shadow_size = 3;
     	  	  }
   		];
 	};
