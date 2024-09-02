@@ -36,16 +36,16 @@
 			halign = "center";
 			valign = "center";
 		  }
+		  # Time
 		  {
 			monitor = "";
-			text = "$TIME";
+			text = ''cmd[update:1000] echo "<span>$(date +"%I:%M")</span>"'';
 			text_align = "center";
-			color = "rgba(200, 200, 200, 1.0)";
-			font_size = 45;
-			font_family = "Noto Sans Mono";
-			rotate = 0;
+			color = "rgba(216, 222, 233, .7)";
+			font_size = 160;
+			font_family = "steelfish outline regular";
 
-			position = "0, -125";
+			position = "0, -370";
 			halign = "center";
 			valign = "center";
 		  }
