@@ -9,7 +9,7 @@
 			grace = 0;
 			no_fade_in = false;
 			no_fade_out = false;
-			ignore_empty_input = false;
+			ignore_empty_input = true;
 			immediate_render = false;
 			fractional_scaling = 2;
 		};
@@ -20,6 +20,38 @@
 			blur_passes = 4;
 			blur_size = 3;
 	    	  }
+		];
+
+		Hi_There = [
+		  {
+			monitor = "";
+    			text = "Hi there, $USER";
+			text_align = "center";
+			color = "rgba(200, 200, 200, 1.0)";
+			font_size = 25;
+			font_family = "Noto Sans Mono";
+			rotate = 0;
+			
+			position = "0, 80";
+			halign = "center";
+			valign = "center";
+		  }
+		];
+
+		Time = [
+		  {
+			monitor = "";
+			text = "<span><b>$TIME</b></span>";
+			text_align = "center";
+			color = "rgba(200, 200, 200, 1.0)";
+			font_size = 42;
+			font_family = "Noto Sans Mono";
+			rotate = 0;
+
+			position = "0, 240";
+			halign = "center";
+			valign = "center";
+		  }
 		];
 
 		input-field = [
