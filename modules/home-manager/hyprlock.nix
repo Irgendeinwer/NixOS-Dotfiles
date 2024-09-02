@@ -29,7 +29,7 @@
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
 			font_size = 25;
-			font_family = "Noto Sans Mono";
+			#font_family = "Noto Sans Mono";
 			rotate = 0;
 			
 			position = "0, 80";
@@ -45,7 +45,7 @@
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
 			font_size = 42;
-			font_family = "Noto Sans Mono";
+			font_family = "Noto Sans";
 			rotate = 0;
 
 			position = "0, 240";
