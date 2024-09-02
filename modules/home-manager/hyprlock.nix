@@ -22,11 +22,11 @@
 
 		input-field = [
   	  	  {
-      			size = "200, 50";
+      			size = "200, 100";
       			position = "0, 0";
       			monitor = "";
       			dots_center = true;
-      			fade_on_empty = false;
+      			fade_on_empty = true;
       			font_color = "rgb(202, 211, 245)";
       			inner_color = "rgb(91, 96, 120)";
       			outer_color = "rgb(24, 25, 38)";
