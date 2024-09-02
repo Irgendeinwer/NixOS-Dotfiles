@@ -17,13 +17,15 @@
 		background = [
 	  	  {
 			path = "~/wallpapers/nix-glow-black.png";
+			blur_passes = 2;
+			blur_size = 10;
 	    	  }
 		];
 
 		input-field = [
   	  	  {
-      			size = "200, 100";
-      			position = "0, 0";
+      			size = "175, 75";
+      			position = "-100, 0";
       			monitor = "";
       			dots_center = true;
       			fade_on_empty = true;
@@ -31,8 +33,9 @@
       			inner_color = "rgb(91, 96, 120)";
       			outer_color = "rgb(24, 25, 38)";
       			outline_thickness = 5;
-      			placeholder_text = "Enter Secret UwU";
-      			shadow_passes = 2;
+      			placeholder_text = "Try: UwU";
+      			shadow_passes = 10;
+			shadow_size = 10;
     	  	  }
   		];
 	};
