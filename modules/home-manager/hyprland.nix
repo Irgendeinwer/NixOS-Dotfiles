@@ -212,8 +212,8 @@ bind = $mainMod, P, pseudo, # dwindle
 bind = $mainMod, J, togglesplit, # dwindle
 
 bind = , PRINT, exec, hyprshot -m region
-bind = , F12, exec, amixer set Master 5%+
-bind = , F11, exec, amixer set Master 5%-
+bind = , F9, exec, amixer set Master 5%+
+bind = , F10, exec, amixer set Master 5%-
 
 # Move focus with mainMod + arrow keys
 bind = $mainMod, left, movefocus, l
