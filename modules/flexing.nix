@@ -11,5 +11,7 @@
 		lolcat
 		fortune
 		neo-cowsay
+		pipes
+		pipes-rs
 	];
 }

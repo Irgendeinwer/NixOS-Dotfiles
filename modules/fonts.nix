@@ -7,13 +7,13 @@ fonts= {
 		noto-fonts-cjk
 		noto-fonts-emoji
 
-		nerdfonts
+		(nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
 	];
 	fontconfig = {
 		defaultFonts = {
       			serif = [ "Noto Serif" ];
       			sansSerif = [ "Noto Sans" ];
-      			monospace = [ "Meslo LG Mono Nerd Font" ];
+      			monospace = [ "Fira Code" ];
     		};
 	};
 };
