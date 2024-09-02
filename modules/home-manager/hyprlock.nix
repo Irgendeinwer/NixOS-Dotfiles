@@ -25,11 +25,11 @@
 		label = [
 		  {
 			monitor = "";
-    			text = "Hi there, $USER";
+    			text = "Hallo $USER :)";
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
 			font_size = 25;
-			font_family = "Noto Sans";
+			font_family = "Noto Sans Mono";
 			rotate = 0;
 			
 			position = "0, 100";
@@ -38,11 +38,11 @@
 		  }
 		  {
 			monitor = "";
-			text = "<span><b>$TIME</b></span>";
+			text = "$TIME";
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
 			font_size = 42;
-			font_family = "Noto Sans";
+			font_family = "Noto Sans Mono";
 			rotate = 0;
 
 			position = "0, -100";
