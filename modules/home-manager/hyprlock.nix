@@ -29,10 +29,10 @@
 			text_align = "center";
 			color = "rgba(200, 200, 200, 1.0)";
 			font_size = 25;
-			font_family = "Noto Sans Mono";
+			font_family = "Noto Sans";
 			rotate = 0;
 			
-			position = "0, 80";
+			position = "0, 100";
 			halign = "center";
 			valign = "center";
 		  }
@@ -48,7 +48,7 @@
 			font_family = "Noto Sans";
 			rotate = 0;
 
-			position = "0, 240";
+			position = "0, -100";
 			halign = "center";
 			valign = "center";
 		  }
@@ -57,8 +57,8 @@
 		input-field = [
   	  	  {
       			size = "225, 75";
-      			position = "-100, 0";
-			text = "$ATTEMPTS";
+      			position = "0, 0";
+			text = "xyz: $ATTEMPTS";
 			text_align = "right";
       			monitor = "";
       			dots_center = true;
