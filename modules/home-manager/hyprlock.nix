@@ -16,7 +16,7 @@
 
 		background = [
 	  	  {
-			path = "screenshot";
+			path = "~/wallpapers/nixos-wallpaper-catppuccin-mocha.png";
 	    	  }
 		];
 
