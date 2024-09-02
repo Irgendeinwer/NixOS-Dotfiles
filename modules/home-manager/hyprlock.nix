@@ -22,7 +22,7 @@
 	    	  }
 		];
 
-		Hi_There = [
+		label = [
 		  {
 			monitor = "";
     			text = "Hi there, $USER";
