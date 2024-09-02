@@ -36,9 +36,6 @@
 			halign = "center";
 			valign = "center";
 		  }
-		];
-
-		label2 = [
 		  {
 			monitor = "";
 			text = "<span><b>$TIME</b></span>";
