@@ -23,7 +23,7 @@
 		input-field = [
   	  	  {
       			size = "200, 50";
-      			position = "0, -80";
+      			position = "0, 0";
       			monitor = "";
       			dots_center = true;
       			fade_on_empty = false;
@@ -31,7 +31,7 @@
       			inner_color = "rgb(91, 96, 120)";
       			outer_color = "rgb(24, 25, 38)";
       			outline_thickness = 5;
-      			placeholder_text = "Password...";
+      			placeholder_text = "Enter Secret UwU";
       			shadow_passes = 2;
     	  	  }
   		];
