@@ -16,7 +16,7 @@
 
 		background = [
 	  	  {
-			path = "~/wallpapers/nixos-wallpaper-catppuccin-mocha.png";
+			path = "~/wallpapers/nix-glow-black.png";
 	    	  }
 		];
 
