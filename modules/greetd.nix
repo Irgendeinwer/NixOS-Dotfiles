@@ -6,7 +6,7 @@ options = {
 		enable = lib.mkEnableOption "greetd";
 		command = lib.mkOption {
 			type = lib.types.str;
-			default = "dbus-launch --exit-with-session Hyprland";
+			default = "dbus-launch --exit-with-session Hyprland && hyprlock";
 		};
 	};
 	getty = {
