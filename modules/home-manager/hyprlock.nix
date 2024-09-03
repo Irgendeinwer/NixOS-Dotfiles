@@ -16,8 +16,8 @@
 		background = [
 	  	  {
 			path = "~/wallpapers/dark-snow-street.jpg";
-			blur_passes = 4;
-			blur_size = 1;
+			blur_passes = 0;
+			blur_size = 0;
 	    	  }
 		];
 
