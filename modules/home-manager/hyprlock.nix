@@ -11,7 +11,6 @@
 			no_fade_out = false;
 			ignore_empty_input = true;
 			immediate_render = false;
-			fractional_scaling = 2;
 		};
 
 		background = [
@@ -28,10 +27,6 @@
     			text = "    $USER";
 			text_align = "center";
 			color = "rgba(216, 222, 233, 0.80)";
-			outline_thickness = 2;
-			dots_size = 0.2;
-			dots_spacing = 0.2;
-			dots_center = true;
 			font_size = 34;
 			font_family = "Noto Nerd Font Bold";
 			
@@ -66,7 +61,7 @@
 			inner_color = "rgba(255, 255, 255, 0.1)";
 			font_color = "rgb(200, 200, 200)";
 			fade_on_empty = true;
-			font_family = "Noto Nerd Font Bold";
+			# font_family = "Noto Nerd Font Bold";
 			placeholder_text =
 			''<i><span foreground="##ffffff99">🔒 Enter Pass</span></i>'';
 			shadow_passes = 5;
