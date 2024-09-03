@@ -6,7 +6,7 @@
 		general = {
 			disable_loading_bar = false;
 			hide_cursor = true;
-			grace = 3;
+			# grace = 3;
 			no_fade_in = false;
 			no_fade_out = false;
 			ignore_empty_input = true;
