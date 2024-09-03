@@ -36,7 +36,10 @@
   		syntaxHighlighting.enable = true;
 
 		shellAliases = {
+			config = "cd ~/dotfiles/ && nvim configuration.nix";
+			home = "cd ~/dotfiles/ && nvim home.nix";
     			rebuild = "~/dotfiles/scripts/rebuild.sh";
+			lock = "hyprlock && systemctl suspend";
   		};
   		history = {
     			size = 10000;
