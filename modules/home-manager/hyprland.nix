@@ -211,7 +211,7 @@ bind = $mainMod, R, exec, $menu
 bind = $mainMod, P, pseudo, # dwindle
 bind = $mainMod, J, togglesplit, # dwindle
 
-bind = $mainMod, ESC, exec, hyprlock
+bind = $mainMod, Escape, exec, hyprlock
 bind = , PRINT, exec, hyprshot -m region
 bind = , F9, exec, amixer set Master 5%-
 bind = , F10, exec, amixer set Master 5%+
