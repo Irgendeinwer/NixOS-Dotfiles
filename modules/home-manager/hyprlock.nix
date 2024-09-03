@@ -15,9 +15,9 @@
 
 		background = [
 	  	  {
-			path = "~/wallpapers/nix-glow-black.png";
+			path = "~/wallpapers/dark-snow-street.jpg";
 			blur_passes = 4;
-			blur_size = 3;
+			blur_size = 1;
 	    	  }
 		];
 
