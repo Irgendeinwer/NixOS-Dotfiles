@@ -39,10 +39,10 @@
 		  # Time
 		  {
 			monitor = "";
-			text = ''cmd[update:1000] echo "<span>$(date +"%I:%M")</span>"'';
+			text = "$TIME";
 			text_align = "center";
 			color = "rgba(216, 222, 233, .7)";
-			font_size = 160;
+			font_size = 180;
 			font_family = "Fira Code Nerd Font";
 
 			position = "0, -370";
