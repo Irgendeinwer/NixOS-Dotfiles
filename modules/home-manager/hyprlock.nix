@@ -6,7 +6,7 @@
 		general = {
 			disable_loading_bar = false;
 			hide_cursor = true;
-			grace = 0;
+			grace = 3;
 			no_fade_in = false;
 			no_fade_out = false;
 			ignore_empty_input = true;
@@ -32,7 +32,7 @@
 			dots_size = 0.2;
 			dots_spacing = 0.2;
 			dots_center = true;
-			font_size = 18;
+			font_size = 34;
 			font_family = "Noto Nerd Font Bold";
 			
 			position = "0, -180";
@@ -56,20 +56,30 @@
 
 		input-field = [
   	  	  {
-      			size = "225, 75";
-      			position = "0, 0";
-			text = "xyz: $ATTEMPTS";
-			text_align = "right";
-      			monitor = "";
-      			dots_center = true;
-      			fade_on_empty = true;
-      			font_color = "rgb(202, 211, 245)";
-      			inner_color = "rgb(91, 96, 120)";
-      			outer_color = "rgb(24, 25, 38)";
-      			outline_thickness = 5;
-      			placeholder_text = "Try: UwU";
-      			shadow_passes = 5;
+		  	monitor = "";
+      			size = "300, 60";
+			outline_thickness = 2;
+
+      			dots_size = 0.2;
+			dots_spacing = 0.2;
+			dots_center = true;
+      			
+      			outer_color = "rgba(255, 255, 255, 0)";
+			inner_color = "rgba(255, 255, 255, 0.1)";
+			font_color = "rgb(200, 200, 200)";
+
+			fade_on_empty = true;
+			font_family = "Noto Nerd Font Bold";
+
+			placeholder_text =
+			''<i><span foreground="##ffffff99">🔒 Enter Pass</span></i>'';
+      			
+			shadow_passes = 5;
 			shadow_size = 3;
+
+			position = "0, -250";
+			halign = "center";
+			valign = "center";
     	  	  }
   		];
 	};
