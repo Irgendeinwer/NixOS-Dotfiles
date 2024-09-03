@@ -43,7 +43,7 @@
 			text_align = "center";
 			color = "rgba(216, 222, 233, .7)";
 			font_size = 160;
-			font_family = "steelfish outline regular";
+			font_family = "Fira Code Nerd Font";
 
 			position = "0, -370";
 			halign = "center";
