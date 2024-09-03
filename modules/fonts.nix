@@ -3,18 +3,18 @@
 {
 fonts= {
 	packages = with pkgs; [
-		noto-fonts
+		#noto-fonts
 		noto-fonts-cjk
 		noto-fonts-emoji
 		vegur
 
-		(nerdfonts.override { fonts = [ "FiraCode" ]; })
+		(nerdfonts.override { fonts = [ "Noto" "FiraCode" ]; })
 	];
 	fontconfig = {
 		defaultFonts = {
-      			serif = [ "Noto Serif" ];
-      			sansSerif = [ "Noto Sans" ];
-      			monospace = [ "Fira Code Nerd Font Mono" ];
+      			serif = [ "Noto Nerd Font Serif" ];
+      			sansSerif = [ "Noto Nerd Font Sans" ];
+      			monospace = [ "Fira Code Nerd Font Mono" "Noto Nerd Font Sans Mono"];
     		};
 	};
 };

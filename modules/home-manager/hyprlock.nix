@@ -25,14 +25,17 @@
 		label = [
 		  {
 			monitor = "";
-    			text = "Hallo $USER :)";
+    			text = "    $USER";
 			text_align = "center";
-			color = "rgba(200, 200, 200, 1.0)";
-			font_size = 55;
-			font_family = "Noto Sans Mono";
-			rotate = 0;
+			color = "rgba(216, 222, 233, 0.80)";
+			outline_thickness = 2;
+			dots_size = 0.2;
+			dots_spacing = 0.2;
+			dots_center = true;
+			font_size = 18;
+			font_family = "Noto Nerd Font Bold";
 			
-			position = "0, 130";
+			position = "0, -180";
 			halign = "center";
 			valign = "center";
 		  }
@@ -45,7 +48,7 @@
 			font_size = 180;
 			font_family = "Fira Code Nerd Font";
 
-			position = "0, -370";
+			position = "0, 370";
 			halign = "center";
 			valign = "center";
 		  }
