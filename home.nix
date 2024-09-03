@@ -39,6 +39,7 @@
 			config = "cd ~/dotfiles/ && nvim configuration.nix";
 			home = "cd ~/dotfiles/ && nvim home.nix";
     			rebuild = "~/dotfiles/scripts/rebuild.sh";
+
 			lock = "systemctl suspend & hyprlock";
   		};
   		history = {
