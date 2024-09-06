@@ -66,7 +66,6 @@
 	tor-browser
 	obsidian
 	waybar
-	swww
 	btop
 	easyeffects
 	openrgb
