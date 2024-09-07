@@ -4,4 +4,4 @@ These are my dotfiles for NixOS. You can install them but I don't recommend it, 
 
 Credits:
 
- - Nix Community - for copying most configs :)
+ - Nix Community - I copied most configs :)
