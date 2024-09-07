@@ -5,14 +5,14 @@
     [
 	./hardware-configuration.nix
 	inputs.home-manager.nixosModules.home-manager
-	./modules/flakes.nix
-	./modules/greetd.nix
-	./modules/sound.nix
-	./modules/fonts.nix
-	./modules/gaming.nix
-	./modules/samba.nix
-	./modules/flexing.nix
-	./modules/streaming.nix
+	../../modules/nixos/flakes.nix
+	../../modules/nixos/greetd.nix
+	../../modules/nixos/sound.nix
+	../../modules/nixos/hypr.nix
+	../../modules/nixos/fonts.nix
+	../../modules/nixos/gaming.nix
+	../../modules/nixos/flexing.nix
+	../../modules/nixos/streaming.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -20,7 +20,7 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "junixos"; 
+  networking.hostName = "junixbook"; 
 
   networking.networkmanager.enable = true;
 
@@ -45,7 +45,7 @@
   users.users.julian = {
     isNormalUser = true;
     
-    extraGroups = [ "networkmanager" "wheel" "kvm" "input" "libvirtd" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -59,8 +59,7 @@
 	libnotify
 	dunst
 	wl-clipboard
-	xdg-desktop-portal-hyprland
-	xdg-desktop-portal-gtk
+	# xdg-desktop-portal-gtk
 	dconf
 	firefox
 	tor-browser
@@ -71,20 +70,18 @@
 	openrgb
 	gparted
 	vlc
+	playerctl
 	celluloid
 	prismlauncher
 	zip
 	unzip
 	traceroute
-	hyprshot
 	whois
 	dig
-	telegram-desktop
 	qimgv
 	polkit
 	polkit_gnome
 	#polkit-kde-agent
-	thefuck
 	bat
 	python3
 	yt-dlp
@@ -92,15 +89,16 @@
 	element-desktop
 	vesktop
 	whatsapp-for-linux
+	signal-desktop
 	zathura
 	inkscape
+	brightnessctl
+	wev
 ];
 
 users.defaultUserShell = pkgs.zsh;
 environment.shells = with pkgs; [ zsh ];
 programs.zsh.enable = true;
-
-#services.hardware.openrgb.enable = true;
 
 xdg = {
 	portal = {
@@ -108,14 +106,12 @@ xdg = {
 		xdgOpenUsePortal = true;
 		extraPortals = [
 			pkgs.xdg-desktop-portal-hyprland
-			pkgs.xdg-desktop-portal-gtk
+			# pkgs.xdg-desktop-portal-gtk
 		];
 	};
 };
 
 programs = {
-	hyprland.enable = true;
-	hyprlock.enable = true;
 	neovim = {
 		enable = true;
 		defaultEditor = true;
@@ -137,8 +133,6 @@ hardware = {
 		enable32Bit = true;
 	};
 };
-
-services.openssh.enable = true;
 
 networking.firewall.enable = false;
 

@@ -15,7 +15,7 @@
 
 		background = [
 	  	  {
-			path = "~/wallpapers/dark-snow-street.jpg";
+			path = "~/dotfiles/wallpapers/jellyfish-space-k9v8d1.png";
 			blur_passes = 0;
 			blur_size = 0;
 	    	  }
@@ -58,14 +58,14 @@
 			dots_spacing = 0.2;
 			dots_center = true;
       			outer_color = "rgba(255, 255, 255, 0)";
-			inner_color = "rgba(255, 255, 255, 0.1)";
+			inner_color = "rgba(255, 255, 255, 0.3)";
 			font_color = "rgb(200, 200, 200)";
 			fade_on_empty = true;
 			# font_family = "Noto Nerd Font Bold";
 			placeholder_text =
 			''<i><span foreground="##ffffff99">🔒 Enter Pass</span></i>'';
-			shadow_passes = 5;
-			shadow_size = 3;
+			shadow_passes = 0;
+			shadow_size = 0;
 
 			position = "0, 0";
 			halign = "center";
