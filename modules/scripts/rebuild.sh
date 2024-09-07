@@ -7,7 +7,7 @@ font="rozzo"
 
 figlet -tc -f $font Testing... | lolcat
 read -rp "Enter options to pass to the command (default: none): " options
-sudo nixos-rebuild test --flake ~/dotfiles/#junixos $options
+sudo nixos-rebuild test --flake ~/dotfiles/#junixbook $options
 echo -e "\n"
 
 figlet -tc -f $font Committing... | lolcat
@@ -18,4 +18,4 @@ git commit -m "$message" -a
 echo -e "\n"
 
 figlet -tc -f $font Applying... | lolcat
-sudo nixos-rebuild switch --flake ~/dotfiles/#junixos $options
+sudo nixos-rebuild switch --flake ~/dotfiles/#junixbook $options

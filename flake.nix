@@ -16,7 +16,7 @@ inputs = {
 
 
 outputs = { self, nixpkgs, nixos-hardware, ... }@inputs: {
-	nixosConfigurations.junixos = nixpkgs.lib.nixosSystem {
+	nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
 		specialArgs = {inherit inputs;};
 		modules = [
         		./hosts/junixos/configuration.nix
@@ -30,7 +30,7 @@ outputs = { self, nixpkgs, nixos-hardware, ... }@inputs: {
 		];
 	};
 
-	nixosConfiguration.junixbook = nixpkgs.lib.nixosSystem {
+	nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
 		specialArgs = {inherit inputs;};
 		modules = [
 			./hosts/junixbook/configuration.nix
