@@ -84,8 +84,8 @@ wayland.windowManager.hyprland = {
 				",PRINT, exec, hyprshot -m region --freeze"
 
 				# Media and volume controls
-				",F9, exec, amixer -d 5"
-				",F10, exec, amixer -i 5"
+				",F9, exec, pamixer -d 5"
+				",F10, exec, pamixer -i 5"
 				",XF86AudioRaiseVolume, exec, pamixer -i 5"
 				",XF86AudioLowerVolume, exec, pamixer -d 5"
 				",XF86AudioMute, exec, pamixer -t"
