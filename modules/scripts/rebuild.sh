@@ -12,7 +12,8 @@ echo -e "\n"
 
 figlet -tc -f $font Committing... | lolcat
 cd ~/dotfiles/
-git add * 
+git add *
+git pull
 read -rp "Enter git commit message: " message
 git commit -m "$message" -a
 echo -e "\n"
