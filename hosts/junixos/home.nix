@@ -26,7 +26,7 @@
 
 		shellAliases = {
 			config = "cd ~/dotfiles/ && nvim hosts/junixos/configuration.nix";
-			hardware-config = "cd ~/dotfiles/ && nvim hosts/junixos/configuration.nix";
+			hardware-config = "cd ~/dotfiles/ && nvim hosts/junixos/hardware-configuration.nix";
 			flake = "cd ~/dotfiles/ && nvim flake.nix";
 			home = "cd ~/dotfiles/ && nvim hosts/junixos/home.nix";
 			hypr = "cd ~/dotfiles/ && nvim modules/home-manager/hypr/";
