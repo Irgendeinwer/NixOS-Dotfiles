@@ -131,8 +131,8 @@ wayland.windowManager.hyprland = {
 				"$mainMod, S, togglespecialworkspace, magic"
 				"$mainMod SHIFT, S, movetoworkspace, special:magic"
 
-				"$mainMod, mouse_down, workspace, e+1"
-				"$mainMod, mouse_up, workspace, e-1"
+				"$mainMod, mouse_down, workspace, e-1"
+				"$mainMod, mouse_up, workspace, e+1"
 
 				# window control
 				"$mainMod SHIFT, left, movewindow, l"
