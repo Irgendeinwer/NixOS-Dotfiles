@@ -17,7 +17,7 @@ wayland.windowManager.hyprland = {
 				numlock_by_default = false;
 				
 				follow_mouse = 2;
-    				sensitivity = 0; # -1.0 - 1.0, 0 means no modification.
+    				sensitivity = -0.25; # -1.0 - 1.0, 0 means no modification.
     				
 				touchpad = {
         				natural_scroll = false;
