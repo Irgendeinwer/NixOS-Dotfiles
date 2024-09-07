@@ -9,7 +9,7 @@ inputs = {
 		inputs.nixpkgs.follows = "nixpkgs";
 	};
 
-	hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
+	# hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
 };
 
 	
@@ -19,13 +19,28 @@ outputs = { self, nixpkgs, nixos-hardware, ... }@inputs: {
 	nixosConfigurations.junixos = nixpkgs.lib.nixosSystem {
 		specialArgs = {inherit inputs;};
 		modules = [
-        		./configuration.nix
+        		./hosts/junixos/configuration.nix
 			nixos-hardware.nixosModules.common-cpu-intel-cpu-only
+			nixos-hardware.nixosModules.common-pc-ssd
 			inputs.home-manager.nixosModules.default
 			{
             			home-manager.useGlobalPkgs = true;
             			home-manager.useUserPackages = true;
           		}
+		];
+	};
+
+	nixosConfiguration.junixbook = nixpkgs.lib.nixosSystem {
+		specialArgs = {inherit inputs;};
+		modules = [
+			./hosts/junixbook/configuration.nix
+			nixos-hardware.nixosModules.common-cpu-intel
+			nixos-hardware.nixosModules.common-pc-ssd
+			inputs.home-manager.nixosModules.default
+			{
+				home-manager.useGlobalPkgs = true;
+				home-manager.useUserPackages = true;
+			}
 		];
 	};
 };

@@ -5,14 +5,15 @@
     [
 	./hardware-configuration.nix
 	inputs.home-manager.nixosModules.home-manager
-	./modules/flakes.nix
-	./modules/greetd.nix
-	./modules/sound.nix
-	./modules/fonts.nix
-	./modules/gaming.nix
-	./modules/samba.nix
-	./modules/flexing.nix
-	./modules/streaming.nix
+	../../modules/nixos/flakes.nix
+	../../modules/nixos/greetd.nix
+	../../modules/nixos/sound.nix
+	../../modules/nixos/hypr.nix
+	../../modules/nixos/fonts.nix
+	../../modules/nixos/gaming.nix
+	#../../modules/nixos/samba.nix
+	../../modules/nixos/flexing.nix
+	../../modules/nixos/streaming.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -45,7 +46,7 @@
   users.users.julian = {
     isNormalUser = true;
     description = "Julian Lindner";
-    extraGroups = [ "networkmanager" "wheel" "kvm" "input" "libvirtd" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -59,8 +60,7 @@
 	libnotify
 	dunst
 	wl-clipboard
-	xdg-desktop-portal-hyprland
-	xdg-desktop-portal-gtk
+	# xdg-desktop-portal-gtk
 	dconf
 	firefox
 	tor-browser
@@ -71,12 +71,12 @@
 	openrgb
 	gparted
 	vlc
+	playerctl
 	celluloid
 	prismlauncher
 	zip
 	unzip
 	traceroute
-	hyprshot
 	whois
 	dig
 	telegram-desktop
@@ -84,7 +84,6 @@
 	polkit
 	polkit_gnome
 	#polkit-kde-agent
-	thefuck
 	bat
 	python3
 	yt-dlp
@@ -92,8 +91,11 @@
 	element-desktop
 	vesktop
 	whatsapp-for-linux
+	signal-desktop
 	zathura
 	inkscape
+	brightnessctl
+	wev
 ];
 
 users.defaultUserShell = pkgs.zsh;
@@ -108,14 +110,12 @@ xdg = {
 		xdgOpenUsePortal = true;
 		extraPortals = [
 			pkgs.xdg-desktop-portal-hyprland
-			pkgs.xdg-desktop-portal-gtk
+			# pkgs.xdg-desktop-portal-gtk
 		];
 	};
 };
 
 programs = {
-	hyprland.enable = true;
-	hyprlock.enable = true;
 	neovim = {
 		enable = true;
 		defaultEditor = true;

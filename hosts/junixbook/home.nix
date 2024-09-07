@@ -4,25 +4,14 @@
 	home.homeDirectory = "/home/julian";
 
 	imports = [
-		./modules/home-manager/hyprland.nix
-		./modules/home-manager/hyprlock.nix
+		../../modules/home-manager/hypr/hyprland.nix
+		../../modules/home-manager/hypr/hyprpaper.nix
+		../../modules/home-manager/hypr/hyprlock.nix
+		../../modules/home-manager/hypr/hypridle.nix
 	];
 
 	home.packages = with pkgs; [
-		signal-desktop
 	];
-
-	# wayland.windowManager.hyprland = {
-	#	enable = true;
-	#	plugins = [];
-	#	systemd.variables = ["--all"];
-	#	#settings = {
-	#	#	bind = []
-	#	#};
-	#	extraConfig = ''
-	#		$terminal = kitty
-	#	'';
-	# };
 
 	gtk = {
 		enable = true;
@@ -36,9 +25,12 @@
   		syntaxHighlighting.enable = true;
 
 		shellAliases = {
-			config = "cd ~/dotfiles/ && nvim configuration.nix";
-			home = "cd ~/dotfiles/ && nvim home.nix";
-    			rebuild = "~/dotfiles/scripts/rebuild.sh";
+			config = "cd ~/dotfiles/ && nvim hosts/junixbook/configuration.nix";
+			flake = "cd ~/dotfiles/ && nvim flake.nix";
+			home = "cd ~/dotfiles/ && nvim hosts/junixbook/home.nix";
+			hypr = "cd ~/dotfiles/ && nvim modules/home-manager/hypr/";
+
+			rebuild = "~/dotfiles/modules/scripts/rebuild.sh";
 
 			lock = "systemctl suspend & hyprlock";
   		};
