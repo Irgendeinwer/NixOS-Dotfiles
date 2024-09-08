@@ -33,7 +33,7 @@
 
     			rebuild = "~/dotfiles/modules/scripts/rebuild.sh";
 
-			stfu = "git push && systemctl poweroff";
+			stfu = "git -C ~/dotfiles/ push && systemctl poweroff";
 			lock = "systemctl suspend & hyprlock";
   		};
   		history = {
