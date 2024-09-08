@@ -27,7 +27,7 @@
     
   highlight: underline bold #eee0b7;
 
-  transparent: rgba(0,0,0,0.1);
+  transparent: rgba(0,0,0,0.8);
 
 }
 
