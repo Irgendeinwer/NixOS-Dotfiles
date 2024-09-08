@@ -15,7 +15,11 @@ cd ~/dotfiles/
 git add *
 read -rp "Enter git commit message: " message
 git commit -m "$message" -a
+
+echo pull
 git pull
+echo pull c
+
 echo -e "\n"
 
 figlet -tc -f $font Applying... | lolcat
