@@ -94,6 +94,7 @@
 	inkscape
 	brightnessctl
 	wev
+	networkmanagerapplet
 ];
 
 users.defaultUserShell = pkgs.zsh;
