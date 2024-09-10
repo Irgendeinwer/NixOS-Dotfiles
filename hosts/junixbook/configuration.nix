@@ -95,6 +95,7 @@
 	brightnessctl
 	wev
 	networkmanagerapplet
+	swww
 ];
 
 users.defaultUserShell = pkgs.zsh;
