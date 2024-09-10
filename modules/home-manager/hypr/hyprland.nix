@@ -9,7 +9,7 @@ wayland.windowManager.hyprland = {
 				"hypridle &"
 				# "hyprpaper &"
 				"swww-daemon &"
-				"swww img ~/dotfiles/wallpapers/bg-noflash.mp4 &"
+				"swww img ~/dotfiles/wallpapers/bg-noflash.webp &"
 				"waybar &"
 				"hyprlock &"
 			];
