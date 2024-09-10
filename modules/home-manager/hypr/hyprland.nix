@@ -7,7 +7,9 @@ wayland.windowManager.hyprland = {
 		settings = {
 			exec-once = [
 				"hypridle &"
-				"hyprpaper &"
+				# "hyprpaper &"
+				"swww-daemon &"
+				"swww img ~/dotfiles/wallpapers/bg-noflash.mp4 &"
 				"waybar &"
 				"hyprlock &"
 			];
