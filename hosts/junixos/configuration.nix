@@ -97,6 +97,7 @@
 	brightnessctl
 	wev
 	swww
+	ffmpeg
 ];
 
 users.defaultUserShell = pkgs.zsh;
