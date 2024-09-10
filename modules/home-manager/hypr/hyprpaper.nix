@@ -8,10 +8,10 @@
 		splash_color = "55ffffff";
 		ipc = true;
 
-		preload = [ "~/dotfiles/wallpapers/bg-noflash.mp4" ];
+		preload = [ "~/dotfiles/wallpapers/wallhaven-d5p6j3.png" ];
 
 		wallpaper = [
-			", ~/dotfiles/wallpapers/bg-noflash.mp4"
+			", ~/dotfiles/wallpapers/wallhaven-d5p6j3.png"
 		];
 	};
   };
