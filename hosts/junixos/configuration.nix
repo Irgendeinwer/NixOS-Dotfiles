@@ -14,6 +14,7 @@
 	#../../modules/nixos/samba.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
+	../../modules/nixos/i2p.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
