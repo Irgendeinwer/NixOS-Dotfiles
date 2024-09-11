@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
-  environment.systemPackages = with pkgs; [
-	i2p
-	i2pd
-  ];
+  services.i2pd = {
+	enable = true;
+	proto.i2cp.enable = true;
+  };
 }
