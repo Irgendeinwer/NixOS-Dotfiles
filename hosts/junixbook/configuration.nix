@@ -92,6 +92,7 @@
 	signal-desktop
 	zathura
 	pdf4qt
+	libreoffice
 	inkscape
 	brightnessctl
 	wev
