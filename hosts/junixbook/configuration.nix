@@ -91,6 +91,7 @@
 	whatsapp-for-linux
 	signal-desktop
 	zathura
+	pdf4qt
 	inkscape
 	brightnessctl
 	wev
