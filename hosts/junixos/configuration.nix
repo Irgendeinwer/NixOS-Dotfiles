@@ -96,7 +96,7 @@
 	inkscape
 	brightnessctl
 	wev
-	swww
+	# swww
 	ffmpeg
 ];
 
