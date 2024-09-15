@@ -99,6 +99,7 @@
 	wev
 	# swww
 	ffmpeg
+	looking-glass-client
 ];
 
 users.defaultUserShell = pkgs.zsh;
