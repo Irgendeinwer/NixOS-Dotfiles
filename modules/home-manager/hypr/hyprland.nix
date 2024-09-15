@@ -30,9 +30,9 @@ wayland.windowManager.hyprland = {
 			general = {
 				"$mainMod" = "SUPER";
 
-				gaps_in = 1; # 4
+				gaps_in = 2; # 4
     				gaps_out = 4; # 6
-				border_size = 2;
+				border_size = 1; #2
 
 			#	"col.active_border" = "rgb(98971a) rgb(cc241d) 45deg"; # red
     				"col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg"; # blue
@@ -62,7 +62,7 @@ wayland.windowManager.hyprland = {
 			};
 
 			decoration = {
-				rounding = 1;
+				rounding = 3;
 			#	rounding = 5;
 
 				blur = {
