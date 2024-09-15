@@ -20,6 +20,10 @@
 			on-resume = "brightnessctl -rd dell::kbd_backlight";
 		  }
 		  {
+			timeout = 290;
+			on-timeout = "notify-send 'Lock in 10 seconds!'";
+		  }
+		  {
 			timeout = 300; # 5 min
 			on-timeout = "loginctl lock-session";
 		  }

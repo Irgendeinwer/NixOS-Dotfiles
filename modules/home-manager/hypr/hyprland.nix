@@ -12,6 +12,7 @@ wayland.windowManager.hyprland = {
 				# "swww img ~/dotfiles/wallpapers/bg-noflash.webp &"
 				"waybar &"
 				"hyprlock &"
+				"brightnessctl set 100%"
 			];
 			
 			input = {
@@ -165,6 +166,10 @@ wayland.windowManager.hyprland = {
 			};
 
 			windowrulev2 = [
+				"float, title:^(Picture-in-Picture)$"
+				"opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
+				"pin, title:^(Picture-in-Picture)$"
+
 				"suppressevent maximize, class:.* "
 			];
 		};
