@@ -20,7 +20,7 @@ wayland.windowManager.hyprland = {
 				numlock_by_default = false;
 				
 				follow_mouse = 2;
-    				sensitivity = 0; # -1.0 - 1.0, 0 means no modification.
+    				sensitivity = -0.1; # -1.0 - 1.0, 0 means no modification.
     				
 				touchpad = {
         				natural_scroll = false;
@@ -30,8 +30,8 @@ wayland.windowManager.hyprland = {
 			general = {
 				"$mainMod" = "SUPER";
 
-				gaps_in = 4; # 4
-    				gaps_out = 6; # 8
+				gaps_in = 1; # 4
+    				gaps_out = 4; # 6
 				border_size = 2;
 
 			#	"col.active_border" = "rgb(98971a) rgb(cc241d) 45deg"; # red
@@ -62,8 +62,8 @@ wayland.windowManager.hyprland = {
 			};
 
 			decoration = {
-			#	rounding = 0;
-				rounding = 5;
+				rounding = 1;
+			#	rounding = 5;
 
 				blur = {
 					enabled = false;
