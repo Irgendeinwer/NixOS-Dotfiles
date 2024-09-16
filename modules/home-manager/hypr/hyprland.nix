@@ -170,7 +170,7 @@ wayland.windowManager.hyprland = {
 
 				"float, title:^(Picture-in-Picture)$"
 				"size 512 288, title:^(Picture-in-Picture)$"
-				"move 5 5, title:^(Picture-in-Picture)$"
+				"move 2038 40, title:^(Picture-in-Picture)$"
 				"opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
 				"pin, title:^(Picture-in-Picture)$"
 				"noinitialfocus, title:^(Picture-in-Picture)$"
