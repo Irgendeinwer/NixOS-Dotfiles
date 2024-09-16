@@ -48,7 +48,7 @@
   users.users.julian = {
     isNormalUser = true;
     
-    extraGroups = [ "networkmanager" "wheel" "input" ];
+    extraGroups = [ "networkmanager" "wheel" "input" "libvirtd" ];
   };
 
   nixpkgs.config.allowUnfree = true;
