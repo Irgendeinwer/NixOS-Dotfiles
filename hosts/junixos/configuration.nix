@@ -91,6 +91,7 @@
 	obs-studio
 	element-desktop
 	vesktop
+	armcord # lightweight discord client
 	whatsapp-for-linux
 	signal-desktop
 	zathura
