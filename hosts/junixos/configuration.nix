@@ -95,6 +95,7 @@
 	signal-desktop
 	zathura
 	inkscape
+	gimp
 	brightnessctl
 	wev
 	# swww
