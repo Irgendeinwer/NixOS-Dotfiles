@@ -17,7 +17,7 @@ read -rp "Enter git commit message: " message
 git commit -m "$message" -a
 
 echo pull
-git pull
+git pull --rebase
 echo pull c
 
 echo -e "\n"
