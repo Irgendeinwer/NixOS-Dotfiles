@@ -97,6 +97,7 @@
 	whatsapp-for-linux
 	signal-desktop
 	zathura
+	libreoffice
 	inkscape
 	gimp
 	brightnessctl
