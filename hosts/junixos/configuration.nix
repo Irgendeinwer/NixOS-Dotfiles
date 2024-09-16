@@ -48,7 +48,7 @@
   users.users.julian = {
     isNormalUser = true;
     description = "Julian Lindner";
-    extraGroups = [ "networkmanager" "wheel" "input" ];
+    extraGroups = [ "networkmanager" "wheel" "input" "libvirtd" ];
   };
 
   nixpkgs.config.allowUnfree = true;
