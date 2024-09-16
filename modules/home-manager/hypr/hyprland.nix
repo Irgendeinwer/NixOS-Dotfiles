@@ -51,6 +51,7 @@ wayland.windowManager.hyprland = {
 				# key_press_enables_dpms = true;
 				disable_autoreload = true;
 				enable_swallow = true;
+				swallow_regex = "^(kitty)$";
 				new_window_takes_over_fullscreen = 2;
 			#	render_unfocused_fps = 25;
 			};
