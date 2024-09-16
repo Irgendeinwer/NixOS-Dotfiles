@@ -11,6 +11,7 @@
 	../../modules/nixos/hypr.nix
 	../../modules/nixos/fonts.nix
 	../../modules/nixos/gaming.nix
+	../../modules/nixos/virt.nix
 	#../../modules/nixos/samba.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
@@ -100,7 +101,6 @@
 	wev
 	# swww
 	ffmpeg
-	looking-glass-client
 ];
 
 users.defaultUserShell = pkgs.zsh;
