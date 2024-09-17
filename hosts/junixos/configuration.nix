@@ -146,6 +146,10 @@ hardware = {
 		enable = true;
 		enable32Bit = true;
 	};
+	nvidia = {
+		modesetting.enable = true;
+		package = config.boot.kernelPackages.nvidiaPackages.legacy_340;
+	};
 };
 
 services.openssh.enable = true;

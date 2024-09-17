@@ -5,12 +5,12 @@
 	settings = {
 		general = {
 			disable_loading_bar = false;
-			hide_cursor = true;
+			hide_cursor = false; # buggy?
 			# grace = 3;
 			no_fade_in = false;
 			no_fade_out = false;
 			ignore_empty_input = true;
-			immediate_render = false;
+			immediate_render = true;
 		};
 
 		background = [
