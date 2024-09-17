@@ -146,16 +146,7 @@ hardware = {
 		enable = true;
 		enable32Bit = true;
 	};
-	#nvidia = {
-	#	modesetting.enable = true;
-	#	package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
-	#	acceptLicense = true;
-	#};
 };
-
-#nixpkgs.config.nvidia.acceptLicense = true;
-
-#services.xserver.videoDrivers = ["nvidia"];
 
 services.openssh.enable = true;
 
