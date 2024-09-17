@@ -31,7 +31,9 @@
 
   virtualisation.spiceUSBRedirection.enable = true;
 
-#  systemd.tmpfiles.rules = [
+#  systemd.tmpfiles.rules = let
+#  devices = [ "1002:73ff" ]; #RX 6600
+#  in [
 #        "f /dev/shm/looking-glass 0660 ${config.settings.user.name} libvirtd -"
 #  ];
 
