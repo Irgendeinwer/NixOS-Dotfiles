@@ -148,7 +148,7 @@ hardware = {
 	};
 	nvidia = {
 		modesetting.enable = true;
-		package = config.boot.kernelPackages.nvidiaPackages.legacy_340;
+		package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
 	};
 };
 
