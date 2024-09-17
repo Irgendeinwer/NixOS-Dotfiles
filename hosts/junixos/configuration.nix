@@ -11,7 +11,7 @@
 	../../modules/nixos/hypr.nix
 	../../modules/nixos/fonts.nix
 	../../modules/nixos/gaming.nix
-	../../modules/nixos/virt.nix
+	#../../modules/nixos/virt.nix
 	#../../modules/nixos/samba.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
@@ -146,11 +146,16 @@ hardware = {
 		enable = true;
 		enable32Bit = true;
 	};
-	nvidia = {
-		modesetting.enable = true;
-		package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
-	};
+	#nvidia = {
+	#	modesetting.enable = true;
+	#	package = config.boot.kernelPackages.nvidiaPackages.legacy_470;
+	#	acceptLicense = true;
+	#};
 };
+
+#nixpkgs.config.nvidia.acceptLicense = true;
+
+#services.xserver.videoDrivers = ["nvidia"];
 
 services.openssh.enable = true;
 
