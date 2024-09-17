@@ -71,7 +71,7 @@
 		enable = true;
 		package = pkgs.rofi-wayland;
 		location = "center";
-		theme = "~/.config/rofi/gruvbox-material.rasi";
+		theme = "~/dotfiles/modules/home-manager/rofi/gruvbox-material.rasi";
 	};
 
 	programs.git = {
