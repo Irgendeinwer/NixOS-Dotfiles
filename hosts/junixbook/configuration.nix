@@ -98,6 +98,8 @@
 	wev
 	networkmanagerapplet
 	# swww
+	gruvbox-plus-icons
+	gruvbox-gtk-theme
 ];
 
 users.defaultUserShell = pkgs.zsh;
