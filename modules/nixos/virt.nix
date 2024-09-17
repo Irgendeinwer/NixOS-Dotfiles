@@ -17,8 +17,6 @@
   	};
   };
 
-  virtualisation.spiceUSBRedirection.enable = true;
-
   boot.kernelParams = let
   devices = [ "1002:73ff" ]; #RX6600
   in [
@@ -30,6 +28,12 @@
        	"vfio"
        	"vfio_iommu_type1"
   ];
+
+  virtualisation.spiceUSBRedirection.enable = true;
+
+#  systemd.tmpfiles.rules = [
+#        "f /dev/shm/looking-glass 0660 ${config.settings.user.name} libvirtd -"
+#  ];
 
   environment.systemPackages = with pkgs; [
 	virt-manager
