@@ -81,7 +81,7 @@
 	traceroute
 	whois
 	dig
-	direnv
+	nix-direnv
 	qimgv
 	polkit
 	polkit_gnome
