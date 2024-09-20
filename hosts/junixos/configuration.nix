@@ -81,7 +81,7 @@
 	traceroute
 	whois
 	dig
-	telegram-desktop
+	direnv
 	qimgv
 	polkit
 	polkit_gnome
@@ -92,10 +92,13 @@
 	python3
 	yt-dlp
 	obs-studio
+
 	element-desktop
 	vesktop
 	whatsapp-for-linux
 	signal-desktop
+	telegram-desktop
+	
 	zathura
 	libreoffice
 	inkscape
