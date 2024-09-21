@@ -4,6 +4,7 @@
 		protonup
 		mangohud
 		ddnet
+		osu-lazer
 	];
 	programs = {
 		steam.enable = true;
