@@ -125,6 +125,10 @@ programs = {
 	# kdeconnect.enable = true;
 };
 
+services.logind.extraConfig = ''
+	HandlePowerKey=ignore
+'';
+
 services.printing.enable = true;
 
 services.avahi = {
