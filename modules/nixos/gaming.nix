@@ -4,7 +4,7 @@
 		protonup
 		mangohud
 		ddnet
-		osu-lazer
+		osu-lazer-bin # "-bin" is needed to submit scores and play online multiplayer
 	];
 	programs = {
 		steam.enable = true;
