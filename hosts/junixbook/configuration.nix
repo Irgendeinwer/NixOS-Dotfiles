@@ -13,6 +13,7 @@
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
+	../../modules/nixos/direnv.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
