@@ -60,6 +60,8 @@
 	kitty
 	wofi
 	mako
+	ripgrep
+	yazi
 	libnotify
 	dunst
 	wl-clipboard
