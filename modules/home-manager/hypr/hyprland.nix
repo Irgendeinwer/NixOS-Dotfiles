@@ -169,6 +169,7 @@ wayland.windowManager.hyprland = {
 
 			windowrulev2 = [
 				"idleinhibit fullscreen, class:^(firefox)$"
+				"idleinhibit, fullscreen:1"
 
 				"float, title:^(Picture-in-Picture)$"
 				"size 512 288, title:^(Picture-in-Picture)$"
