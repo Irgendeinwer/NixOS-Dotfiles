@@ -8,10 +8,10 @@
 		# splash_color = "55ffffff";
 		ipc = true;
 
-		preload = [ "~/dotfiles/wallpapers/wallhaven-d5p6j3.png" ];
+		preload = [ "~/dotfiles/wallpapers/gruvbox_pixel.png" ];
 
 		wallpaper = [
-			", ~/dotfiles/wallpapers/wallhaven-d5p6j3.png"
+			", ~/dotfiles/wallpapers/gruvbox_pixel.png"
 		];
 	};
   };
