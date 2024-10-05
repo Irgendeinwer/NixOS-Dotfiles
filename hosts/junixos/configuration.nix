@@ -111,6 +111,7 @@
 	ffmpeg
 	gruvbox-plus-icons
 	gruvbox-gtk-theme
+	lmms
 ];
 
 users.defaultUserShell = pkgs.zsh;
