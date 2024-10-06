@@ -12,5 +12,4 @@
 		steam.enable = true;
 		gamemode.enable = true;
 	};
-	virtualisation.waydroid.enable = true;
 }
