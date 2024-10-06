@@ -1,4 +1,4 @@
-{inputs, config, pkgs, ... }:
+{ inputs, config, pkgs, ... }:
 
 {
   imports =
@@ -12,6 +12,7 @@
 	../../modules/nixos/fonts.nix
 	../../modules/nixos/direnv.nix
 	../../modules/nixos/gaming.nix
+	../../modules/nixos/android.nix
 	#../../modules/nixos/virt.nix
 	#../../modules/nixos/samba.nix
 	../../modules/nixos/flexing.nix
