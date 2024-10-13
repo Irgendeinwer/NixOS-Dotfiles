@@ -24,10 +24,10 @@
 		label = [
 		  {
 			monitor = "";
-    			text = "    $USER";
+    			text = "    Julian Lindner, 10a";
 			text_align = "center";
 			color = "rgba(216, 222, 233, 0.80)";
-			font_size = 34;
+			font_size = 36;
 			font_family = "Noto Nerd Font Bold";
 			
 			position = "0, -180";
@@ -63,7 +63,7 @@
 			fade_on_empty = true;
 			# font_family = "Noto Nerd Font Bold";
 			placeholder_text =
-			''<i><span foreground="##ffffff99">🔒 Enter Pass</span></i>'';
+			''<i><span foreground="##ffffff99">🔒 Enter Password</span></i>'';
 			shadow_passes = 0;
 			shadow_size = 0;
 
