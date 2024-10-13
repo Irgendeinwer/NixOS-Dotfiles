@@ -113,6 +113,7 @@
 	gruvbox-plus-icons
 	gruvbox-gtk-theme
 	lmms
+	pdf4qt
 ];
 
 users.defaultUserShell = pkgs.zsh;
