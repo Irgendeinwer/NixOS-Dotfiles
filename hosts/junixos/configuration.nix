@@ -95,6 +95,7 @@
 	python3
 	yt-dlp
 	obs-studio
+	kdenlive
 
 	element-desktop
 	vesktop
