@@ -71,7 +71,7 @@
 	firefox
 	tor-browser
 	obsidian
-	waybar
+	# waybar
 	btop
 	easyeffects
 	openrgb

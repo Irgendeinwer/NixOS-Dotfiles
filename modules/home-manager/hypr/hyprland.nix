@@ -11,7 +11,7 @@ wayland.windowManager.hyprland = {
 				# "swww-daemon &"
 				# "swww img ~/dotfiles/wallpapers/bg-noflash.webp &"
 				"hyprlock &"
-				"waybar &"
+				# "waybar &"
 				"nm-applet --indicator &"
 				"brightnessctl set 100%"
 			];
