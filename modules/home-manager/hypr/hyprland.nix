@@ -89,10 +89,10 @@ wayland.windowManager.hyprland = {
 				",PRINT, exec, hyprshot -m region --freeze"
 
 				# Media and volume controls
-				",F9, exec, pamixer -d 5"
-				",F10, exec, pamixer -i 5"
-				",XF86AudioRaiseVolume, exec, pamixer -i 5"
-				",XF86AudioLowerVolume, exec, pamixer -d 5"
+				",F9, exec, pamixer -d 2"
+				",F10, exec, pamixer -i 2"
+				",XF86AudioRaiseVolume, exec, pamixer -i 2"
+				",XF86AudioLowerVolume, exec, pamixer -d 2"
 				",XF86AudioMute, exec, pamixer -t"
 				",XF86AudioPlay, exec, playerctl play-pause"
 				",XF86AudioNext, exec, playerctl next"
@@ -100,8 +100,8 @@ wayland.windowManager.hyprland = {
 				",XF86AudioStop, exec, playerctl stop"
 				",XF86AudioMicMute, exec, pamixer --default-source -t"
 
-				",XF86MonBrightnessUp, exec, brightnessctl set 5%+"
-				",XF86MonBrightnessDown, exec, brightnessctl set 5%-"
+				",XF86MonBrightnessUp, exec, brightnessctl set 10%+"
+				",XF86MonBrightnessDown, exec, brightnessctl set 10%-"
 
 				# switch focus
 				"$mainMod, left, movefocus, l"
