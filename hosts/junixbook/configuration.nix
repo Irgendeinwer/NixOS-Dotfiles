@@ -86,7 +86,7 @@
 	polkit_gnome
 	#polkit-kde-agent
 	bat
-	anki
+	# anki
 	python3
 	yt-dlp
 	obs-studio
