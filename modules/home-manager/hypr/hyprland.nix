@@ -90,7 +90,7 @@ wayland.windowManager.hyprland = {
 
 				# Quick access to the bone keyboard layout
 				",F7, exec, hyprctl keyword input:kb_layout de"
-				",F8, exec, hyprctl keyword input:kb_layout de\(bone\)"
+				",F8, exec, hyprctl keyword input:kb_layout de\\(bone\\)"
 
 				# Media and volume controls
 				",F9, exec, pamixer -d 2"
