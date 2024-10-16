@@ -39,8 +39,8 @@ wayland.windowManager.hyprland = {
     				"col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg"; # blue
     				"col.inactive_border" = "rgba(595959aa)";
 
-    				resize_on_border = true;
-    				hover_icon_on_border = false;
+    			#	resize_on_border = true;
+    			#	hover_icon_on_border = false;
 
     				allow_tearing = false;
 
