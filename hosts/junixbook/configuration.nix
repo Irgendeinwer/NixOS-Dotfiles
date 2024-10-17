@@ -141,6 +141,8 @@ services.avahi = {
   openFirewall = true;
 };
 
+services.upower.enable = true;
+
 security.polkit.enable = true;
 
 programs.mtr.enable = true;
