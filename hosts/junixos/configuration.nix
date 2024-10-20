@@ -14,7 +14,6 @@
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/android.nix
 	#../../modules/nixos/virt.nix
-	#../../modules/nixos/samba.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/i2p.nix
