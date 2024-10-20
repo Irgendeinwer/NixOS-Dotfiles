@@ -5,7 +5,7 @@
 	settings = {
 		general = {
 			disable_loading_bar = false;
-			hide_cursor = false; # buggy?
+			hide_cursor = true; # buggy?
 			# grace = 3;
 			no_fade_in = false;
 			no_fade_out = false;
