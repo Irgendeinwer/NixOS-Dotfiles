@@ -15,7 +15,7 @@
 
 		background = [
 	  	  {
-			path = "~/dotfiles/wallpapers/jellyfish-space-k9v8d1.png";
+			path = "~/dotfiles/wallpapers/gruvbox_girl.png";
 			blur_passes = 0;
 			blur_size = 0;
 	    	  }
