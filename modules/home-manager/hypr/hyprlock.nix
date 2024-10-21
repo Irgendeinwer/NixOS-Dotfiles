@@ -26,7 +26,7 @@
 			monitor = "";
     			text = "    Julian Lindner, 10a";
 			text_align = "center";
-			color = "rgba(216, 222, 233, 0.80)";
+			color = "rgba(16, 22, 33, 0.80)";
 			font_size = 36;
 			font_family = "Noto Nerd Font Bold";
 			
@@ -39,7 +39,7 @@
 			monitor = "";
 			text = "$TIME";
 			text_align = "center";
-			color = "rgba(216, 222, 233, .7)";
+			color = "rgba(16, 22, 33, .7)";
 			font_size = 180;
 			font_family = "Fira Code Nerd Fontadasdasd";
 
