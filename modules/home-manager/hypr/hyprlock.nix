@@ -26,7 +26,7 @@
 			monitor = "";
     			text = "    Julian Lindner, 10a";
 			text_align = "center";
-			color = "rgba(16, 22, 33, 0.80)";
+			color = "rgba(116, 122, 133, 0.80)";
 			font_size = 36;
 			font_family = "Noto Nerd Font Bold";
 			
@@ -57,8 +57,8 @@
       			dots_size = 0.2;
 			dots_spacing = 0.2;
 			dots_center = true;
-      			outer_color = "rgba(255, 255, 255, 0)";
-			inner_color = "rgba(255, 255, 255, 0.3)";
+      			outer_color = "rgba(55, 55, 55, 0)";
+			inner_color = "rgba(55, 55, 55, 0.3)";
 			font_color = "rgb(200, 200, 200)";
 			fade_on_empty = true;
 			# font_family = "Noto Nerd Font Bold";
