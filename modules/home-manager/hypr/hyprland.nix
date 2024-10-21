@@ -88,6 +88,9 @@ wayland.windowManager.hyprland = {
 				"$mainMod, Escape, exec, loginctl lock-session"
 				",PRINT, exec, hyprshot -m region --freeze"
 
+				# Time
+				"$mainMod, T, exec, notify-send \"$(date +%H):$(date +%M) Uhr\" -t 3000"
+
 				# Quick access to the bone keyboard layout
 				",F7, exec, hyprctl keyword input:kb_layout de"
 				",F8, exec, hyprctl keyword input:kb_layout de\\(bone\\)"
