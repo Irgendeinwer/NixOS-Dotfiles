@@ -14,6 +14,7 @@
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/direnv.nix
+	../../modules/nixos/messaging.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -71,7 +72,6 @@
 	btop
 	easyeffects
 	openrgb
-	gparted
 	vlc
 	playerctl
 	celluloid
@@ -90,10 +90,6 @@
 	python3
 	yt-dlp
 	obs-studio
-	element-desktop
-	vesktop
-	whatsapp-for-linux
-	signal-desktop
 	zathura
 	pdf4qt
 	libreoffice
