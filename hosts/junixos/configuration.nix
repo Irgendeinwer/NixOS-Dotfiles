@@ -17,6 +17,7 @@
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/i2p.nix
+	../../modules/nixos/messaging.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -94,13 +95,7 @@
 	python3
 	yt-dlp
 	obs-studio
-	kdenlive
-
-	element-desktop
-	vesktop
-	whatsapp-for-linux
-	signal-desktop
-	telegram-desktop
+	kdenlive	
 	
 	zathura
 	libreoffice
