@@ -8,6 +8,7 @@
 		../../modules/home-manager/hypr/hyprpaper.nix
 		../../modules/home-manager/hypr/hyprlock.nix
 		../../modules/home-manager/hypr/hypridle.nix
+		../../modules/home-manager/zsh.nix
 	];
 
 	home.packages = with pkgs; [
@@ -36,38 +37,8 @@
             	};
 	};
 
-	qt.enable = true;
+	qt.enable = true;	
 	
-	programs.zsh = {
-  		enable = true;
-  		enableCompletion = true;
-  		autosuggestion.enable = true;
-  		syntaxHighlighting.enable = true;
-
-		shellAliases = {
-			config = "cd ~/dotfiles/ && nvim hosts/junixos/configuration.nix";
-			hardware-config = "cd ~/dotfiles/ && nvim hosts/junixos/hardware-configuration.nix";
-			flake = "cd ~/dotfiles/ && nvim flake.nix";
-			home = "cd ~/dotfiles/ && nvim hosts/junixos/home.nix";
-			hypr = "cd ~/dotfiles/ && nvim modules/home-manager/hypr/";
-
-    			rebuild = "~/dotfiles/modules/scripts/rebuild.sh";
-
-			stfu = "git -C ~/dotfiles/ push && systemctl poweroff";
-			lock = "systemctl suspend & hyprlock";
-  		};
-  		history = {
-    			size = 10000;
-    			path = "${config.xdg.dataHome}/zsh/history";
-  		};
-		
-		oh-my-zsh = {
-			enable = true;
-			plugins = [ "git" "direnv" ];
-			theme = "robbyrussell";
-		};
-	};
-
 	programs.rofi = {
 		enable = true;
 		package = pkgs.rofi-wayland;
