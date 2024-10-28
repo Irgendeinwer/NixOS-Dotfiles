@@ -9,6 +9,7 @@
 		../../modules/home-manager/hypr/hyprlock.nix
 		../../modules/home-manager/hypr/hypridle.nix
 		../../modules/home-manager/zsh.nix
+		../../modules/home-manager/rofi.nix
 	];
 
 	home.packages = with pkgs; [
@@ -38,13 +39,6 @@
 	};
 
 	qt.enable = true;	
-	
-	programs.rofi = {
-		enable = true;
-		package = pkgs.rofi-wayland;
-		location = "center";
-		theme = "~/dotfiles/modules/home-manager/rofi/gruvbox-material.rasi";
-	};
 
 	programs.git = {
 		enable = true;
@@ -53,7 +47,6 @@
 		extraConfig = {
 			init.defaultBranch = "main";
 		};
-
 	};
 
 	services.kdeconnect.enable = true;
