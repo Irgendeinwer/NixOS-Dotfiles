@@ -9,45 +9,15 @@
 		../../modules/home-manager/hypr/hyprlock.nix
 		../../modules/home-manager/hypr/hypridle.nix
 		../../modules/home-manager/zsh.nix
-		../../modules/home-manager/rofi.nix
+		../../modules/home-manager/git.nix
+		../../modules/home-manager/rofi/rofi.nix
+		../../modules/home-manager/gtk.nix
 	];
 
 	home.packages = with pkgs; [
 	];
 
-	gtk = {
-		enable = true;
-		theme = {
-		package = pkgs.gruvbox-gtk-theme;
-			name = "gruvbox-gtk-theme";
-		};
-		iconTheme = {
-			package = pkgs.gruvbox-plus-icons;
-			name = "Gruvbox-Plus-Dark";
-		};
-		gtk3.extraConfig = {
-                	gtk-application-prefer-dark-theme = true;
-                	gtk-button-images = true;
-                	gtk-menu-images = true;
-            	};
-
-            	gtk4.extraConfig = {
-                	gtk-application-prefer-dark-theme = true;
-                	gtk-button-images = true;
-                	gtk-menu-images = true;
-            	};
-	};
-
 	qt.enable = true;	
-
-	programs.git = {
-		enable = true;
-		userName = "Irgendeinwer";
-		userEmail = "irgendeinwer@proton.me";
-		extraConfig = {
-			init.defaultBranch = "main";
-		};
-	};
 
 	services.kdeconnect.enable = true;
 	services.kdeconnect.indicator = true;
