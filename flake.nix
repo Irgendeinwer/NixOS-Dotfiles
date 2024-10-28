@@ -9,6 +9,8 @@ inputs = {
 		inputs.nixpkgs.follows = "nixpkgs";
 	};
 
+	zen-browser.url = "github:MarceColl/zen-browser-flake";
+
 	# hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
 };
 
