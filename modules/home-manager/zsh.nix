@@ -14,7 +14,7 @@
 			hypr = "cd ~/dotfiles/ && nvim modules/home-manager/hypr/";
 
     			rb = "~/dotfiles/modules/scripts/rebuild.sh";
-			rebuild = "sudo nixos-rebuild switch --flake ~/dotfile/#$HOST";
+			rebuild = "sudo nixos-rebuild switch --flake ~/dotfiles/#$HOST";
 
 			stfu = "git -C ~/dotfiles/ push && systemctl poweroff";
 			lock = "systemctl suspend & hyprlock";
