@@ -7,10 +7,10 @@
   		syntaxHighlighting.enable = true;
 
 		shellAliases = {
-			config = "cd ~/dotfiles/ && nvim hosts/junixos/configuration.nix";
-			hconfig = "cd ~/dotfiles/ && nvim hosts/junixos/hardware-configuration.nix";
+			config = "cd ~/dotfiles/ && nvim hosts/$HOST/configuration.nix";
+			hconfig = "cd ~/dotfiles/ && nvim hosts/$HOST/hardware-configuration.nix";
 			flake = "cd ~/dotfiles/ && nvim flake.nix";
-			home = "cd ~/dotfiles/ && nvim hosts/junixos/home.nix";
+			home = "cd ~/dotfiles/ && nvim hosts/$HOST/home.nix";
 			hypr = "cd ~/dotfiles/ && nvim modules/home-manager/hypr/";
 
     			rb = "~/dotfiles/modules/scripts/rebuild.sh";
