@@ -18,6 +18,7 @@
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/i2p.nix
 	../../modules/nixos/messaging.nix
+	../../modules/nixos/pentesting.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -139,7 +140,6 @@ programs = {
 
 networking.hosts = {
   "192.168.100.2" = [ "yuno.hadiag.selfhost.bz" ];
-  "yuno" = [ "yuno.hadiag.selfhost.bz" ];
 };
 
 security.polkit.enable = true;
