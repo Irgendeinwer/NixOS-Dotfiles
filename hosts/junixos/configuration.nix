@@ -19,6 +19,8 @@
 	../../modules/nixos/i2p.nix
 	../../modules/nixos/messaging.nix
 	../../modules/nixos/pentesting.nix
+
+	../../modules/nixos/genericSysPkgs.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -110,8 +112,7 @@
 	gruvbox-gtk-theme
 	lmms
 	pdf4qt
-	inputs.zen-browser.packages.x86_64-linux.default
-  ];
+];
 
 users.defaultUserShell = pkgs.zsh;
 environment.shells = with pkgs; [ zsh ];

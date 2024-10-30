@@ -10,11 +10,15 @@
 	../../modules/nixos/sound.nix
 	../../modules/nixos/hypr.nix
 	../../modules/nixos/fonts.nix
+	../../modules/nixos/direnv.nix
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/direnv.nix
 	../../modules/nixos/messaging.nix
+	../../modules/nixos/pentesting.nix
+
+	../../modules/nixos/genericSysPkgs.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
