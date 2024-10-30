@@ -10,7 +10,7 @@
 			no_fade_in = false;
 			no_fade_out = false;
 			ignore_empty_input = true;
-			immediate_render = true;
+			immediate_render = false;
 		};
 
 		background = [
@@ -24,9 +24,9 @@
 		label = [
 		  {
 			monitor = "";
-    			text = "    Julian Lindner, 10a";
+    			text = "     Julian";
 			text_align = "center";
-			color = "rgba(116, 122, 133, 0.80)";
+			color = "rgba(255, 255, 255, 0.90)";
 			font_size = 36;
 			font_family = "Noto Nerd Font Bold";
 			
