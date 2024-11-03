@@ -19,6 +19,7 @@
 	../../modules/nixos/i2p.nix
 	../../modules/nixos/messaging.nix
 	../../modules/nixos/pentesting.nix
+	../../modules/nixos/yazi.nix
 
 	../../modules/nixos/genericSysPkgs.nix
     ];
@@ -65,7 +66,6 @@
 	wofi
 	mako
 	ripgrep
-	yazi
 	libnotify
 	dunst
 	wl-clipboard
@@ -169,7 +169,6 @@ home-manager = {
 		"julian" = import ./home.nix;
 	};
 };
-
 
 # --------------------custom options---------------
 
