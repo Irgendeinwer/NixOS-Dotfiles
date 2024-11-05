@@ -13,5 +13,6 @@
 		neo-cowsay
 		pipes
 		pipes-rs
+		cool-retro-term
 	];
 }
