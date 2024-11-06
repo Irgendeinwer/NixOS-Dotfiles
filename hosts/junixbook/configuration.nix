@@ -15,6 +15,7 @@
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/direnv.nix
+	../../modules/nixos/yazi.nix
 	../../modules/nixos/messaging.nix
 	../../modules/nixos/pentesting.nix
 
@@ -61,7 +62,6 @@
 	curl
 	kitty
 	wofi
-	yazi
 	ripgrep
 	mako
 	libnotify
