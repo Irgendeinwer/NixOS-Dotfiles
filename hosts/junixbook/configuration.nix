@@ -58,6 +58,7 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
+  	scrcpy
 	wget
 	curl
 	kitty
