@@ -19,7 +19,6 @@
 	../../modules/nixos/i2p.nix
 	../../modules/nixos/messaging.nix
 	../../modules/nixos/pentesting.nix
-	../../modules/nixos/yazi.nix
 
 	../../modules/nixos/genericSysPkgs.nix
     ];
