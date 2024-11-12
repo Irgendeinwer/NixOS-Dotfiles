@@ -99,6 +99,8 @@
 	obs-studio
 	kdenlive	
 	
+	qbittorrent
+
 	zathura
 	libreoffice
 	inkscape
