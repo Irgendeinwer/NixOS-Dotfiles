@@ -60,7 +60,6 @@ wayland.windowManager.hyprland = {
 			dwindle = {
 				pseudotile = true;
 				smart_split = true;
-				no_gaps_when_only = 1;
 			};
 
 			decoration = {
