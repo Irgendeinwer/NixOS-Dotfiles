@@ -174,6 +174,12 @@ wayland.windowManager.hyprland = {
 				workspace_swipe = true;
 			};
 
+			workspace = [
+				# https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 1
+				"w[tv1], gapsout:0, gapsin:0"
+				"f[1], gapsout:0, gapsin:0"
+			];
+
 			windowrulev2 = [
 				# "idleinhibit fullscreen, class:^(firefox)$"
 				"idleinhibit always, fullscreen:1"
@@ -186,6 +192,12 @@ wayland.windowManager.hyprland = {
 				"noinitialfocus, title:^(Picture-in-Picture)$"
 
 				"suppressevent maximize, class:.* "
+
+				# https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 2
+				"bordersize 0, floating:0, onworkspace:w[tv1]"
+				"rounding 0, floating:0, onworkspace:w[tv1]"
+				"bordersize 0, floating:0, onworkspace:f[1]"
+				"rounding 0, floating:0, onworkspace:f[1]"
 			];
 		};
 		extraConfig = "
