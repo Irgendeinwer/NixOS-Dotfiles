@@ -10,13 +10,15 @@
 	../../modules/nixos/sound.nix
 	../../modules/nixos/hypr.nix
 	../../modules/nixos/fonts.nix
-	../../modules/nixos/direnv.nix
+	../../modules/nixos/direnv.nix	
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/flexing.nix
 	../../modules/nixos/streaming.nix
 	../../modules/nixos/direnv.nix
 	../../modules/nixos/messaging.nix
 	../../modules/nixos/pentesting.nix
+
+	../../modules/nixvim/nixvim.nix
 
 	../../modules/nixos/genericSysPkgs.nix
     ];
@@ -121,13 +123,13 @@ xdg = {
 	};
 };
 
-programs = {
-	neovim = {
-		enable = true;
-		defaultEditor = true;
-	};
-	# kdeconnect.enable = true;
-};
+#programs = {
+#	neovim = {
+#		enable = true;
+#		defaultEditor = true;
+#	};
+#	 kdeconnect.enable = true;
+#};
 
 services.logind.extraConfig = ''
 	HandlePowerKey=ignore
