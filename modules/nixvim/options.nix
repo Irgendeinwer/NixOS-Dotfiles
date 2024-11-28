@@ -1,6 +1,6 @@
-{ config, ... }:
+{ ... }:
 {
-programs.nixvim = {
+  programs.nixvim = {
     opts = {
 	number = true;
 	shiftwidth = 4;
@@ -13,5 +13,5 @@ programs.nixvim = {
 	providers.wl-copy.enable = true;
     };
     globals.mapleader = " ";
-};
+  };
 }

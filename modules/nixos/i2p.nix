@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ ... }:
 {
   services.i2pd = {
-	enable = true;
-	proto.i2cp.enable = true;
+    enable = true;
+    proto.i2cp.enable = true;
   };
 }
