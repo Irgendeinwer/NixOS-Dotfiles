@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
-	scrcpy
+    scrcpy
   ];
   virtualisation.waydroid.enable = true;
 }
