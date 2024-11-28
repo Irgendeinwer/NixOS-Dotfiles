@@ -20,6 +20,8 @@
 	../../modules/nixos/messaging.nix
 	../../modules/nixos/pentesting.nix
 
+	../../modules/nixvim/nixvim.nix
+
 	../../modules/nixos/genericSysPkgs.nix
     ];
 
@@ -132,13 +134,13 @@ xdg = {
 	};
 };
 
-programs = {
-	neovim = {
-		enable = true;
-		defaultEditor = true;
-	};
-	# kdeconnect.enable = true;
-};
+#programs = {
+#	neovim = {
+#		enable = true;
+#		defaultEditor = true;
+#	};
+#	kdeconnect.enable = true;
+#};
 
 networking.hosts = {
   "192.168.100.2" = [ "yuno.hadiag.selfhost.bz" ];
