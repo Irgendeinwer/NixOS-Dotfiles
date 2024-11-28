@@ -2,7 +2,7 @@
 {
   imports = [
 	# ./plugins/default.nix
-	# ./options.nix
+	./options.nix
 	# ./keybinds.nix
   ];
 
