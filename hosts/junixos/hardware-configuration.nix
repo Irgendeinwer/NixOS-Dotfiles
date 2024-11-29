@@ -1,4 +1,4 @@
-{ config, lib, pkgs, modulesPath, ... }:
+{ config, lib, modulesPath, ... }:
 
 {
   imports =
@@ -15,7 +15,7 @@
       fsType = "ext4";
     };
 
-  fileSystems."/media/spiele" =
+  fileSystems."/media/fun" =
     { device = "/dev/disk/by-uuid/70a537a9-fc4a-4271-84c0-ef999c2a1bdf";
       fsType = "ext4";
     };
