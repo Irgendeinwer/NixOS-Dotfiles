@@ -10,6 +10,7 @@
     enable = true;
     colorschemes.gruvbox = {
         enable = true;
+	package = pkgs.vimPlugins.gruvbox-material-nvim;
     };
   };
 
