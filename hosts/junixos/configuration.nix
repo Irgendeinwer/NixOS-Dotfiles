@@ -1,4 +1,4 @@
-{ inputs, config, pkgs, ... }:
+{ inputs, pkgs, ... }:
 
 {
   imports =
@@ -23,6 +23,8 @@
 	../../modules/nixvim/nixvim.nix
 
 	../../modules/nixos/genericSysPkgs.nix
+
+	../../modules/services/jellyfin.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
