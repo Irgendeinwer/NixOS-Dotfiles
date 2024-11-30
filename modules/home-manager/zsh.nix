@@ -18,6 +18,9 @@
 
 	stfu = "git -C ~/dotfiles/ push && systemctl poweroff";
 	lock = "systemctl suspend & hyprlock";
+
+	# yt-dlp aliases
+	dl-music = "yt-dlp -f bestaudio/best --extract-audio -o \"%(title)s\"";
     };
     history = {
     	size = 10000;
