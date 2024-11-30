@@ -8,7 +8,7 @@
 	noto-fonts-emoji
 	vegur
 	quicksand
-	(nerdfonts.override { fonts = [ "Noto" "FiraCode" ]; })
+	fira-code-nerdfont
     ];
     fontconfig = {
 	defaultFonts = {
