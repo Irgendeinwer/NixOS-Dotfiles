@@ -15,5 +15,6 @@
 
   environment.systemPackages = with pkgs; [
     nixd
+    rust-analyzer
   ];
 }
