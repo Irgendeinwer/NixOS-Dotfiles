@@ -8,10 +8,10 @@
 	# splash_color = "55ffffff";
 	ipc = true;
 
-	preload = [ "~/dotfiles/wallpapers/wallhaven-2e2xyx.jpg" ];
+	preload = [ "~/dotfiles/wallpapers/Witcher_IV_Wallpaper_01_13840x2160_EN.jpeg" ];
 
 	wallpaper = [
-	    ", ~/dotfiles/wallpapers/wallhaven-2e2xyx.jpg"
+	    ", ~/dotfiles/wallpapers/Witcher_IV_Wallpaper_01_13840x2160_EN.jpeg"
 	];
     };
   };
