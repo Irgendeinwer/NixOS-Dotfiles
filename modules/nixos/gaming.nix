@@ -4,6 +4,7 @@
     protonup
     protontricks
     mangohud
+    lutris
     ddnet
     osu-lazer-bin # "-bin" is needed to submit scores and play online multiplayer
     r2modman
