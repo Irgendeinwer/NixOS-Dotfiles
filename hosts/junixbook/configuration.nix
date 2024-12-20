@@ -12,15 +12,11 @@
 	../../modules/nixos/fonts.nix
 	../../modules/nixos/direnv.nix	
 	../../modules/nixos/gaming.nix
-	../../modules/nixos/flexing.nix
-	../../modules/nixos/streaming.nix
 	../../modules/nixos/direnv.nix
-	../../modules/nixos/messaging.nix
-	../../modules/nixos/pentesting.nix
 
 	../../modules/nixvim/nixvim.nix
 
-	../../modules/nixos/genericSysPkgs.nix
+	../../modules/nixos/pkgs.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
@@ -71,8 +67,6 @@
 	wl-clipboard
 	# xdg-desktop-portal-gtk
 	dconf
-	firefox
-	tor-browser
 	obsidian
 	# waybar
 	btop

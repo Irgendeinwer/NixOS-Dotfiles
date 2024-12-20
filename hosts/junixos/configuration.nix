@@ -14,15 +14,11 @@
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/android.nix
 	#../../modules/nixos/virt.nix
-	../../modules/nixos/flexing.nix
-	../../modules/nixos/streaming.nix
 	../../modules/nixos/i2p.nix
-	../../modules/nixos/messaging.nix
-	../../modules/nixos/pentesting.nix
 
 	../../modules/nixvim/nixvim.nix
 
-	../../modules/nixos/genericSysPkgs.nix
+	../../modules/nixos/pkgs.nix
 
 	../../modules/services/jellyfin.nix
     ];
@@ -74,8 +70,6 @@
 	wl-clipboard
 	# xdg-desktop-portal-gtk
 	dconf
-	firefox
-	tor-browser
 	obsidian
 	# waybar
 	btop
@@ -135,10 +129,6 @@ xdg = {
 };
 
 #programs = {
-#	neovim = {
-#		enable = true;
-#		defaultEditor = true;
-#	};
 #	kdeconnect.enable = true;
 #};
 
