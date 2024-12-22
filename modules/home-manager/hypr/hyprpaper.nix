@@ -3,7 +3,7 @@
   services.hyprpaper = {
     enable = true;
     settings = {
-	splash = true;
+	splash = false; #temp see commit
 	splash_offset = 2.0;
 	# splash_color = "55ffffff";
 	ipc = true;
