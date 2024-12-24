@@ -13,6 +13,7 @@
 	../../modules/nixos/direnv.nix	
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/direnv.nix
+	../../modules/nixos/bluetooth.nix
 
 	../../modules/nixvim/nixvim.nix
 
