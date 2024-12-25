@@ -87,7 +87,7 @@
 	    ",PRINT, exec, hyprshot -m region --freeze"
 	
 	    # Time
-	    "$mainMod, T, exec, notify-send \"$(date +%H):$(date +%M) Uhr\" -t 3000"
+	    "$mainMod, T, exec, notify-send -t 3000 \"$(date +%H):$(date +%M) Uhr\" \"$(date)\""
 
 	    # Quick access to the bone keyboard layout
 	    ",F7, exec, hyprctl keyword input:kb_layout de"
