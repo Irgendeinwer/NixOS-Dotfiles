@@ -14,5 +14,6 @@
     pipes
     pipes-rs
     cool-retro-term
+    activate-linux
   ];
 }
