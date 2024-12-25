@@ -10,6 +10,8 @@
   environment.systemPackages = with pkgs; [
     yazi
 
+    keepassxc
+
     qbittorrent
   ];
 }
