@@ -6,7 +6,7 @@
     cbonsai
     fastfetch
     uwufetch
-    # cava
+    cava
     figlet
     lolcat
     fortune
