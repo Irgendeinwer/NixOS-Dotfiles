@@ -2,7 +2,7 @@
 {
   environment.systemPackages = with pkgs; [
     cmatrix
-    hollywood
+    # hollywood
     cbonsai
     fastfetch
     uwufetch
