@@ -20,7 +20,7 @@
 
 	../../modules/nixos/pkgs.nix
 
-	../../modules/services/jellyfin.nix
+	../../modules/services/services.nix
     ];
 
   boot.loader.systemd-boot.enable = true;
