@@ -14,6 +14,8 @@
 	    # "waybar &"
 	    "nm-applet --indicator &"
 	    "brightnessctl set 100%"
+
+	    "[workspace 10 silent] signal-desktop"
 	];
 			
 	input = {
@@ -201,25 +203,3 @@
 	";
   };
 }
-
-# See https://wiki.hyprland.org/Configuring/Environment-variables/
-/*
-env = XCURSOR_SIZE,60
-env = HYPRCURSOR_SIZE,40
-*/
-/*
-animations {
-    enabled = true
-
-    # Default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
-
-    bezier = myBezier, 0.05, 0.9, 0.1, 1.05
-
-    animation = windows, 1, 7, myBezier
-    animation = windowsOut, 1, 7, default, popin 80%
-    animation = border, 1, 10, default
-    animation = borderangle, 1, 8, default
-    animation = fade, 1, 7, default
-    animation = workspaces, 1, 6, default
-}
-*/
