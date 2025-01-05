@@ -107,7 +107,6 @@
 	ffmpeg
 	gruvbox-plus-icons
 	gruvbox-gtk-theme
-	lmms
 	pdf4qt
 ];
 
