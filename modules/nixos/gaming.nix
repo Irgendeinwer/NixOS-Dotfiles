@@ -1,7 +1,8 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
-    itch
+    # itch WAS DOWN SO XD
+    lutris
     heroic
     r2modman
 
