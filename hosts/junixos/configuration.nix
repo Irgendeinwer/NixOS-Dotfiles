@@ -86,9 +86,6 @@
 	whois
 	dig
 	qimgv
-	polkit
-	polkit_gnome
-	#polkit-kde-agent
 	kdePackages.kdeconnect-kde
 	kdePackages.plasma-integration # For QT theming
 	bat
