@@ -8,10 +8,9 @@
 	exec-once = [
 	    "hypridle &"
 	    "hyprpaper &"
-	    # "swww-daemon &"
-	    # "swww img ~/dotfiles/wallpapers/bg-noflash.webp &"
 	    "hyprlock &"
-	    # "waybar &"
+	    "systemctl --user start hyprpolkitagent"
+	    
 	    "nm-applet --indicator &"
 	    "brightnessctl set 100%"
 

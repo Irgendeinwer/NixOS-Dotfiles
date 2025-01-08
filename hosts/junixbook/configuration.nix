@@ -83,9 +83,6 @@
 	whois
 	dig
 	qimgv
-	polkit
-	polkit_gnome
-	#polkit-kde-agent
 	bat
 	# anki
 	python3
