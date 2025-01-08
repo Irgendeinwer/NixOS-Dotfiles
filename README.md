@@ -7,6 +7,6 @@ These are my dotfiles for NixOS (First try!!!). You can use them but I don't rec
 Completely rework the dotfiles as this was my first try with NixOS :)
 
 ---
-Credits:
+# Credits:
 
- - Nix Community - I copied most configs :)
+ - Nix Community - I copied most of my configs :)
