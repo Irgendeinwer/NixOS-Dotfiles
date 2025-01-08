@@ -3,7 +3,7 @@
   environment.systemPackages = with pkgs; [
     hyprshot
     hypridle
-    xdg-desktop-portal-hyprland
+    hyprpolkitagent
   ];
 
   programs = {
