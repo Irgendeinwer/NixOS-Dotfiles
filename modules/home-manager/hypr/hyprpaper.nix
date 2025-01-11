@@ -8,10 +8,10 @@
 	# splash_color = "55ffffff";
 	ipc = true;
 
-	preload = [ "~/dotfiles/wallpapers/Witcher_IV_Wallpaper_01_13840x2160_EN.jpeg" ];
+	preload = [ "~/dotfiles/wallpapers/NixOS.png" ];
 
 	wallpaper = [
-	    ", ~/dotfiles/wallpapers/Witcher_IV_Wallpaper_01_13840x2160_EN.jpeg"
+	    ", ~/dotfiles/wallpapers/NixOS.png"
 	];
     };
   };
