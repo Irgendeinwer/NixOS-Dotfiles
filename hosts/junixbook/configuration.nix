@@ -6,6 +6,7 @@
 	./hardware-configuration.nix
 	inputs.home-manager.nixosModules.home-manager
 	../../modules/nixos/flakes.nix
+	../../modules/nixos/plymouth.nix
 	../../modules/nixos/greetd.nix
 	../../modules/nixos/sound.nix
 	../../modules/nixos/hypr.nix
