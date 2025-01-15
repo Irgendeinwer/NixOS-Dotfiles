@@ -15,7 +15,7 @@
 
 	background = [
 	  {
-	    path = "~/dotfiles/wallpapers/gruvbox_girl.png";
+	    path = "~/dotfiles/wallpapers/nix-flake-gruvbox.png";
 	    blur_passes = 0;
 	    blur_size = 0;
 	  }
