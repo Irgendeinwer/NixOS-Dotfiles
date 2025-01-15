@@ -30,7 +30,7 @@
 	    font_size = 36;
 	    font_family = "Noto Nerd Font Bold";
 			
-	    position = "0, -180";
+	    position = "0, -300";
 	    halign = "center";
 	    valign = "center";
 	  }
@@ -39,7 +39,7 @@
 	    monitor = "";
 	    text = "$TIME";
 	    text_align = "center";
-	    color = "rgba(16, 22, 33, .7)";
+	    color = "rgba(255, 255, 255, 0.90)";
 	    font_size = 180;
 	    font_family = "Fira Code Nerd Fontadasdasd";
 
@@ -52,7 +52,7 @@
 	input-field = [
   	  {
 	    monitor = "";
-	    size = "300, 60";
+	    size = "200, 60";
 	    outline_thickness = 2;
 	    dots_size = 0.2;
 	    dots_spacing = 0.2;
@@ -63,7 +63,7 @@
 	    fade_on_empty = true;
 	    # font_family = "Noto Nerd Font Bold";
 	    placeholder_text =
-	    ''<i><span foreground="##ffffff99">🔒 Enter Password</span></i>'';
+	    ''<i><span foreground="##ffffff99">Welcome!</span></i>'';
 	    shadow_passes = 0;
 	    shadow_size = 0;
 
