@@ -64,6 +64,7 @@
 	curl
 	kitty
 	wofi
+	tree
 	mako
 	ripgrep
 	libnotify
