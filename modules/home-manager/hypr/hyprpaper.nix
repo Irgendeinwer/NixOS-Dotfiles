@@ -8,10 +8,10 @@
 	# splash_color = "55ffffff";
 	ipc = true;
 
-	preload = [ "~/dotfiles/wallpapers/NixOS.png" ];
+	preload = [ "~/dotfiles/wallpapers/plague_tale_arthur-57vpr5.jpg" ];
 
 	wallpaper = [
-	    ", ~/dotfiles/wallpapers/NixOS.png"
+	    ", ~/dotfiles/wallpapers/plague_tale_arthur-57vpr5.jpg"
 	];
     };
   };
