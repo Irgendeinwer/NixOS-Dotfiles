@@ -86,7 +86,10 @@
     
 	    "$mainMod, Escape, exec, loginctl lock-session"
 	    ",PRINT, exec, hyprshot -m region --freeze"
-	
+
+	    # Peace and tranquility
+	    "$mainMod, Y, exec, xdg-open https://www.youtube.com/watch?v=Eni9PPPPBpg"
+
 	    # Time
 	    "$mainMod, T, exec, notify-send -t 3000 \"$(date +%H):$(date +%M) Uhr\" \"$(date)\""
 
