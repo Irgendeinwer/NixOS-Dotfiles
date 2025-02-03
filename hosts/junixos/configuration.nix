@@ -15,7 +15,6 @@
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/android.nix
 	#../../modules/nixos/virt.nix
-	../../modules/nixos/i2p.nix
 	../../modules/nixos/nh.nix
 
 	../../modules/nixvim/nixvim.nix
