@@ -4,5 +4,6 @@
     inputs.zen-browser.packages.x86_64-linux.default
     tor-browser
     firefox
+    ungoogled-chromium
   ];
 }
