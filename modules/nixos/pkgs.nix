@@ -12,6 +12,6 @@
 
     keepassxc
 
-    qbittorrent
+    qbittorrent-nox
   ];
 }
