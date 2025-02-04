@@ -4,7 +4,7 @@
     enable = true;
     settings = {
 	general = {
-	   lock_cmd = "pidof hyprlock || hyprlock";
+	    lock_cmd = "hyprctl keyword input:kb_layout de && pidof hyprlock || hyprlock";
 	    before_sleep_cmd = "loginctl lock-session";
 	    after_sleep_cmd = "hyprctl dispatch dpms on";
 	};
