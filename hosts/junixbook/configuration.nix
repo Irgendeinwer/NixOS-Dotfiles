@@ -15,6 +15,8 @@
 	../../modules/nixos/gaming.nix
 	../../modules/nixos/direnv.nix
 	../../modules/nixos/bluetooth.nix
+	../../modules/nixos/android.nix
+	../../modules/nixos/nh.nix
 
 	../../modules/nixvim/nixvim.nix
 
