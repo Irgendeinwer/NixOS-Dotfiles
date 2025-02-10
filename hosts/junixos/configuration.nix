@@ -104,7 +104,6 @@
 	wev
 	# swww
 	ffmpeg
-	gruvbox-plus-icons
 	gruvbox-gtk-theme
 	pdf4qt
 ];
