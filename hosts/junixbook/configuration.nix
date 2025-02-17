@@ -75,7 +75,6 @@
 	# waybar
 	btop
 	easyeffects
-	openrgb
 	vlc
 	playerctl
 	celluloid
@@ -116,14 +115,6 @@ xdg = {
 		];
 	};
 };
-
-#programs = {
-#	neovim = {
-#		enable = true;
-#		defaultEditor = true;
-#	};
-#	 kdeconnect.enable = true;
-#};
 
 services.logind.extraConfig = ''
 	HandlePowerKey=ignore
