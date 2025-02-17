@@ -76,7 +76,6 @@
 	# waybar
 	btop
 	easyeffects
-	openrgb
 	gparted
 	vlc
 	playerctl
@@ -112,8 +111,6 @@ users.defaultUserShell = pkgs.zsh;
 environment.shells = with pkgs; [ zsh ];
 programs.zsh.enable = true;
 
-#services.hardware.openrgb.enable = true;
-
 xdg = {
 	portal = {
 		enable = true;
@@ -124,10 +121,6 @@ xdg = {
 		];
 	};
 };
-
-#programs = {
-#	kdeconnect.enable = true;
-#};
 
 networking.hosts = {
   "192.168.100.2" = [ "yuno.hadiag.selfhost.bz" ];
