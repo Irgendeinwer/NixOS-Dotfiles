@@ -6,5 +6,6 @@
     ./jellyfin.nix
     ./ArchiSteamFarm.nix
     ./wiki-js.nix
+    ./openrgb.nix
   ];
 }
