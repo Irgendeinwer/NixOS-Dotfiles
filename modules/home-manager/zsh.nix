@@ -20,7 +20,7 @@
 	lock = "systemctl suspend & hyprlock";
 
 	# yt-dlp aliases
-	dl-music = "yt-dlp -f bestaudio/best --extract-audio -o \"%(title)s\"";
+	dl-music = "yt-dlp -f bestaudio -x --audio-format opus --add-metadata --parse-metadata \"playlist_index:%(track_number)s\" --embed-thumbnail -o \"%(title)s.%(ext)s\"";
     };
     history = {
     	size = 10000;
