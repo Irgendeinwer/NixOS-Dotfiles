@@ -87,13 +87,13 @@
 	whois
 	dig
 	qimgv
+	kdePackages.kdenlive
 	kdePackages.kdeconnect-kde
 	kdePackages.plasma-integration # For QT theming
 	bat
 	python3
 	yt-dlp
 	obs-studio
-	kdenlive	
 	
 	zathura
 	libreoffice
