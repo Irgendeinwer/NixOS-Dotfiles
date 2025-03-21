@@ -1,35 +1,34 @@
 { inputs, pkgs, ... }:
 
 {
-  imports =
-    [
-	./hardware-configuration.nix
-	inputs.home-manager.nixosModules.home-manager
-	../../modules/nixos/flakes.nix
-	../../modules/nixos/plymouth.nix
-	../../modules/nixos/greetd.nix
-	../../modules/nixos/sound.nix
-	../../modules/nixos/hypr.nix
-	../../modules/nixos/fonts.nix
-	../../modules/nixos/direnv.nix
-	../../modules/nixos/gaming.nix
-	../../modules/nixos/android.nix
-	#../../modules/nixos/virt.nix
-	../../modules/nixos/nh.nix
+  imports = [
+    ./hardware-configuration.nix
+    inputs.home-manager.nixosModules.home-manager
+    ../../modules/nixos/flakes.nix
+    ../../modules/nixos/plymouth.nix
+    ../../modules/nixos/greetd.nix
+    ../../modules/nixos/sound.nix
+    ../../modules/nixos/hypr.nix
+    ../../modules/nixos/fonts.nix
+    ../../modules/nixos/direnv.nix
+    ../../modules/nixos/gaming.nix
+    ../../modules/nixos/android.nix
+    #../../modules/nixos/virt.nix
+    ../../modules/nixos/nh.nix
 
-	../../modules/nixvim/nixvim.nix
+    ../../modules/nixvim/nixvim.nix
 
-	../../modules/nixos/pkgs.nix
+    ../../modules/nixos/pkgs.nix
 
-	../../modules/services/services.nix
-    ];
+    ../../modules/services/services.nix
+  ];
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  networking.hostName = "junixos"; 
+  networking.hostName = "junixos";
 
   networking.networkmanager.enable = true;
 
@@ -54,111 +53,114 @@
   users.users.julian = {
     isNormalUser = true;
     description = "Julian Lindner";
-    extraGroups = [ "networkmanager" "wheel" "input" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "input"
+    ];
   };
 
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-	wget
-	curl
-	kitty
-	wofi
-	tree
-	mako
-	ripgrep
-	libnotify
-	dunst
-	wl-clipboard
-	# xdg-desktop-portal-gtk
-	dconf
-	obsidian
-	# waybar
-	btop
-	easyeffects
-	gparted
-	vlc
-	playerctl
-	celluloid
-	prismlauncher
-	zip
-	unzip
-	traceroute
-	whois
-	dig
-	qimgv
-	kdePackages.kdenlive
-	kdePackages.kdeconnect-kde
-	kdePackages.plasma-integration # For QT theming
-	bat
-	python3
-	yt-dlp
-	obs-studio
-	
-	zathura
-	libreoffice
-	inkscape
-	gimp
-	brightnessctl
-	wev
-	# swww
-	ffmpeg
-	gruvbox-gtk-theme
-	pdf4qt
-];
+    wget
+    curl
+    kitty
+    wofi
+    tree
+    mako
+    ripgrep
+    libnotify
+    dunst
+    wl-clipboard
+    # xdg-desktop-portal-gtk
+    dconf
+    obsidian
+    # waybar
+    btop
+    easyeffects
+    gparted
+    vlc
+    playerctl
+    celluloid
+    prismlauncher
+    zip
+    unzip
+    traceroute
+    whois
+    dig
+    qimgv
+    kdePackages.kdenlive
+    kdePackages.kdeconnect-kde
+    kdePackages.plasma-integration # For QT theming
+    bat
+    python3
+    yt-dlp
+    obs-studio
 
-users.defaultUserShell = pkgs.zsh;
-environment.shells = with pkgs; [ zsh ];
-programs.zsh.enable = true;
+    zathura
+    libreoffice
+    inkscape
+    gimp
+    brightnessctl
+    wev
+    # swww
+    ffmpeg
+    gruvbox-gtk-theme
+    pdf4qt
+  ];
 
-xdg = {
-	portal = {
-		enable = true;
-		xdgOpenUsePortal = true;
-		extraPortals = [
-			pkgs.xdg-desktop-portal-hyprland
-			# pkgs.xdg-desktop-portal-gtk
-		];
-	};
-};
+  users.defaultUserShell = pkgs.zsh;
+  environment.shells = with pkgs; [ zsh ];
+  programs.zsh.enable = true;
 
-networking.hosts = {
-  "192.168.100.2" = [ "yuno.hadiag.selfhost.bz" ];
-};
+  xdg = {
+    portal = {
+      enable = true;
+      xdgOpenUsePortal = true;
+      extraPortals = [
+        pkgs.xdg-desktop-portal-hyprland
+        # pkgs.xdg-desktop-portal-gtk
+      ];
+    };
+  };
 
-security.polkit.enable = true;
+  networking.hosts = {
+    "192.168.100.2" = [ "yuno.hadiag.selfhost.bz" ];
+  };
 
-programs.mtr.enable = true;
-programs.gnupg.agent = {
-	enable = true;
-        enableSSHSupport = true;
-};
+  security.polkit.enable = true;
 
-hardware = {
-	graphics = {
-		enable = true;
-		enable32Bit = true;
-	};
-};
+  programs.mtr.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
 
-services.openssh.enable = true;
+  hardware = {
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
+  };
 
-networking.firewall.enable = false;
+  services.openssh.enable = true;
 
+  networking.firewall.enable = false;
 
-home-manager = {
-	extraSpecialArgs = {inherit inputs;};
-  	users = {
-		"julian" = import ./home.nix;
-	};
-};
+  home-manager = {
+    extraSpecialArgs = { inherit inputs; };
+    users = {
+      "julian" = import ./home.nix;
+    };
+  };
 
-# --------------------custom options---------------
+  # --------------------custom options---------------
 
-greetd.enable = true;
-sound-module.enable = true;
+  greetd.enable = true;
+  sound-module.enable = true;
 
-# --------------------custom options end-----------
+  # --------------------custom options end-----------
 
   # DO NOT EDIT!!!
   system.stateVersion = "24.05"; # Did you read the comment?
