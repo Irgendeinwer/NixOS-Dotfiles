@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./syncthing.nix
     ./postgresql.nix
     ./i2pd.nix
     ./jellyfin.nix
