@@ -8,10 +8,10 @@
       # splash_color = "55ffffff";
       ipc = true;
 
-      preload = [ "~/dotfiles/wallpapers/plague_tale_arthur-57vpr5.jpg" ];
+      preload = [ "~/dotfiles/wallpapers/jens-spahn.jpg" ];
 
       wallpaper = [
-        ", ~/dotfiles/wallpapers/plague_tale_arthur-57vpr5.jpg"
+        ", ~/dotfiles/wallpapers/jens-spahn.jpg"
       ];
     };
   };
