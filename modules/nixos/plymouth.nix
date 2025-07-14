@@ -1,16 +1,16 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   boot = {
 
     plymouth = {
       enable = true;
       theme = "rings_2";
-      themePackages = with pkgs; [
-        # By default we would install all themes
-        (adi1090x-plymouth-themes.override {
-          selected_themes = [ "rings_2" ];
-        })
-      ];
+      themePackages = with pkgs;
+        [
+          # By default we would install all themes
+          (adi1090x-plymouth-themes.override {
+            selected_themes = [ "rings_2" ];
+          })
+        ];
     };
 
     # Enable "Silent Boot"

@@ -1,5 +1,4 @@
-{ ... }:
-{
+{ ... }: {
   services.hyprpaper = {
     enable = true;
     settings = {
@@ -10,9 +9,7 @@
 
       preload = [ "~/dotfiles/wallpapers/jens-spahn.jpg" ];
 
-      wallpaper = [
-        ", ~/dotfiles/wallpapers/jens-spahn.jpg"
-      ];
+      wallpaper = [ ", ~/dotfiles/wallpapers/jens-spahn.jpg" ];
     };
   };
 }

@@ -52,11 +52,7 @@
   users.users.julian = {
     isNormalUser = true;
     
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "input"
-    ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -112,14 +108,12 @@
     portal = {
       enable = true;
       xdgOpenUsePortal = true;
-      extraPortals = [
-        pkgs.xdg-desktop-portal-hyprland
-      ];
+      extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
     };
   };
 
   services.logind.extraConfig = ''
-    	HandlePowerKey=ignore
+    HandlePowerKey=ignore
   '';
 
   services.printing.enable = true;
@@ -151,9 +145,7 @@
 
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
-    users = {
-      "julian" = import ./home.nix;
-    };
+    users = { "julian" = import ./home.nix; };
   };
 
   # --------------------custom options---------------

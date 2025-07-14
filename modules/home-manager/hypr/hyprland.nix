@@ -1,5 +1,4 @@
-{ ... }:
-{
+{ ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
     plugins = [ ];
@@ -24,9 +23,7 @@
         follow_mouse = 2;
         sensitivity = -0.1; # -1.0 - 1.0, 0 means no modification.
 
-        touchpad = {
-          natural_scroll = false;
-        };
+        touchpad = { natural_scroll = false; };
       };
 
       general = {
@@ -67,14 +64,10 @@
         rounding = 3;
         #	    rounding = 5;
 
-        blur = {
-          enabled = false;
-        };
+        blur = { enabled = false; };
       };
 
-      animations = {
-        enabled = true;
-      };
+      animations = { enabled = true; };
 
       bind = [
         "$mainMod, Q, exec, kitty"
@@ -91,7 +84,8 @@
         "$mainMod, Y, exec, xdg-open https://www.youtube.com/watch?v=Eni9PPPPBpg"
 
         # Time
-        "$mainMod, T, exec, notify-send -t 3000 \"$(date +%H):$(date +%M) Uhr\" \"$(date)\""
+        ''
+          $mainMod, T, exec, notify-send -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"''
 
         # Quick access to the bone keyboard layout
         ",F7, exec, hyprctl keyword input:kb_layout de"
@@ -166,13 +160,9 @@
         "$mainMod, mouse:273, resizewindow"
       ];
 
-      cursor = {
-        hide_on_key_press = true;
-      };
+      cursor = { hide_on_key_press = true; };
 
-      gestures = {
-        workspace_swipe = true;
-      };
+      gestures = { workspace_swipe = true; };
 
       workspace = [
         # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 1
@@ -199,9 +189,7 @@
         "rounding 0, floating:0, onworkspace:f[1]"
       ];
     };
-    extraConfig = "
-	monitor = eDP-1, preferred, auto, 1
-	monitor = HDMI-A-1, preferred, 0x0, 1
-	";
+    extraConfig =
+      "\n	monitor = eDP-1, preferred, auto, 1\n	monitor = HDMI-A-1, preferred, 0x0, 1\n	";
   };
 }

@@ -1,5 +1,4 @@
-{ config, pkgs, ... }:
-{
+{ config, pkgs, ... }: {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
 
@@ -14,8 +13,7 @@
     ../../modules/home-manager/gtk.nix
   ];
 
-  home.packages = with pkgs; [
-  ];
+  home.packages = with pkgs; [ ];
 
   qt.enable = true;
 

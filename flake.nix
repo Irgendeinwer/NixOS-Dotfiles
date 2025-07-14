@@ -19,49 +19,42 @@
     # hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      nixos-hardware,
-      ...
-    }@inputs:
-    {
-      nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [
-          ./hosts/junixos/configuration.nix
+  outputs = { self, nixpkgs, nixos-hardware, ... }@inputs: {
+    nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit inputs; };
+      modules = [
+        ./hosts/junixos/configuration.nix
 
-          nixos-hardware.nixosModules.common-cpu-intel-cpu-only
-          nixos-hardware.nixosModules.common-pc-ssd
+        nixos-hardware.nixosModules.common-cpu-intel-cpu-only
+        nixos-hardware.nixosModules.common-pc-ssd
 
-          inputs.home-manager.nixosModules.default
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          }
+        inputs.home-manager.nixosModules.default
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+        }
 
-          inputs.nixvim.nixosModules.nixvim
-        ];
-      };
-
-      nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [
-          ./hosts/junixbook/configuration.nix
-
-          nixos-hardware.nixosModules.common-cpu-intel
-          nixos-hardware.nixosModules.common-pc-ssd
-
-          inputs.home-manager.nixosModules.default
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-          }
-
-          inputs.nixvim.nixosModules.nixvim
-        ];
-      };
+        inputs.nixvim.nixosModules.nixvim
+      ];
     };
+
+    nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
+      specialArgs = { inherit inputs; };
+      modules = [
+        ./hosts/junixbook/configuration.nix
+
+        nixos-hardware.nixosModules.common-cpu-intel
+        nixos-hardware.nixosModules.common-pc-ssd
+
+        inputs.home-manager.nixosModules.default
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+        }
+
+        inputs.nixvim.nixosModules.nixvim
+      ];
+    };
+  };
 
 }
