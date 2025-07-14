@@ -13,7 +13,6 @@
     ../../modules/nixos/direnv.nix
     ../../modules/nixos/gaming.nix
     ../../modules/nixos/android.nix
-    ../../modules/nixos/firejail.nix
     #../../modules/nixos/virt.nix
     ../../modules/nixos/nh.nix
 
