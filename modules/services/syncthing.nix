@@ -31,6 +31,10 @@
           path = "/media/fun/music";
           devices = [ "junixbook" "MobileF6" ];
         };
+        "#Noice" = {
+          path = "/home/julian/stuff/#Noice";
+          devices = [ "MobileF6" ];
+        };
       };
     };
   };
