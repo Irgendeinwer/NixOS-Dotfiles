@@ -1,5 +1,4 @@
-{ ... }:
-{
+{ ... }: {
   programs.hyprlock = {
     enable = true;
     settings = {
@@ -13,13 +12,11 @@
         immediate_render = false;
       };
 
-      background = [
-        {
-          path = "~/dotfiles/wallpapers/nix-flake-gruvbox.png";
-          blur_passes = 0;
-          blur_size = 0;
-        }
-      ];
+      background = [{
+        path = "~/dotfiles/wallpapers/nix-flake-gruvbox.png";
+        blur_passes = 0;
+        blur_size = 0;
+      }];
 
       label = [
         {
@@ -49,28 +46,27 @@
         }
       ];
 
-      input-field = [
-        {
-          monitor = "";
-          size = "200, 60";
-          outline_thickness = 2;
-          dots_size = 0.2;
-          dots_spacing = 0.2;
-          dots_center = true;
-          outer_color = "rgba(55, 55, 55, 0)";
-          inner_color = "rgba(55, 55, 55, 0.3)";
-          font_color = "rgb(200, 200, 200)";
-          fade_on_empty = true;
-          # font_family = "Noto Nerd Font Bold";
-          placeholder_text = ''<i><span foreground="##ffffff99">Welcome!</span></i>'';
-          shadow_passes = 0;
-          shadow_size = 0;
+      input-field = [{
+        monitor = "";
+        size = "200, 60";
+        outline_thickness = 2;
+        dots_size = 0.2;
+        dots_spacing = 0.2;
+        dots_center = true;
+        outer_color = "rgba(55, 55, 55, 0)";
+        inner_color = "rgba(55, 55, 55, 0.3)";
+        font_color = "rgb(200, 200, 200)";
+        fade_on_empty = true;
+        # font_family = "Noto Nerd Font Bold";
+        placeholder_text =
+          ''<i><span foreground="##ffffff99">Welcome!</span></i>'';
+        shadow_passes = 0;
+        shadow_size = 0;
 
-          position = "0, 0";
-          halign = "center";
-          valign = "center";
-        }
-      ];
+        position = "0, 0";
+        halign = "center";
+        valign = "center";
+      }];
     };
   };
 }

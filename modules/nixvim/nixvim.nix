@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{ pkgs, ... }: {
   imports = [
     ./plugins/default.nix
     ./options.nix
@@ -8,13 +7,8 @@
 
   programs.nixvim = {
     enable = true;
-    colorschemes.gruvbox = {
-      enable = true;
-    };
+    colorschemes.gruvbox = { enable = true; };
   };
 
-  environment.systemPackages = with pkgs; [
-    nixd
-    rust-analyzer
-  ];
+  environment.systemPackages = with pkgs; [ nixd rust-analyzer ];
 }
