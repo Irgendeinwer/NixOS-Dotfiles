@@ -21,10 +21,19 @@
         numlock_by_default = false;
 
         follow_mouse = 2;
-        sensitivity = -0.1; # -1.0 - 1.0, 0 means no modification.
+        sensitivity = 0;
+	accel_profile = "flat";
 
-        touchpad = { natural_scroll = false; };
+        touchpad = {
+	    natural_scroll = false;
+	    disable_while_typing = false;
+	};
       };
+      
+      gestures = {
+	workspace_swipe = true;
+	workspace_swipe_invert = false;
+	};
 
       general = {
         "$mainMod" = "SUPER";
@@ -47,7 +56,8 @@
 
       misc = {
         vfr = true;
-        # key_press_enables_dpms = true;
+	vrr = 3;
+        key_press_enables_dpms = true;
         disable_autoreload = true;
         enable_swallow = true;
         swallow_regex = "^(kitty)$";
@@ -161,8 +171,6 @@
       ];
 
       cursor = { hide_on_key_press = true; };
-
-      gestures = { workspace_swipe = true; };
 
       workspace = [
         # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 1
