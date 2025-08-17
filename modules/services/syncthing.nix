@@ -9,16 +9,20 @@
     overrideFolders = true;
     settings = {
       devices = {
-        "junixbook" = { id = ""; };
+        "junixbook" = {
+          id = "";
+        };
         "MobileF6" = {
-          id =
-            "3TDB3IH-BQSLKAR-CTF76VY-IWSYB3S-X2WMD4U-P5QFA23-RBKPITT-U7M3FA6";
+          id = "3TDB3IH-BQSLKAR-CTF76VY-IWSYB3S-X2WMD4U-P5QFA23-RBKPITT-U7M3FA6";
         };
       };
       folders = {
         "Documents" = {
           path = "/home/julian/Documents";
-          devices = [ "junixbook" "MobileF6" ];
+          devices = [
+            "junixbook"
+            "MobileF6"
+          ];
           versioning = {
             type = "staggered";
             params = {
@@ -29,7 +33,10 @@
         };
         "Music" = {
           path = "/media/fun/music";
-          devices = [ "junixbook" "MobileF6" ];
+          devices = [
+            "junixbook"
+            "MobileF6"
+          ];
         };
         "#Noice" = {
           path = "/home/julian/stuff/#Noice";

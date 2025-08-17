@@ -1,5 +1,10 @@
-{ pkgs, ... }: {
-  environment.systemPackages = with pkgs; [ hyprshot hypridle hyprpolkitagent ];
+{ pkgs, ... }:
+{
+  environment.systemPackages = with pkgs; [
+    hyprshot
+    hypridle
+    hyprpolkitagent
+  ];
 
   programs = {
     hyprland.enable = true;

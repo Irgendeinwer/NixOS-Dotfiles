@@ -1,5 +1,15 @@
-{ lib, config, pkgs, ... }: {
-  options = { sound-module = { enable = lib.mkEnableOption "sound-module"; }; };
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
+{
+  options = {
+    sound-module = {
+      enable = lib.mkEnableOption "sound-module";
+    };
+  };
   config = lib.mkIf config.sound-module.enable {
     environment.systemPackages = with pkgs; [
       alsa-utils

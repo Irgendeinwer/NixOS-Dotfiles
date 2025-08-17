@@ -1,4 +1,5 @@
-{ ... }: {
+{ ... }:
+{
   wayland.windowManager.hyprland = {
     enable = true;
     plugins = [ ];
@@ -22,18 +23,18 @@
 
         follow_mouse = 2;
         sensitivity = 0;
-	accel_profile = "flat";
+        accel_profile = "flat";
 
         touchpad = {
-	    natural_scroll = false;
-	    disable_while_typing = false;
-	};
+          natural_scroll = false;
+          disable_while_typing = false;
+        };
       };
-      
+
       gestures = {
-	workspace_swipe = true;
-	workspace_swipe_invert = false;
-	};
+        workspace_swipe = true;
+        workspace_swipe_invert = false;
+      };
 
       general = {
         "$mainMod" = "SUPER";
@@ -56,7 +57,7 @@
 
       misc = {
         vfr = true;
-	vrr = 3;
+        vrr = 3;
         key_press_enables_dpms = true;
         disable_autoreload = true;
         enable_swallow = true;
@@ -74,10 +75,14 @@
         rounding = 3;
         #	    rounding = 5;
 
-        blur = { enabled = false; };
+        blur = {
+          enabled = false;
+        };
       };
 
-      animations = { enabled = true; };
+      animations = {
+        enabled = true;
+      };
 
       bind = [
         "$mainMod, Q, exec, kitty"
@@ -94,8 +99,7 @@
         "$mainMod, Y, exec, xdg-open https://www.youtube.com/watch?v=Eni9PPPPBpg"
 
         # Time
-        ''
-          $mainMod, T, exec, notify-send -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"''
+        ''$mainMod, T, exec, notify-send -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"''
 
         # Quick access to the bone keyboard layout
         ",F7, exec, hyprctl keyword input:kb_layout de"
@@ -170,7 +174,9 @@
         "$mainMod, mouse:273, resizewindow"
       ];
 
-      cursor = { hide_on_key_press = true; };
+      cursor = {
+        hide_on_key_press = true;
+      };
 
       workspace = [
         # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 1
@@ -197,7 +203,6 @@
         "rounding 0, floating:0, onworkspace:f[1]"
       ];
     };
-    extraConfig =
-      "\n	monitor = eDP-1, preferred, auto, 1\n	monitor = HDMI-A-1, preferred, 0x0, 1\n	";
+    extraConfig = "\n	monitor = eDP-1, preferred, auto, 1\n	monitor = HDMI-A-1, preferred, 0x0, 1\n	";
   };
 }

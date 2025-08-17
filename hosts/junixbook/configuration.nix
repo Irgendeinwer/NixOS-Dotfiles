@@ -52,7 +52,11 @@
   users.users.julian = {
     isNormalUser = true;
     
-    extraGroups = [ "networkmanager" "wheel" "input" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "input"
+    ];
   };
 
   nixpkgs.config.allowUnfree = true;
@@ -145,7 +149,9 @@
 
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
-    users = { "julian" = import ./home.nix; };
+    users = {
+      "julian" = import ./home.nix;
+    };
   };
 
   # --------------------custom options---------------

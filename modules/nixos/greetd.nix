@@ -9,7 +9,9 @@
         default = "dbus-launch --exit-with-session Hyprland && hyprlock";
       };
     };
-    getty = { enable = lib.mkEnableOption "getty"; };
+    getty = {
+      enable = lib.mkEnableOption "getty";
+    };
   };
 
   config = lib.mkMerge [

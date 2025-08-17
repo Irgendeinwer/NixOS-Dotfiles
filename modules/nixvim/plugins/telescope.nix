@@ -1,1 +1,8 @@
-{ ... }: { programs.nixvim = { plugins.telescope = { enable = true; }; }; }
+{ ... }:
+{
+  programs.nixvim = {
+    plugins.telescope = {
+      enable = true;
+    };
+  };
+}
