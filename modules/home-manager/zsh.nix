@@ -1,4 +1,5 @@
-{ config, ... }: {
+{ config, ... }:
+{
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -19,8 +20,7 @@
       lock = "systemctl suspend & hyprlock";
 
       # yt-dlp aliases
-      dl-music = ''
-        yt-dlp -f bestaudio -x --audio-format opus --add-metadata --parse-metadata "playlist_index:%(track_number)s" --embed-thumbnail -o "%(title)s.%(ext)s"'';
+      dl-music = ''yt-dlp -f bestaudio -x --audio-format opus --add-metadata --parse-metadata "playlist_index:%(track_number)s" --embed-thumbnail -o "%(title)s.%(ext)s"'';
     };
     history = {
       size = 10000;
@@ -29,7 +29,10 @@
 
     oh-my-zsh = {
       enable = true;
-      plugins = [ "git" "direnv" ];
+      plugins = [
+        "git"
+        "direnv"
+      ];
       theme = "robbyrussell";
     };
   };

@@ -1,1 +1,4 @@
-{ pkgs, ... }: { environment.systemPackages = with pkgs; [ youtube-music ]; }
+{ pkgs, ... }:
+{
+  environment.systemPackages = with pkgs; [ youtube-music ];
+}

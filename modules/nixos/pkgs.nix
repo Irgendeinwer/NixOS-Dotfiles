@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   imports = [
     ./pkgs/browsers.nix
     ./pkgs/flexing.nix
