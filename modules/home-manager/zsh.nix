@@ -21,6 +21,8 @@
 
       # yt-dlp aliases
       dl-music = ''yt-dlp -f bestaudio -x --audio-format opus --add-metadata --parse-metadata "playlist_index:%(track_number)s" --embed-thumbnail -o "%(title)s.%(ext)s"'';
+
+      listen = "bash -c 'nix run nixpkgs#fd -- -a \"$0\" ~/music -X vlc' ";
     };
     history = {
       size = 10000;
