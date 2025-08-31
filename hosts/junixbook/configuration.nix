@@ -116,9 +116,7 @@
     };
   };
 
-  services.logind.extraConfig = ''
-    HandlePowerKey=ignore
-  '';
+  services.logind.powerKey = "ignore";
 
   services.printing.enable = true;
 
