@@ -13,7 +13,7 @@
   config = lib.mkIf config.sound-module.enable {
     environment.systemPackages = with pkgs; [
       alsa-utils
-      helvum
+      qpwgraph
       pulseaudioFull
       pulsemixer
       pavucontrol
