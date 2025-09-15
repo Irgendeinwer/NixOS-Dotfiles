@@ -3,7 +3,7 @@
     enable = true;
     group = "users";
     user = "julian";
-    configDir = "/home/julian/Documents/.config/syncthing";
+    configDir = "/home/julian/.config/syncthing";
     guiAddress = "0.0.0.0:8384";
     overrideDevices = true;
     overrideFolders = true;
