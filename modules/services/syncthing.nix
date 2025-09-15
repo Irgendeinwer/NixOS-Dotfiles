@@ -9,6 +9,9 @@
     overrideFolders = true;
     settings = {
       devices = {
+	"junixos" = {
+	  id = "AGTVWZK-N2CFTWJ-GBQH4CJ-YU4BQBQ-LXCK7ZD-E7QP7K3-4PBNGEI-MJL4AAC";
+	};
         "junixbook" = {
           id = "";
         };
@@ -20,6 +23,7 @@
         "Documents" = {
           path = "/home/julian/Documents";
           devices = [
+	    "junixos"
             "junixbook"
             "MobileF6"
           ];
@@ -34,13 +38,17 @@
         "Music" = {
           path = "/media/fun/music";
           devices = [
+	    "junixos"
             "junixbook"
             "MobileF6"
           ];
         };
         "#Noice" = {
           path = "/home/julian/stuff/#Noice";
-          devices = [ "MobileF6" ];
+          devices = [
+	    "junixos"
+	    "MobileF6"
+	  ];
         };
       };
     };

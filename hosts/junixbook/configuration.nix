@@ -20,6 +20,8 @@
     ../../modules/nixvim/nixvim.nix
 
     ../../modules/nixos/pkgs.nix
+
+    ../../modules/services/syncthing.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
