@@ -36,7 +36,7 @@
           };
         };
         "Music" = {
-          path = "/media/fun/music";
+          path = "/home/julian/music";
           devices = [
 	    "junixos"
             "junixbook"
