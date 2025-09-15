@@ -35,6 +35,14 @@
             };
           };
         };
+	"Schule-25-26" = {
+	  path = "/home/julian/Schule-25-26";
+	  devices = [
+	    "junixos"
+	    "junixbook"
+	    "MobileF6"
+	  ];
+	};
         "Music" = {
           path = "/home/julian/music";
           devices = [
