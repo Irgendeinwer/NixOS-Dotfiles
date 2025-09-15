@@ -10,10 +10,10 @@
     settings = {
       devices = {
 	"junixos" = {
-	  id = "AGTVWZK-N2CFTWJ-GBQH4CJ-YU4BQBQ-LXCK7ZD-E7QP7K3-4PBNGEI-MJL4AAC";
+	  id = "4MAINN2-ZRIWH6F-GU47MQP-4RZEUZX-E7OJJMU-H3HVRUF-2JLGKMI-AUP5CQQ";
 	};
         "junixbook" = {
-          id = "";
+          id = "XVJL4SC-76BTLAU-7KBGIFQ-GLOYBAR-OGFVIBM-R7H3DZW-MT7YYMP-D4VUVAS";
         };
         "MobileF6" = {
           id = "3TDB3IH-BQSLKAR-CTF76VY-IWSYB3S-X2WMD4U-P5QFA23-RBKPITT-U7M3FA6";
