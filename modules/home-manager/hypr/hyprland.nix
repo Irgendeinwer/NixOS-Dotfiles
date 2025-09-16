@@ -31,10 +31,9 @@
         };
       };
 
-      gestures = {
-        workspace_swipe = true;
-        workspace_swipe_invert = false;
-      };
+      gesture = [
+	"3, horizontal, workspace"
+      ];
 
       general = {
         "$mainMod" = "SUPER";
