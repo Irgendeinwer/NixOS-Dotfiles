@@ -8,9 +8,9 @@
       # splash_color = "55ffffff";
       ipc = true;
 
-      preload = [ "~/dotfiles/wallpapers/jens-spahn.jpg" ];
+      preload = [ "~/dotfiles/wallpapers/wallhaven-mdzzj8.jpg" ];
 
-      wallpaper = [ ", ~/dotfiles/wallpapers/jens-spahn.jpg" ];
+      wallpaper = [ ", ~/dotfiles/wallpapers/wallhaven-mdzzj8.jpg" ];
     };
   };
 }
