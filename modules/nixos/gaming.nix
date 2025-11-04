@@ -6,7 +6,7 @@
     heroic
     r2modman
 
-    protonup
+    protonup-ng
     protontricks
     mangohud
 
