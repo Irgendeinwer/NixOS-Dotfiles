@@ -101,12 +101,14 @@
         ''$mainMod, T, exec, notify-send -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"''
 
         # Quick access to the bone keyboard layout
-        ",F7, exec, hyprctl keyword input:kb_layout de"
-        ",F8, exec, hyprctl keyword input:kb_layout de\\(bone\\)"
+        # ",F7, exec, hyprctl keyword input:kb_layout de"
+        # ",F8, exec, hyprctl keyword input:kb_layout de\\(bone\\)"
 
         # Media and volume controls
+	",F8, exec, playerctl play-pause"
         ",F9, exec, pamixer -d 2"
         ",F10, exec, pamixer -i 2"
+
         ",XF86AudioRaiseVolume, exec, pamixer -i 2"
         ",XF86AudioLowerVolume, exec, pamixer -d 2"
         ",XF86AudioMute, exec, pamixer -t"
