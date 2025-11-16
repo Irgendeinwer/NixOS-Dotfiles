@@ -6,7 +6,7 @@
 
     plugins = with pkgs.obs-studio-plugins; [
       # --- Minimal Essentials (Performance & System Integration) ---
-      wlrobs-unstable             # Screen capture for Hyprland
+      wlrobs             	  # Screen capture for Hyprland
       obs-pipewire-audio-capture  # Audio capture with PipeWire
       obs-vkcapture               # High-performance game capture
       obs-vaapi                   # Hardware encoding (AMD/Intel)
@@ -18,7 +18,7 @@
       advanced-scene-switcher     # Automate your scene switching
       obs-source-record           # Record clean, individual sources for editing
       obs-backgroundremoval       # AI background removal without a green screen
-      obs-input-overlay           # Display keyboard/mouse/gamepad inputs
+      input-overlay               # Display keyboard/mouse/gamepad inputs
     ];
   };
 }
