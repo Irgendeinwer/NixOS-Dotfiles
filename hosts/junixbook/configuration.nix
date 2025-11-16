@@ -94,7 +94,6 @@
     # anki
     python3
     yt-dlp
-    obs-studio
     zathura
     pdf4qt
     libreoffice
