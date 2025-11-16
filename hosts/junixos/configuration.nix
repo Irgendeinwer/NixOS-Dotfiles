@@ -12,6 +12,7 @@
     ../../modules/nixos/fonts.nix
     ../../modules/nixos/direnv.nix
     ../../modules/nixos/gaming.nix
+    ../../modules/nixos/obs-studio.nix
     ../../modules/nixos/android.nix
     #../../modules/nixos/virt.nix
     ../../modules/nixos/nh.nix
@@ -96,7 +97,6 @@
     bat
     python3
     yt-dlp
-    obs-studio
 
     zathura
     libreoffice
