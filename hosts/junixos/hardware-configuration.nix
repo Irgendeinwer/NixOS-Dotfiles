@@ -9,9 +9,13 @@
     ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
-  boot.initrd.kernelModules = [ ];
+  boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+
+  # Swap for Hibernation
+  boot.resumeDevice = "/dev/disk/by-uuid/5ef65cfe-e632-47eb-b239-3eff47eacd8f";
+  boot.kernelParams = [ "resume_offset=533760" ];
 
   #fileSystems."/" =
   #  { device = "/dev/disk/by-uuid/ff815add-9ab2-4e20-af20-0f68f902a218";
