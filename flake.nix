@@ -9,14 +9,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     zen-browser.url = "github:0xc000022070/zen-browser-flake";
-
-    # hyprland.url = "git+https://github.com/hyprwm/Hyprland?submodules=1";
   };
 
   outputs =
@@ -30,6 +33,9 @@
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
+	  inputs.disko.nixosModules.disko
+	  ./hosts/junixos/disk-config.nix
+
           ./hosts/junixos/configuration.nix
 
           nixos-hardware.nixosModules.common-cpu-intel-cpu-only
