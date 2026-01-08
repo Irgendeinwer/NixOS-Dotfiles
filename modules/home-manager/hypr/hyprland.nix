@@ -5,6 +5,7 @@
     plugins = [ ];
     systemd.variables = [ "--all" ];
     settings = {
+      "$mainMod" = "SUPER";
       exec-once = [
         "hypridle &"
         "hyprpaper &"
@@ -36,7 +37,6 @@
       ];
 
       general = {
-        "$mainMod" = "SUPER";
 
         gaps_in = 2; # 4
         gaps_out = 4; # 6
