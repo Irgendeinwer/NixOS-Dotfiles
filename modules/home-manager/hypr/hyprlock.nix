@@ -1,4 +1,4 @@
-{ ... }:
+{ config, ... }:
 {
   programs.hyprlock = {
     enable = true;
@@ -15,7 +15,7 @@
 
       background = [
         {
-          path = "~/dotfiles/wallpapers/nix-flake-gruvbox.png";
+	  path = "${config.home.homeDirectory}/dotfiles/wallpapers/nix-flake-gruvbox.png";
           blur_passes = 0;
           blur_size = 0;
         }
@@ -41,7 +41,7 @@
           text_align = "center";
           color = "rgba(255, 255, 255, 0.90)";
           font_size = 180;
-          font_family = "Fira Code Nerd Fontadasdasd";
+          font_family = "Fira Code Nerd Font";
 
           position = "0, 370";
           halign = "center";

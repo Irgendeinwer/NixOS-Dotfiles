@@ -3,16 +3,17 @@
   wayland.windowManager.hyprland = {
     enable = true;
     plugins = [ ];
+    systemd.enable = true;
     systemd.variables = [ "--all" ];
     settings = {
       "$mainMod" = "SUPER";
       exec-once = [
-        "hypridle &"
-        "hyprpaper &"
-        "hyprlock &"
+        "hypridle"
+        "hyprpaper"
+        "hyprlock"
         "systemctl --user start hyprpolkitagent"
 
-        "nm-applet --indicator &"
+        "nm-applet --indicator"
         "brightnessctl set 100%"
 
         "[workspace 10 silent] signal-desktop"
@@ -59,10 +60,13 @@
         vrr = 3;
         key_press_enables_dpms = true;
         disable_autoreload = true;
+
+	force_default_wallpaper = 0;
+        disable_hyprland_logo = true;
+
         enable_swallow = true;
         swallow_regex = "^(kitty)$";
-        new_window_takes_over_fullscreen = 2;
-        #	    render_unfocused_fps = 25;
+	# render_unfocused_fps = 25;
       };
 
       dwindle = {
@@ -181,8 +185,10 @@
 
       workspace = [
         # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 1
-        "w[tv1], gapsout:0, gapsin:0"
-        "f[1], gapsout:0, gapsin:0"
+        # "w[tv1], gapsout:0, gapsin:0"
+        # "f[1], gapsout:0, gapsin:0"
+	"w[t1], gapsout:0, gapsin:0, border:false, rounding:false"
+	"f[1], gapsout:0, gapsin:0, border:false, rounding:false"
       ];
 
       windowrulev2 = [
@@ -198,10 +204,17 @@
         "suppressevent maximize, class:.* "
 
         # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 2
-        "bordersize 0, floating:0, onworkspace:w[tv1]"
-        "rounding 0, floating:0, onworkspace:w[tv1]"
-        "bordersize 0, floating:0, onworkspace:f[1]"
-        "rounding 0, floating:0, onworkspace:f[1]"
+        # "bordersize 0, floating:0, onworkspace:w[tv1]"
+        # "rounding 0, floating:0, onworkspace:w[tv1]"
+        # "bordersize 0, floating:0, onworkspace:f[1]"
+        # "rounding 0, floating:0, onworkspace:f[1]"
+
+	# Use 'tiled:1' to ensure it doesn't trigger on floating windows
+	"bordersize 0, floating:0, tiled:1, onworkspace:w[t1]"
+	"rounding 0, floating:0, tiled:1, onworkspace:w[t1]"
+	# For fullscreen
+	"bordersize 0, floating:0, onworkspace:f[1]"
+	"rounding 0, floating:0, onworkspace:f[1]"
       ];
     };
     extraConfig = "\n	monitor = eDP-1, preferred, auto, 1\n	monitor = HDMI-A-1, preferred, 0x0, 1\n	";

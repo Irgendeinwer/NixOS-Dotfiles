@@ -18,4 +18,5 @@
     gamemode.enable = true;
     gamescope.enable = true;
   };
+  users.users.julian.extraGroups = [ "gamemode" ];
 }
