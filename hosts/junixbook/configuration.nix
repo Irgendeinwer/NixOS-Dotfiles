@@ -33,6 +33,8 @@
 
   networking.networkmanager.enable = true;
 
+  environment.etc."ssl/certs/iserv.pem".source = ../../iserv.pem;
+
   time.timeZone = "Europe/Berlin";
 
   i18n.defaultLocale = "en_US.UTF-8";
