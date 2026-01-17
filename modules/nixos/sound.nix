@@ -27,6 +27,19 @@
         support32Bit = true;
       };
       pulse.enable = true;
+      extraConfig.pipewire."99-virtual-mic" = {
+        "context.objects" = [
+        {
+          factory = "adapter";
+          args = {
+            "factory.name" = "support.null-audio-sink";
+            "node.name" = "AndroidMic-Sink";
+            "node.description" = "AndroidMic Virtual Device";
+            "media.class" = "Audio/Sink";
+            "audio.position" = "FL,FR";
+          };
+        }];
+	};
     };
   };
 }
