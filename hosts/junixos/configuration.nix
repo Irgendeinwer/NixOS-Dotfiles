@@ -124,15 +124,22 @@
     whois
     dig
     qimgv
-    kdePackages.kdenlive
-    kdePackages.kdeconnect-kde
-    kdePackages.plasma-integration # For QT theming
+    #kdePackages.kdenlive
+    #kdePackages.kdeconnect-kde
+    #kdePackages.plasma-integration # For QT theming
     bat
     python3
     yt-dlp
 
     zathura
-    libreoffice
+    
+    libreoffice-fresh
+    hunspell
+    hunspellDicts.de_DE
+    hunspellDicts.en_US
+    hyphenDicts.de_DE
+    hyphenDicts.en_US
+
     inkscape
     gimp
     brightnessctl
