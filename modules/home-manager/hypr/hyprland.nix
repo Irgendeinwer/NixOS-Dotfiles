@@ -13,10 +13,14 @@
         "hyprlock"
         "systemctl --user start hyprpolkitagent"
 
+	"wl-paste --type text --watch cliphist store"
+	"wl-paste --type image --watch cliphist store"
+
         "nm-applet --indicator"
         "brightnessctl set 100%"
 
         "[workspace 10 silent] signal-desktop"
+	"[workspace 10 silent] easyeffects"
       ];
 
       input = {
@@ -39,16 +43,12 @@
 
       general = {
 
-        gaps_in = 2; # 4
-        gaps_out = 4; # 6
-        border_size = 1; # 2
+        gaps_in = 2;
+        gaps_out = 4;
+        border_size = 1;
 
-        #	    "col.active_border" = "rgb(98971a) rgb(cc241d) 45deg"; # red
         "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg"; # blue
         "col.inactive_border" = "rgba(595959aa)";
-
-        #	    resize_on_border = true;
-        #    	    hover_icon_on_border = false;
 
         allow_tearing = false;
 
@@ -66,7 +66,6 @@
 
         enable_swallow = true;
         swallow_regex = "^(kitty)$";
-	# render_unfocused_fps = 25;
       };
 
       dwindle = {
@@ -76,11 +75,14 @@
 
       decoration = {
         rounding = 3;
-        #	    rounding = 5;
 
         blur = {
           enabled = false;
         };
+
+	shadow = {
+	  enabled = false;
+	};
       };
 
       animations = {
@@ -97,6 +99,9 @@
 
         "$mainMod, Escape, exec, loginctl lock-session"
         ",PRINT, exec, hyprshot -m region --freeze"
+
+	# Clipboard history
+	"$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
 
         # Peace and tranquility
         "$mainMod, Y, exec, xdg-open https://www.youtube.com/watch?v=Eni9PPPPBpg"
@@ -184,37 +189,30 @@
       };
 
       workspace = [
-        # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 1
-        # "w[tv1], gapsout:0, gapsin:0"
-        # "f[1], gapsout:0, gapsin:0"
-	"w[t1], gapsout:0, gapsin:0, border:false, rounding:false"
-	"f[1], gapsout:0, gapsin:0, border:false, rounding:false"
+        # Only gap settings belong here. 
+        # Border/rounding settings must be in windowrule.
+        "w[t1], gapsout:0, gapsin:0"
+        "f[1], gapsout:0, gapsin:0"
       ];
 
-      windowrulev2 = [
-        # "idleinhibit fullscreen, class:^(firefox)$"
-        "idleinhibit always, fullscreen:1"
-        "float, title:^(Picture-in-Picture)$"
-        "size 512 288, title:^(Picture-in-Picture)$"
-        "move 2038 40, title:^(Picture-in-Picture)$"
-        "opacity 1.0 override 1.0 override, title:^(Picture-in-Picture)$"
-        "pin, title:^(Picture-in-Picture)$"
-        "noinitialfocus, title:^(Picture-in-Picture)$"
+      windowrule = [
+        # --- Picture-in-Picture ---
+        "float 1, match:title ^(Picture-in-Picture)$"
+        "pin 1, match:title ^(Picture-in-Picture)$"
+        "move 2038 10, match:title ^(Picture-in-Picture)$"
+        "size 512 288, match:title ^(Picture-in-Picture)$"
+        "no_initial_focus 1, match:title ^(Picture-in-Picture)$"
+        "opacity 1.0 override 1.0 override, match:title ^(Picture-in-Picture)$"
 
-        "suppressevent maximize, class:.* "
+        # --- General ---
+        "suppress_event maximize, match:class .*"
 
-        # https://wiki.hyprland.org/Configuring/Workspace-Rules/#smart-gaps Part 2
-        # "bordersize 0, floating:0, onworkspace:w[tv1]"
-        # "rounding 0, floating:0, onworkspace:w[tv1]"
-        # "bordersize 0, floating:0, onworkspace:f[1]"
-        # "rounding 0, floating:0, onworkspace:f[1]"
-
-	# Use 'tiled:1' to ensure it doesn't trigger on floating windows
-	"bordersize 0, floating:0, tiled:1, onworkspace:w[t1]"
-	"rounding 0, floating:0, tiled:1, onworkspace:w[t1]"
-	# For fullscreen
-	"bordersize 0, floating:0, onworkspace:f[1]"
-	"rounding 0, floating:0, onworkspace:f[1]"
+        # --- Smart Gaps ---
+        "border_size 0, match:workspace w[t1]"
+        "rounding 0, match:workspace w[t1]"
+        
+        "border_size 0, match:workspace f[1]"
+        "rounding 0, match:workspace f[1]"
       ];
     };
     extraConfig = "\n	monitor = eDP-1, preferred, auto, 1\n	monitor = HDMI-A-1, preferred, 0x0, 1\n	";
