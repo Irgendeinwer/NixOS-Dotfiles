@@ -76,6 +76,7 @@
     libnotify
     dunst
     wl-clipboard
+    cliphist
     # xdg-desktop-portal-gtk
     dconf
     obsidian
