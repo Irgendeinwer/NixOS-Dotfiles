@@ -203,6 +203,12 @@
   greetd.enable = true;
   sound-module.enable = true;
 
+  # ADDED THIS BLOCK TO ENABLE THE ARK SERVER
+  gaming.arkServer = {
+    enable = true;
+    user = "julian";
+  };
+
   # --------------------custom options end-----------
 
   # DO NOT EDIT!!!

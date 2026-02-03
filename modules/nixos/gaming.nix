@@ -1,5 +1,8 @@
 { pkgs, ... }:
 {
+  imports = [
+    ./arkSurvivalEvolved.nix
+  ];
   environment.systemPackages = with pkgs; [
     itch
     lutris
