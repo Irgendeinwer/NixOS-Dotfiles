@@ -86,7 +86,6 @@
     vlc
     playerctl
     celluloid
-    prismlauncher
     zip
     unzip
     traceroute
