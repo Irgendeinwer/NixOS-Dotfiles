@@ -42,6 +42,9 @@
       description = "ARK: Survival Evolved Dedicated Server";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
+      
+      restartIfChanged = false;
+      stopIfChanged = false;
 
       serviceConfig = {
         User = "ark";
@@ -82,7 +85,9 @@
             "XPMultiplier=2.0"
             "BabyMatureSpeedMultiplier=10.0"
             "EggHatchSpeedMultiplier=10.0"
-            "bRawSockets=True"
+            # "bRawSockets=True"
+	    "PlayerCharacterNameTagDistance=200000.0" # Massive distance for nameplates
+            "bFloatingNames=True"                     # Ensure names are enabled
           ];
           
           args = "?" + (builtins.concatStringsSep "?" settings);
