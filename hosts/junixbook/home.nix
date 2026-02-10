@@ -18,9 +18,6 @@
 
   qt.enable = true;
 
-  services.kdeconnect.enable = true;
-  services.kdeconnect.indicator = true;
-
   home.sessionVariables = {
     EDITOR = "nvim";
     # SHELL = "/home/julian/.nix-profile/bin/zsh";
