@@ -8,6 +8,10 @@
   ];
 
   environment.systemPackages = with pkgs; [
+    antigravity-fhs
+
+    appimage-run
+
     yazi
 
     keepassxc
