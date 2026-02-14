@@ -2,7 +2,7 @@
 {
   programs.hyprshot = {
     enable = true;
-    saveLocation = "~/Screenshots";
+    saveLocation = "$HOME/Screenshots";
   };
 
   wayland.windowManager.hyprland = {
