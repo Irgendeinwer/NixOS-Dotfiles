@@ -12,6 +12,7 @@
 
     appimage-run
 
+    unar
     yazi
 
     keepassxc
