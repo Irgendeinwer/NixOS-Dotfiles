@@ -1,5 +1,10 @@
 { ... }:
 {
+  programs.hyprshot = {
+    enable = true;
+    saveLocation = "~/Screenshots";
+  };
+
   wayland.windowManager.hyprland = {
     enable = true;
     plugins = [ ];
@@ -98,6 +103,8 @@
         "$mainMod, J, togglesplit,"
 
         "$mainMod, Escape, exec, loginctl lock-session"
+        
+        # Hyprshot
         ",PRINT, exec, hyprshot -m region --freeze"
 
 	# Clipboard history
