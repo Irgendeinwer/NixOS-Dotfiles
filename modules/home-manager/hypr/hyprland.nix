@@ -1,8 +1,8 @@
-{ ... }:
+{ config, ... }:
 {
   programs.hyprshot = {
     enable = true;
-    saveLocation = "$HOME/Screenshots";
+    saveLocation = "${config.home.homeDirectory}/Screenshots";
   };
 
   wayland.windowManager.hyprland = {
@@ -105,7 +105,7 @@
         "$mainMod, Escape, exec, loginctl lock-session"
         
         # Hyprshot
-        ",PRINT, exec, hyprshot -m region --freeze"
+	",PRINT, exec, hyprshot -m region --freeze -o ${config.programs.hyprshot.saveLocation}"
 
 	# Clipboard history
 	"$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
