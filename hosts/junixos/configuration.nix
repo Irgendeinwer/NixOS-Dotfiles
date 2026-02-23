@@ -205,6 +205,11 @@
     user = "julian";
   };
 
+  gaming.factorioServer = {
+    enable = true;
+    user = "julian";
+  };
+
   # --------------------custom options end-----------
 
   # DO NOT EDIT!!!
