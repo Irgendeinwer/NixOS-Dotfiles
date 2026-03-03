@@ -1,0 +1,6 @@
+{ ... }:
+{
+  services.meilisearch = {
+    enable = true;
+  };
+}
