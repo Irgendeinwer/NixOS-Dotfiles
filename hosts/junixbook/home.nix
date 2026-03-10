@@ -18,6 +18,12 @@
 
   qt.enable = true;
 
+  # Custom options
+  theme.wallpaper = {
+    path = ../../wallpapers/sergey-vasnev-spine-top-camera-exp-1.jpg;
+    backend = "hyprpaper";
+  };
+
   home.sessionVariables = {
     EDITOR = "nvim";
     # SHELL = "/home/julian/.nix-profile/bin/zsh";

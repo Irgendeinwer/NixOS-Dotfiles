@@ -5,7 +5,7 @@
 
   imports = [
     ../../modules/home-manager/hypr/hyprland.nix
-    ../../modules/home-manager/hypr/hyprpaper.nix
+    ../../modules/home-manager/hypr/wallpaper.nix
     ../../modules/home-manager/hypr/hyprlock.nix
     ../../modules/home-manager/hypr/hypridle.nix
     ../../modules/home-manager/zsh.nix
@@ -17,6 +17,12 @@
   home.packages = with pkgs; [ ];
 
   qt.enable = true;
+
+  # Custom options
+  theme.wallpaper = {
+    path = ../../wallpapers/neko-anime-girl-streamer-moewalls-com.mp4;
+    backend = "mpvpaper";
+  };
 
   home.sessionVariables = {
     EDITOR = "nvim";
