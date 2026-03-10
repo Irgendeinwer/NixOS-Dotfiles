@@ -13,8 +13,6 @@
     settings = {
       "$mainMod" = "SUPER";
       exec-once = [
-        "hypridle"
-        "hyprpaper"
         "hyprlock"
         "systemctl --user start hyprpolkitagent"
 
