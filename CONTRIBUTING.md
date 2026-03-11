@@ -1,6 +1,6 @@
 # Git Commit Schema
 
-Pattern: `<type>(<scope>[/sub-scope]): <subject>`
+Pattern: `<type>(<scope>[/sub-scope(/s)]): <subject>`
 
 ## 1. Types (Enum)
 | Type | Description |
@@ -14,7 +14,7 @@ Pattern: `<type>(<scope>[/sub-scope]): <subject>`
 | **meta** | Changes to the repo itself (README, rules, CI) |
 
 ## 2. Scopes
-*Context of the change. Use a `/` for sub-components.*
+*Context of the change. Use a `/` for sub-components. You can add multiple sub-scopes if needed.*
 - `system`: Global NixOS config
 - `hm`: Home Manager modules
 - `hypr`: Hyprland (sub-scopes include: `shot`, `idle`, `lock`, `paper`)
