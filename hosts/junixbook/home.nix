@@ -5,7 +5,7 @@
 
   imports = [
     ../../modules/home-manager/hypr/hyprland.nix
-    ../../modules/home-manager/hypr/hyprpaper.nix
+    ../../modules/home-manager/hypr/wallpaper.nix
     ../../modules/home-manager/hypr/hyprlock.nix
     ../../modules/home-manager/hypr/hypridle.nix
     ../../modules/home-manager/zsh.nix
