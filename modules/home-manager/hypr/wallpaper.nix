@@ -11,7 +11,6 @@ let
   socat     = getExe pkgs.socat;
   jq        = getExe pkgs.jq;
 
-  # mpvpaper control socket (standard location in user cache)
   mpvSocket = "${config.home.homeDirectory}/.cache/mpvpaper-ipc.sock";
 
   mpvFlags = [
@@ -41,7 +40,7 @@ in {
   config = mkIf (cfg.path != null) (mkMerge [
     
     # ----------------------------------------------------
-    # BACKEND: Hyprpaper (Static)
+    # BACKEND: Hyprpaper (Static / Laptop)
     # ----------------------------------------------------
     (mkIf (cfg.backend == "hyprpaper") {
       services.hyprpaper = {
@@ -49,15 +48,20 @@ in {
         settings = {
           splash = false;
           ipc = "on";
-          # Use ${} to ensure the image is copied to the store
           preload = [ "${cfg.path}" ];
-          wallpaper = [ ",${cfg.path}" ];
+          # Use the object syntax for better compatibility with 0.8.x
+          wallpaper = [
+            {
+              monitor = ""; # Empty string = all monitors
+              path = "${cfg.path}";
+            }
+          ];
         };
       };
     })
 
     # ----------------------------------------------------
-    # BACKEND: Mpvpaper (Video)
+    # BACKEND: Mpvpaper (Video / Desktop)
     # ----------------------------------------------------
     (mkIf (cfg.backend == "mpvpaper") {
       systemd.user.services.mpvpaper = {
@@ -65,11 +69,9 @@ in {
           Description = "mpvpaper video wallpaper daemon";
           After = [ "graphical-session.target" ];
           PartOf = [ "graphical-session.target" ];
-          # This now checks for the file inside the Nix Store
           ConditionPathExists = "${cfg.path}";
         };
         Service = {
-          # Interpolating ${cfg.path} here ensures the service restarts if the video content changes
           ExecStart = "${mpvpaper} -o '${concatStringsSep " " mpvFlags}' '*' ${cfg.path}";
           Restart = "on-failure";
         };
@@ -85,32 +87,24 @@ in {
         Service = {
           ExecStart = pkgs.writeShellScript "mpvpaper-autopause" ''
             LAST_STATE="unknown"
-
             update_state() {
               WINDOWS=$(${hyprctl} activeworkspace -j | ${jq} '.windows')
-              
               if [ "$WINDOWS" -gt 0 ] && [ "$LAST_STATE" != "paused" ]; then
-                # FIX: Added UNIX-CONNECT: prefix for socat
                 echo '{"command": ["set_property", "pause", true]}' | ${socat} - UNIX-CONNECT:"${mpvSocket}" >/dev/null 2>&1 || true
                 LAST_STATE="paused"
               elif [ "$WINDOWS" -eq 0 ] && [ "$LAST_STATE" != "playing" ]; then
-                # FIX: Added UNIX-CONNECT: prefix for socat
                 echo '{"command": ["set_property", "pause", false]}' | ${socat} - UNIX-CONNECT:"${mpvSocket}" >/dev/null 2>&1 || true
                 LAST_STATE="playing"
               fi
             }
-
             while true; do
               HYPR_SIG=$(ls -t "$XDG_RUNTIME_DIR/hypr/" 2>/dev/null | head -n 1)
               HYPR_SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPR_SIG/.socket2.sock"
-
               if [ ! -S "$HYPR_SOCKET" ] || [ ! -S "${mpvSocket}" ]; then
                 sleep 2
                 continue
               fi
-
               update_state
-
               ${socat} -u UNIX-CONNECT:"$HYPR_SOCKET" | while read -r line; do
                 case "$line" in
                   openwindow*|closewindow*|workspace*|movewindow*)
@@ -118,7 +112,6 @@ in {
                     ;;
                 esac
               done
-              
               sleep 1
             done
           '';
