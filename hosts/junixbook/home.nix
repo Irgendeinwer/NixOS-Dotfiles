@@ -20,7 +20,7 @@
 
   # Custom options
   theme.wallpaper = {
-    path = ../../wallpapers/sergey-vasnev-spine-top-camera-exp-1.jpg;
+    path = ../../wallpapers/pigeon.jpg;
     backend = "hyprpaper";
   };
 

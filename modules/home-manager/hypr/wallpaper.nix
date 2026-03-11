@@ -5,12 +5,13 @@ with lib;
 let
   cfg = config.theme.wallpaper;
 
-  # Binary references
+  # Binary references using Nix Best Practices
   hyprctl   = getExe' pkgs.hyprland "hyprctl";
   mpvpaper  = getExe pkgs.mpvpaper;
   socat     = getExe pkgs.socat;
   jq        = getExe pkgs.jq;
 
+  # mpvpaper control socket
   mpvSocket = "${config.home.homeDirectory}/.cache/mpvpaper-ipc.sock";
 
   mpvFlags = [
@@ -39,9 +40,7 @@ in {
 
   config = mkIf (cfg.path != null) (mkMerge [
     
-    # ----------------------------------------------------
-    # BACKEND: Hyprpaper (Static / Laptop)
-    # ----------------------------------------------------
+    # 1. Hyprpaper (Static / Laptop)
     (mkIf (cfg.backend == "hyprpaper") {
       services.hyprpaper = {
         enable = true;
@@ -49,7 +48,6 @@ in {
           splash = false;
           ipc = "on";
           preload = [ "${cfg.path}" ];
-          # Use the object syntax for better compatibility with 0.8.x
           wallpaper = [
             {
               monitor = ""; # Empty string = all monitors
@@ -60,9 +58,7 @@ in {
       };
     })
 
-    # ----------------------------------------------------
-    # BACKEND: Mpvpaper (Video / Desktop)
-    # ----------------------------------------------------
+    # 2. Mpvpaper (Video / Desktop)
     (mkIf (cfg.backend == "mpvpaper") {
       systemd.user.services.mpvpaper = {
         Unit = {
@@ -87,24 +83,38 @@ in {
         Service = {
           ExecStart = pkgs.writeShellScript "mpvpaper-autopause" ''
             LAST_STATE="unknown"
+            MPV_SOCK="${mpvSocket}"
+
             update_state() {
+              # Safety check: ensure the mpv socket exists
+              if [ ! -S "$MPV_SOCK" ]; then return; fi
+
               WINDOWS=$(${hyprctl} activeworkspace -j | ${jq} '.windows')
+              
               if [ "$WINDOWS" -gt 0 ] && [ "$LAST_STATE" != "paused" ]; then
-                echo '{"command": ["set_property", "pause", true]}' | ${socat} - UNIX-CONNECT:"${mpvSocket}" >/dev/null 2>&1 || true
+                echo '{"command": ["set_property", "pause", true]}' | ${socat} - UNIX-CONNECT:"$MPV_SOCK" >/dev/null 2>&1 || true
                 LAST_STATE="paused"
               elif [ "$WINDOWS" -eq 0 ] && [ "$LAST_STATE" != "playing" ]; then
-                echo '{"command": ["set_property", "pause", false]}' | ${socat} - UNIX-CONNECT:"${mpvSocket}" >/dev/null 2>&1 || true
+                echo '{"command": ["set_property", "pause", false]}' | ${socat} - UNIX-CONNECT:"$MPV_SOCK" >/dev/null 2>&1 || true
                 LAST_STATE="playing"
               fi
             }
+
             while true; do
+              # Dynamically find the Hyprland socket signature
               HYPR_SIG=$(ls -t "$XDG_RUNTIME_DIR/hypr/" 2>/dev/null | head -n 1)
               HYPR_SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPR_SIG/.socket2.sock"
-              if [ ! -S "$HYPR_SOCKET" ] || [ ! -S "${mpvSocket}" ]; then
+
+              # Wait for both sockets to exist before starting the listener
+              if [ ! -S "$HYPR_SOCKET" ] || [ ! -S "$MPV_SOCK" ]; then
                 sleep 2
                 continue
               fi
+
+              # Initial state sync on start or resume
               update_state
+
+              # Listen to Hyprland events
               ${socat} -u UNIX-CONNECT:"$HYPR_SOCKET" | while read -r line; do
                 case "$line" in
                   openwindow*|closewindow*|workspace*|movewindow*)
@@ -112,11 +122,13 @@ in {
                     ;;
                 esac
               done
+              
+              # If the pipe breaks (e.g. suspend/resume), wait and retry the loop
               sleep 1
             done
           '';
           Restart = "always";
-          RestartSec = "2";
+          RestartSec = "3";
         };
         Install.WantedBy = [ "graphical-session.target" ];
       };
