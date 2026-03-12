@@ -50,7 +50,7 @@ in {
           preload = [ "${cfg.path}" ];
           wallpaper = [
             {
-              monitor = ""; # Empty string = all monitors
+              monitor = ""; 
               path = "${cfg.path}";
             }
           ];
@@ -68,7 +68,8 @@ in {
           ConditionPathExists = "${cfg.path}";
         };
         Service = {
-          ExecStart = "${mpvpaper} -o '${concatStringsSep " " mpvFlags}' '*' ${cfg.path}";
+          # Added quotes around the path for shell safety
+          ExecStart = "${mpvpaper} -o '${concatStringsSep " " mpvFlags}' '*' '${cfg.path}'";
           Restart = "on-failure";
         };
         Install.WantedBy = [ "graphical-session.target" ];
@@ -84,9 +85,11 @@ in {
           ExecStart = pkgs.writeShellScript "mpvpaper-autopause" ''
             LAST_STATE="unknown"
             MPV_SOCK="${mpvSocket}"
+            
+            # Ensure the cache directory exists so mpv can create the socket
+            mkdir -p "$(dirname "$MPV_SOCK")"
 
             update_state() {
-              # Safety check: ensure the mpv socket exists
               if [ ! -S "$MPV_SOCK" ]; then return; fi
 
               WINDOWS=$(${hyprctl} activeworkspace -j | ${jq} '.windows')
@@ -101,21 +104,18 @@ in {
             }
 
             while true; do
-              # Dynamically find the Hyprland socket signature
               HYPR_SIG=$(ls -t "$XDG_RUNTIME_DIR/hypr/" 2>/dev/null | head -n 1)
               HYPR_SOCKET="$XDG_RUNTIME_DIR/hypr/$HYPR_SIG/.socket2.sock"
 
-              # Wait for both sockets to exist before starting the listener
               if [ ! -S "$HYPR_SOCKET" ] || [ ! -S "$MPV_SOCK" ]; then
                 sleep 2
                 continue
               fi
 
-              # Initial state sync on start or resume
               update_state
 
               # Listen to Hyprland events
-              ${socat} -u UNIX-CONNECT:"$HYPR_SOCKET" | while read -r line; do
+              ${socat} -u UNIX-CONNECT:"$HYPR_SOCKET" - | while read -r line; do
                 case "$line" in
                   openwindow*|closewindow*|workspace*|movewindow*)
                     update_state
@@ -123,7 +123,6 @@ in {
                 esac
               done
               
-              # If the pipe breaks (e.g. suspend/resume), wait and retry the loop
               sleep 1
             done
           '';
