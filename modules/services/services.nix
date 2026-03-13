@@ -7,5 +7,6 @@
     ./meilisearch.nix
     ./ArchiSteamFarm.nix
     ./openrgb.nix
+    ./playerctl.nix
   ];
 }
