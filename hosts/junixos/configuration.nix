@@ -115,9 +115,6 @@
     btop
     easyeffects
     gparted
-    vlc
-    playerctl
-    celluloid
     zip
     unzip
     traceroute

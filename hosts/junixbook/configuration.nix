@@ -83,9 +83,6 @@
     # waybar
     btop
     easyeffects
-    vlc
-    playerctl
-    celluloid
     zip
     unzip
     traceroute
