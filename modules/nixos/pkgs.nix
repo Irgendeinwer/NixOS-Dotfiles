@@ -4,7 +4,7 @@
     ./pkgs/browsers.nix
     ./pkgs/flexing.nix
     ./pkgs/messaging.nix
-    ./pkgs/streaming.nix
+    ./pkgs/media.nix
   ];
 
   environment.systemPackages = with pkgs; [
