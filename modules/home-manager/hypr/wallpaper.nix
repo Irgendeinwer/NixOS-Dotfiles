@@ -78,7 +78,7 @@ in {
       systemd.user.services.mpvpaper-autopause = {
         Unit = {
           Description = "Instant event-based auto-pause for mpvpaper";
-          After = [ "mpvpaper.service" ];
+	  After = [ "graphical-session.target" "mpvpaper.service" ];
           PartOf = [ "mpvpaper.service" ];
         };
         Service = {
