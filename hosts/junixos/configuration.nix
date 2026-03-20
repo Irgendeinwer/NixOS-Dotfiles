@@ -100,7 +100,6 @@
     wget
     curl
     kitty
-    wofi
     tree
     mako
     ripgrep

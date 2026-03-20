@@ -70,7 +70,6 @@
     wget
     curl
     kitty
-    wofi
     ripgrep
     mako
     libnotify
