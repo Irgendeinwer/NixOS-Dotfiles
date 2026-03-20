@@ -116,7 +116,7 @@
     };
   };
 
-  services.logind.powerKey = "ignore";
+  services.logind.settings.Login.HandlePowerKey = "ignore";
 
   services.printing.enable = true;
 
