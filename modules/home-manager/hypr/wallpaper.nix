@@ -27,7 +27,7 @@ let
 in {
   options.theme.wallpaper = {
     path = mkOption {
-      type = types.nullOr types.path;
+      type = types.nullOr types.str;
       default = null;
       description = "Path to the wallpaper file (image or video)";
     };

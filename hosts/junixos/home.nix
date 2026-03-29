@@ -21,7 +21,7 @@
 
   # Custom options
   theme.wallpaper = {
-    path = ../../wallpapers/neko-anime-girl-streamer-moewalls-com.mp4;
+    path = "${inputs.wallpaper}/video/neko-anime-girl-streamer-moewalls-com.mp4";
     backend = "mpvpaper";
   };
 

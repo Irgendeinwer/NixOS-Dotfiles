@@ -27,6 +27,11 @@
         home-manager.follows = "home-manager";
       };
     };
+    
+    wallpaper = {
+      url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
+      flake = false;
+    };
   };
 
   outputs =
