@@ -1,4 +1,4 @@
-{ config, ... }:
+{ inputs, config, ... }:
 {
   programs.hyprlock = {
     enable = true;
@@ -15,7 +15,7 @@
 
       background = [
         {
-	  path = "${config.home.homeDirectory}/dotfiles/wallpapers/nix-flake-gruvbox.png";
+	  path = "${inputs.wallpaper}/image/nix-flake-gruvbox.png";
           blur_passes = 0;
           blur_size = 0;
         }

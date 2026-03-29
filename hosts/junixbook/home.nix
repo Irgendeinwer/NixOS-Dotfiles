@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ inputs, config, pkgs, ... }:
 {
   home.username = "julian";
   home.homeDirectory = "/home/julian";
@@ -21,7 +21,7 @@
 
   # Custom options
   theme.wallpaper = {
-    path = ../../wallpapers/pigeon.jpg;
+    path = "${inputs.wallpaper}/image/pigeon.jpg";
     backend = "hyprpaper";
   };
 
