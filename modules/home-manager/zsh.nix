@@ -41,6 +41,9 @@
         #    - Line 2: Artist (Bold Cyan) on Album (Grey)
         #    - Line 3: Date (Yellow) • Genre (Magenta)
         echo "$matches" | nix run nixpkgs#mpv -- \
+	    --no-shuffle \
+	    --loop=no \
+	    --no-resume-playback \
             --no-video \
             --term-osd-bar \
             --msg-color \

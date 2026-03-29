@@ -38,7 +38,7 @@
       cursor-autohide = 500;        # Hide cursor faster
 
       # --- Behavior ---
-      keep-open = "always";         # Don't close window when media ends
+      keep-open = "yes";            # Don't close window when media ends
       save-position-on-quit = "yes";# Perfect for long Audiobooks
       pause = "no";                 # Auto-play on start
     };
