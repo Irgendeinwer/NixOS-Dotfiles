@@ -12,6 +12,7 @@
     ../../modules/home-manager/git.nix
     ../../modules/home-manager/rofi/rofi.nix
     ../../modules/home-manager/gtk.nix
+    ../../modules/home-manager/mpv.nix
   ];
 
   home.packages = with pkgs; [ ];
