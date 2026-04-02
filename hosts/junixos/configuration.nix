@@ -195,6 +195,14 @@
   greetd.enable = true;
   sound-module.enable = true;
 
+  networking.hotspot = {
+    enable = true;
+    wifiInterface = "wlp0s20f0u7";
+    ethernetInterface = "enp7s0";
+    ssid = "6-7";
+    password = "IlikeFemboys69";
+  };
+
   # ADDED THIS BLOCK TO ENABLE THE ARK SERVER
   gaming.arkServer = {
     enable = true;
