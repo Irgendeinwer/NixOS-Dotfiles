@@ -8,5 +8,6 @@
     ./ArchiSteamFarm.nix
     ./openrgb.nix
     ./playerctl.nix
+    ./hotspot.nix
   ];
 }
