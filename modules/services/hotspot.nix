@@ -39,8 +39,12 @@ in
 
     systemd.services.hotspot = {
       description = "High-Speed 5GHz Hotspot";
-      wantedBy = [ "multi-user.target" ];
-      after = [ "network.target" "NetworkManager.service" ];
+      
+      conflicts = [ "suspend.target" "hibernate.target" ];
+      wantedBy = [ "sys-subsystem-net-devices-${cfg.wifiInterface}.device" ];
+      bindsTo = [ "sys-subsystem-net-devices-${cfg.wifiInterface}.device" ];
+      after = [ "network.target" "NetworkManager.service" "sys-subsystem-net-devices-${cfg.wifiInterface}.device" ];
+      
       serviceConfig = {
         Type = "simple";
         ExecStartPre = "${pkgs.iw}/bin/iw reg set DE";
