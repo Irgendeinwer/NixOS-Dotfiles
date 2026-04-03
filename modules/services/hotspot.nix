@@ -29,6 +29,11 @@ in
 
   config = lib.mkIf cfg.enable {
     boot.kernelParams = [ "usbcore.autosuspend=-1" ];
+    boot.extraModprobeConfig = ''
+      options rtw88_core disable_aspm=y
+      options rtw88_pci disable_aspm=y
+      options 88x2bu rtw_power_mgnt=0 rtw_dynamic_ps=0
+    '';
     boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
     hardware.wirelessRegulatoryDatabase = true;
 
