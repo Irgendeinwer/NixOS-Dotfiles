@@ -9,5 +9,6 @@
     ./openrgb.nix
     ./playerctl.nix
     ./hotspot.nix
+    ./printing.nix
   ];
 }
