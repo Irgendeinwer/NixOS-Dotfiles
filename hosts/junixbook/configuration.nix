@@ -22,6 +22,7 @@
     ../../modules/nixos/pkgs.nix
 
     ../../modules/services/syncthing.nix
+    ../../modules/services/printing.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -116,14 +117,6 @@
   };
 
   services.logind.settings.Login.HandlePowerKey = "ignore";
-
-  services.printing.enable = true;
-
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
 
   services.upower.enable = true;
 
