@@ -3,55 +3,95 @@
   programs.mpv = {
     enable = true;
 
-    scripts = with pkgs.mpvScripts; [
-      uosc             # The best Proximity-UI (essential for minimalism)
-      mpris            # Allows Hyprland/Waybar to control the player
-      thumbfast        # High-speed seekbar previews (integrated with uosc)
-      sponsorblock     # Automatically skips sponsorships in YouTube links
-      quality-menu     # uosc-style menu for selecting stream resolutions
+    scripts = with pkgs.mpvScripts;[
+      uosc
+      mpris
+      thumbfast
+      sponsorblock
+      quality-menu
     ];
 
     config = {
-      # --- Playback Behavior ---
-      loop-file = "inf";    	    # "inf" means infinite loop for the current file
-      shuffle = "yes";		    # Randomize the playlist on startup
+      # Playback & Hardware
+      vo = "gpu-next";
+      gpu-context = "wayland";
+      hwdec = "auto-safe";
+      profile = "high-quality";
+      target-colorspace-hint = "no";
+      
+      loop-file = "inf";
+      shuffle = "yes";
+      keep-open = "yes";
+      save-position-on-quit = "yes";
+      pause = "no";
 
-      # --- Rendering ---
-      vo = "gpu-next";              # Use the modern libplacebo-based renderer
-      gpu-context = "wayland";      # Wayland-native (crucial for Hyprland)
-      hwdec = "auto-safe";          # Hardware decoding for 4K efficiency
-      profile = "high-quality";     # Enables better scaling and debanding
-
-      # --- Wayland / Hyprland Color Fixes ---
-      target-colorspace-hint = "no"; 
-
-      # --- Audio Quality ---
+      # Audio
       ao = "pipewire";
-      audio-channels = "stereo";    # Optimized for headphones
-      gapless-audio = "yes";        # Essential for your Music/Audiobooks
-      volume-max = 100;             # Keep at 100%
+      audio-channels = "stereo";
+      gapless-audio = "yes";
+      volume-max = 100;
 
-      # --- Visuals & UI ---
-      osc = "no";                   # Disable default UI (uosc takes over)
-      osd-bar = "no";               # Hide default progress bar
-      border = "no";                # Cleaner look for tiling WMs
-      cursor-autohide = 500;        # Hide cursor faster
+      # UI (Delegated to uosc)
+      osc = "no";
+      osd-bar = "no";
+      border = "no";
+      cursor-autohide = 500;
 
-      # --- Behavior ---
-      keep-open = "yes";            # Don't close window when media ends
-      save-position-on-quit = "yes";# Perfect for long Audiobooks
-      pause = "no";                 # Auto-play on start
+      # YouTube / Streaming
+      ytdl-format = "bestvideo+bestaudio/best";
+
+      # Caching
+      cache = "yes";
+      demuxer-max-bytes = "400M";
+      demuxer-max-back-bytes = "150M";
+
+      # Subtitles & Languages
+      slang = "eng,en";
+      alang = "eng,en";
+      sub-auto = "fuzzy";
     };
 
-    # Custom keybinds for the uosc interface
     bindings = {
-      "tab" = "script-binding uosc/menu";
-      "s" = "script-binding uosc/subtitles";
-      "a" = "script-binding uosc/audio";
-      "q" = "script-binding uosc/quality";
-      "p" = "script-binding uosc/items";      # Show playlist
-      "right" = "seek 5";
-      "left" = "seek -5";
+      # uosc menus
+      "tab"        = "script-binding uosc/menu";
+      "MBTN_RIGHT" = "script-binding uosc/menu";
+      "c"          = "script-binding uosc/chapters";
+      "p"          = "script-binding uosc/playlist";
+      "s"          = "script-binding uosc/subtitles";
+      "a"          = "script-binding uosc/audio";
+      "Q"          = "script-binding uosc/stream-quality";
+
+      # Window & Playback Controls
+      "q"             = "quit";
+      "SPACE"         = "cycle pause";
+      "MBTN_LEFT"     = "cycle pause";
+      "f"             = "cycle fullscreen";
+      "MBTN_LEFT_DBL" = "cycle fullscreen";
+      
+      # Seeking
+      "right"       = "seek 5";
+      "left"        = "seek -5";
+      "shift+right" = "seek 1 exact";
+      "shift+left"  = "seek -1 exact";
+
+      # Volume
+      "WHEEL_UP" = "add volume 5";
+      "up" = "add volume 5";
+      "WHEEL_DOWN" = "add volume -5";
+      "down" = "add volume -5";
+
+      # Speed Control
+      "[" = "add speed -0.1";
+      "]" = "add speed 0.1";
+      "BS" = "set speed 1.0";
+
+      # Video adjustments
+      "r" = "cycle_values video-rotate 90 180 270 0";
+
+      # Information & Utilities
+      "i" = "show-text \"\${path}\" 3000";
+      "I" = "script-binding stats/display-stats";
+      "ctrl+i" = "script-binding stats/display-stats-toggle";
     };
   };
 }
