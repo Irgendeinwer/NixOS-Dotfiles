@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.home-manager
     ../../modules/nixos/flakes.nix
+    ../../modules/nixos/kernel.nix
     ../../modules/nixos/plymouth.nix
     ../../modules/nixos/greetd.nix
     ../../modules/nixos/sound.nix
@@ -27,8 +28,6 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   networking.hostName = "junixbook";
 
@@ -145,6 +144,8 @@
   };
 
   # --------------------custom options---------------
+  
+  kernel = "latest";
 
   greetd.enable = true;
   sound-module.enable = true;
