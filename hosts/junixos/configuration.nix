@@ -5,6 +5,7 @@
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.home-manager
     ../../modules/nixos/flakes.nix
+    ../../modules/nixos/kernel.nix
     ../../modules/nixos/plymouth.nix
     ../../modules/nixos/greetd.nix
     ../../modules/nixos/sound.nix
@@ -26,8 +27,6 @@
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   # Setting up networking + dns
   services.resolved.enable = false;
@@ -191,6 +190,8 @@
   };
 
   # --------------------custom options---------------
+
+  kernel = "cachyos";
 
   greetd.enable = true;
   sound-module.enable = true;
