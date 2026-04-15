@@ -20,11 +20,7 @@ in
     })
 
     (lib.mkIf (cfg == "cachyos") {
-      nixpkgs.overlays = [
-        inputs.nix-cachyos-kernel.overlays.default
-      ];
-
-      boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
+      boot.kernelPackages = inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-latest;
 
       nix.settings = {
         substituters = [
