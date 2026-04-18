@@ -16,5 +16,7 @@
   environment.systemPackages = with pkgs; [
     nixd
     rust-analyzer
+    nixfmt
+    rustfmt
   ];
 }
