@@ -10,5 +10,6 @@
     ./playerctl.nix
     ./hotspot.nix
     ./printing.nix
+    ./immich.nix
   ];
 }
