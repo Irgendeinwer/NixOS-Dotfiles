@@ -16,14 +16,14 @@
         "hyprlock"
         "systemctl --user start hyprpolkitagent"
 
-	"wl-paste --type text --watch cliphist store"
-	"wl-paste --type image --watch cliphist store"
+        "wl-paste --type text --watch cliphist store"
+        "wl-paste --type image --watch cliphist store"
 
         "nm-applet --indicator"
         "brightnessctl set 100%"
 
         "[workspace 10 silent] signal-desktop"
-	"[workspace 10 silent] easyeffects"
+        "[workspace 10 silent] easyeffects"
       ];
 
       input = {
@@ -41,7 +41,7 @@
       };
 
       gesture = [
-	"3, horizontal, workspace"
+        "3, horizontal, workspace"
       ];
 
       general = {
@@ -64,7 +64,7 @@
         key_press_enables_dpms = true;
         disable_autoreload = true;
 
-	force_default_wallpaper = 0;
+        force_default_wallpaper = 0;
         disable_hyprland_logo = true;
 
         enable_swallow = true;
@@ -83,9 +83,9 @@
           enabled = false;
         };
 
-	shadow = {
-	  enabled = false;
-	};
+        shadow = {
+          enabled = false;
+        };
       };
 
       animations = {
@@ -101,12 +101,12 @@
         "$mainMod, J, togglesplit,"
 
         "$mainMod, Escape, exec, loginctl lock-session"
-        
-        # Hyprshot
-	",PRINT, exec, hyprshot -m region --freeze -o ${config.programs.hyprshot.saveLocation}"
 
-	# Clipboard history
-	"$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+        # Hyprshot
+        ",PRINT, exec, hyprshot -m region --freeze -o ${config.programs.hyprshot.saveLocation}"
+
+        # Clipboard history
+        "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
 
         # Peace and tranquility
         "$mainMod, Y, exec, xdg-open https://www.youtube.com/watch?v=Eni9PPPPBpg"
@@ -119,7 +119,7 @@
         # ",F8, exec, hyprctl keyword input:kb_layout de\\(bone\\)"
 
         # Media and volume controls
-	",F8, exec, playerctl play-pause"
+        ",F8, exec, playerctl play-pause"
         ",F9, exec, pamixer -d 2"
         ",F10, exec, pamixer -i 2"
 
@@ -194,7 +194,7 @@
       };
 
       workspace = [
-        # Only gap settings belong here. 
+        # Only gap settings belong here.
         # Border/rounding settings must be in windowrule.
         "w[t1], gapsout:0, gapsin:0"
         "f[1], gapsout:0, gapsin:0"
@@ -215,7 +215,7 @@
         # --- Smart Gaps ---
         "border_size 0, match:workspace w[t1]"
         "rounding 0, match:workspace w[t1]"
-        
+
         "border_size 0, match:workspace f[1]"
         "rounding 0, match:workspace f[1]"
       ];

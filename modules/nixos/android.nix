@@ -5,7 +5,10 @@
     android-tools
   ];
 
-  users.users.julian.extraGroups = [ "adbusers" "kvm" ];
+  users.users.julian.extraGroups = [
+    "adbusers"
+    "kvm"
+  ];
 
   virtualisation.waydroid = {
     enable = true;

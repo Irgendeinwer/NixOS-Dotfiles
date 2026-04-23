@@ -29,7 +29,7 @@
         home-manager.follows = "home-manager";
       };
     };
-    
+
     wallpaper = {
       url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
       flake = false;
@@ -47,8 +47,8 @@
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
-	  inputs.disko.nixosModules.disko
-	  ./hosts/junixos/disk-config.nix
+          inputs.disko.nixosModules.disko
+          ./hosts/junixos/disk-config.nix
 
           ./hosts/junixos/configuration.nix
 

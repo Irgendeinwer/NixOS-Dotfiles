@@ -146,7 +146,7 @@
   };
 
   # --------------------custom options---------------
-  
+
   kernel = "latest";
 
   greetd.enable = true;

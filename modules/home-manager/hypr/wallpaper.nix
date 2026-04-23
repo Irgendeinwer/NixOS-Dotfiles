@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 
@@ -6,10 +11,10 @@ let
   cfg = config.theme.wallpaper;
 
   # Binary references using Nix Best Practices
-  hyprctl   = getExe' pkgs.hyprland "hyprctl";
-  mpvpaper  = getExe pkgs.mpvpaper;
-  socat     = getExe pkgs.socat;
-  jq        = getExe pkgs.jq;
+  hyprctl = getExe' pkgs.hyprland "hyprctl";
+  mpvpaper = getExe pkgs.mpvpaper;
+  socat = getExe pkgs.socat;
+  jq = getExe pkgs.jq;
 
   # mpvpaper control socket
   mpvSocket = "${config.home.homeDirectory}/.cache/mpvpaper-ipc.sock";
@@ -24,7 +29,8 @@ let
     "--no-osc"
     "--no-osd-bar"
   ];
-in {
+in
+{
   options.theme.wallpaper = {
     path = mkOption {
       type = types.nullOr types.str;
@@ -32,14 +38,17 @@ in {
       description = "Path to the wallpaper file (image or video)";
     };
     backend = mkOption {
-      type = types.enum [ "hyprpaper" "mpvpaper" ];
+      type = types.enum [
+        "hyprpaper"
+        "mpvpaper"
+      ];
       default = "hyprpaper";
       description = "hyprpaper for static images, mpvpaper for video loops.";
     };
   };
 
   config = mkIf (cfg.path != null) (mkMerge [
-    
+
     # 1. Hyprpaper (Static / Laptop)
     (mkIf (cfg.backend == "hyprpaper") {
       services.hyprpaper = {
@@ -50,7 +59,7 @@ in {
           preload = [ "${cfg.path}" ];
           wallpaper = [
             {
-              monitor = ""; 
+              monitor = "";
               path = "${cfg.path}";
             }
           ];
@@ -78,14 +87,17 @@ in {
       systemd.user.services.mpvpaper-autopause = {
         Unit = {
           Description = "Instant event-based auto-pause for mpvpaper";
-	  After = [ "graphical-session.target" "mpvpaper.service" ];
+          After = [
+            "graphical-session.target"
+            "mpvpaper.service"
+          ];
           PartOf = [ "mpvpaper.service" ];
         };
         Service = {
           ExecStart = pkgs.writeShellScript "mpvpaper-autopause" ''
             LAST_STATE="unknown"
             MPV_SOCK="${mpvSocket}"
-            
+
             # Ensure the cache directory exists so mpv can create the socket
             mkdir -p "$(dirname "$MPV_SOCK")"
 

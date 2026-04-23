@@ -15,7 +15,7 @@
 
       background = [
         {
-	  path = "${inputs.wallpaper}/image/nix-flake-gruvbox.png";
+          path = "${inputs.wallpaper}/image/nix-flake-gruvbox.png";
           blur_passes = 0;
           blur_size = 0;
         }

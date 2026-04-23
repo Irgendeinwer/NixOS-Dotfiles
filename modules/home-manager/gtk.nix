@@ -6,7 +6,7 @@
       package = pkgs.gruvbox-gtk-theme;
       name = "gruvbox-gtk-theme";
     };
-    
+
     gtk3.extraConfig = {
       gtk-application-prefer-dark-theme = true;
       gtk-button-images = true;
