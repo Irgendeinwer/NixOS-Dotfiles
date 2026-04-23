@@ -3,7 +3,7 @@
   programs.mpv = {
     enable = true;
 
-    scripts = with pkgs.mpvScripts;[
+    scripts = with pkgs.mpvScripts; [
       uosc
       mpris
       thumbfast
@@ -18,7 +18,7 @@
       hwdec = "auto-safe";
       profile = "high-quality";
       target-colorspace-hint = "no";
-      
+
       loop-file = "inf";
       shuffle = "yes";
       keep-open = "yes";
@@ -53,26 +53,26 @@
 
     bindings = {
       # uosc menus
-      "tab"        = "script-binding uosc/menu";
+      "tab" = "script-binding uosc/menu";
       "MBTN_RIGHT" = "script-binding uosc/menu";
-      "c"          = "script-binding uosc/chapters";
-      "p"          = "script-binding uosc/playlist";
-      "s"          = "script-binding uosc/subtitles";
-      "a"          = "script-binding uosc/audio";
-      "Q"          = "script-binding uosc/stream-quality";
+      "c" = "script-binding uosc/chapters";
+      "p" = "script-binding uosc/playlist";
+      "s" = "script-binding uosc/subtitles";
+      "a" = "script-binding uosc/audio";
+      "Q" = "script-binding uosc/stream-quality";
 
       # Window & Playback Controls
-      "q"             = "quit";
-      "SPACE"         = "cycle pause";
-      "MBTN_LEFT"     = "cycle pause";
-      "f"             = "cycle fullscreen";
+      "q" = "quit";
+      "SPACE" = "cycle pause";
+      "MBTN_LEFT" = "cycle pause";
+      "f" = "cycle fullscreen";
       "MBTN_LEFT_DBL" = "cycle fullscreen";
-      
+
       # Seeking
-      "right"       = "seek 5";
-      "left"        = "seek -5";
+      "right" = "seek 5";
+      "left" = "seek -5";
       "shift+right" = "seek 1 exact";
-      "shift+left"  = "seek -1 exact";
+      "shift+left" = "seek -1 exact";
 
       # Volume
       "WHEEL_UP" = "add volume 5";

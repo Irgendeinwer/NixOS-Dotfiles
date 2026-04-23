@@ -8,7 +8,7 @@
         enable = true;
         installCargo = false;
         installRustc = false;
-        
+
         settings = {
           check = {
             command = "clippy";
@@ -26,7 +26,7 @@
       "gd" = "definition";
       "K" = "hover";
       "<leader>rn" = "rename";
-      "<leader>ca" = "code_action"; 
+      "<leader>ca" = "code_action";
     };
   };
 }

@@ -1,11 +1,21 @@
-{ config, lib, pkgs, inputs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 let
   cfg = config.kernel;
 in
 {
   options.kernel = lib.mkOption {
-    type = lib.types.enum [ "cachyos" "latest" "lts" ];
+    type = lib.types.enum [
+      "cachyos"
+      "latest"
+      "lts"
+    ];
     default = "latest";
     description = "The kernel to use.";
   };
@@ -20,7 +30,8 @@ in
     })
 
     (lib.mkIf (cfg == "cachyos") {
-      boot.kernelPackages = inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-latest;
+      boot.kernelPackages =
+        inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-latest;
 
       nix.settings = {
         substituters = [

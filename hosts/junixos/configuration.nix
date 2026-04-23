@@ -37,23 +37,29 @@
     hostName = "junixos";
     networkmanager.enable = true;
     networkmanager.dns = "none";
-    nameservers = [ "127.0.0.1" "::1" ];
+    nameservers = [
+      "127.0.0.1"
+      "::1"
+    ];
   };
 
   services.dnscrypt-proxy = {
     enable = true;
     settings = {
-      listen_addresses = [ "127.0.0.1:53" "[::1]:53" ];
-      
+      listen_addresses = [
+        "127.0.0.1:53"
+        "[::1]:53"
+      ];
+
       ipv6_servers = true;
-      
+
       require_dnssec = true;
 
       # SPECIFIC MULLVAD CONFIGURATION
       # 'mullvad-adblock-doh' is the pre-defined name for:
       # https://adblock.dns.mullvad.net/dns-query
       server_names = [ "mullvad-adblock-doh" ];
-      
+
       sources.public-resolvers = {
         urls = [
           "https://raw.githubusercontent.com/DNSCrypt/dnscrypt-resolvers/master/v3/public-resolvers.md"
@@ -64,8 +70,6 @@
       };
     };
   };
-
-
 
   time.timeZone = "Europe/Berlin";
 
@@ -126,7 +130,7 @@
     yt-dlp
 
     zathura
-    
+
     libreoffice-fresh
     hunspell
     hunspellDicts.de_DE

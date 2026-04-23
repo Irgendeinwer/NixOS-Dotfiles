@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   # 1. Define options
@@ -21,7 +26,7 @@
       enable = true;
       openFirewall = true;
       # Disables the license/account check so your friend can join
-      requireUserVerification = false; 
+      requireUserVerification = false;
     };
 
     # Prevent the service from starting automatically on system boot
@@ -32,10 +37,22 @@
       {
         users = [ config.gaming.factorioServer.user ];
         commands = [
-          { command = "/run/current-system/sw/bin/systemctl start factorio"; options = [ "NOPASSWD" ]; }
-          { command = "/run/current-system/sw/bin/systemctl stop factorio"; options = [ "NOPASSWD" ]; }
-          { command = "/run/current-system/sw/bin/systemctl status factorio"; options = [ "NOPASSWD" ]; }
-          { command = "/run/current-system/sw/bin/systemctl restart factorio"; options = [ "NOPASSWD" ]; }
+          {
+            command = "/run/current-system/sw/bin/systemctl start factorio";
+            options = [ "NOPASSWD" ];
+          }
+          {
+            command = "/run/current-system/sw/bin/systemctl stop factorio";
+            options = [ "NOPASSWD" ];
+          }
+          {
+            command = "/run/current-system/sw/bin/systemctl status factorio";
+            options = [ "NOPASSWD" ];
+          }
+          {
+            command = "/run/current-system/sw/bin/systemctl restart factorio";
+            options = [ "NOPASSWD" ];
+          }
         ];
       }
     ];

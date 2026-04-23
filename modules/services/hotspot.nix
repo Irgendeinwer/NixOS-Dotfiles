@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.networking.hotspot;
@@ -39,12 +44,19 @@ in
 
     systemd.services.hotspot = {
       description = "High-Speed 5GHz Hotspot";
-      
-      conflicts = [ "suspend.target" "hibernate.target" ];
+
+      conflicts = [
+        "suspend.target"
+        "hibernate.target"
+      ];
       wantedBy = [ "sys-subsystem-net-devices-${cfg.wifiInterface}.device" ];
       bindsTo = [ "sys-subsystem-net-devices-${cfg.wifiInterface}.device" ];
-      after = [ "network.target" "NetworkManager.service" "sys-subsystem-net-devices-${cfg.wifiInterface}.device" ];
-      
+      after = [
+        "network.target"
+        "NetworkManager.service"
+        "sys-subsystem-net-devices-${cfg.wifiInterface}.device"
+      ];
+
       serviceConfig = {
         Type = "simple";
         ExecStartPre = "${pkgs.iw}/bin/iw reg set DE";
@@ -64,6 +76,9 @@ in
 
     networking.networkmanager.unmanaged = [ "interface-name:${cfg.wifiInterface}" ];
 
-    environment.systemPackages = [ pkgs.linux-wifi-hotspot pkgs.iw ];
+    environment.systemPackages = [
+      pkgs.linux-wifi-hotspot
+      pkgs.iw
+    ];
   };
 }

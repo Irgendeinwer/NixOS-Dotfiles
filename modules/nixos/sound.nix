@@ -13,14 +13,14 @@
   config = lib.mkIf config.sound-module.enable {
     environment.systemPackages = with pkgs; [
       alsa-utils
-      qpwgraph       # Essential for visual routing
+      qpwgraph # Essential for visual routing
       pulseaudioFull
       pulsemixer
       pavucontrol
       pamixer
     ];
     security.rtkit.enable = true;
-    
+
     services.pipewire = {
       enable = true;
       alsa = {
@@ -28,11 +28,11 @@
         support32Bit = true;
       };
       pulse.enable = true;
-      
+
       # Define Virtual Sinks and Sources
       extraConfig.pipewire = {
         # 1. THE MIC SOURCE (For Chromium/Discord)
-        # This creates a loopback: audio sent to 'obs_mic_sink' 
+        # This creates a loopback: audio sent to 'obs_mic_sink'
         # comes out of 'obs_mic_source' which Chromium sees as a Mic.
         "10-obs-virtual-mic" = {
           "context.modules" = [
@@ -43,12 +43,18 @@
                 "capture.props" = {
                   "node.name" = "obs_mic_sink";
                   "media.class" = "Audio/Sink";
-                  "audio.position" = [ "FL" "FR" ];
+                  "audio.position" = [
+                    "FL"
+                    "FR"
+                  ];
                 };
                 "playback.props" = {
                   "node.name" = "obs_mic_source";
                   "media.class" = "Audio/Source";
-                  "audio.position" = [ "FL" "FR" ];
+                  "audio.position" = [
+                    "FL"
+                    "FR"
+                  ];
                 };
               };
             }
