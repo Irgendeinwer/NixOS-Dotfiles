@@ -25,33 +25,33 @@
 
     # Renamed from initExtra to initContent based on your error
     initContent = ''
-      listen() {
-        local matches
-        matches=$(nix run nixpkgs#fd -- -e opus -e flac -e mp3 -e wav -e m4a -a . ~/music \
-                  | nix run nixpkgs#fzf -- --filter "$*")
+            listen() {
+              local matches
+              matches=$(nix run nixpkgs#fd -- -e opus -e flac -e mp3 -e wav -e m4a -a . ~/music \
+                        | nix run nixpkgs#fzf -- --filter "$*")
 
-        if [ -z "$matches" ]; then
-          echo "No music found matching: $*"
-          return 1
-        fi
+              if [ -z "$matches" ]; then
+                echo "No music found matching: $*"
+                return 1
+              fi
 
-        # 1. display-tags="": Hides the ugly monochrome "File tags" block
-        # 2. term-playing-msg: Rebuilds the stats manually with colors
-        #    - Line 1: Title (Bold Green)
-        #    - Line 2: Artist (Bold Cyan) on Album (Grey)
-        #    - Line 3: Date (Yellow) • Genre (Magenta)
-        echo "$matches" | nix run nixpkgs#mpv -- \
-	    --no-shuffle \
-	    --loop=no \
-	    --no-resume-playback \
-            --no-video \
-            --term-osd-bar \
-            --msg-color \
-            --msg-level=playlist=error,file=error \
-            --display-tags="" \
-            --term-playing-msg=$'\n\e[1;32m''${media-title}\e[0m\n\e[1;36m''${metadata/artist} \e[0;90mon \e[0;37m''${metadata/album}\e[0m\n\e[0;33m''${metadata/date} \e[0;90m• \e[0;35m''${metadata/genre}\e[0m' \
-            --playlist=-
-      }
+              # 1. display-tags="": Hides the ugly monochrome "File tags" block
+              # 2. term-playing-msg: Rebuilds the stats manually with colors
+              #    - Line 1: Title (Bold Green)
+              #    - Line 2: Artist (Bold Cyan) on Album (Grey)
+              #    - Line 3: Date (Yellow) • Genre (Magenta)
+              echo "$matches" | nix run nixpkgs#mpv -- \
+      	    --no-shuffle \
+      	    --loop=no \
+      	    --no-resume-playback \
+                  --no-video \
+                  --term-osd-bar \
+                  --msg-color \
+                  --msg-level=playlist=error,file=error \
+                  --display-tags="" \
+                  --term-playing-msg=$'\n\e[1;32m''${media-title}\e[0m\n\e[1;36m''${metadata/artist} \e[0;90mon \e[0;37m''${metadata/album}\e[0m\n\e[0;33m''${metadata/date} \e[0;90m• \e[0;35m''${metadata/genre}\e[0m' \
+                  --playlist=-
+            }
     '';
 
     history = {
