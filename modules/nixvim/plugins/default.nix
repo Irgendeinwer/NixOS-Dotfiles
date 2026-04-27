@@ -6,5 +6,6 @@
     ./treesitter.nix
     ./formatting.nix
     ./ui.nix
+    ./markview.nix
   ];
 }
