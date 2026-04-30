@@ -43,13 +43,28 @@
       nixos-hardware,
       ...
     }@inputs:
+    let
+      loadOverlays =
+        dir:
+        if builtins.pathExists dir then
+          let
+            files = builtins.attrNames (builtins.readDir dir);
+            nixFiles = builtins.filter (name: builtins.match ".*\\.nix" name != null) files;
+          in
+          map (name: import (dir + "/${name}")) nixFiles
+        else
+          [ ];
+
+      myOverlays = loadOverlays ./modules/overlays;
+    in
     {
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
+          { nixpkgs.overlays = myOverlays; }
+
           inputs.disko.nixosModules.disko
           ./hosts/junixos/disk-config.nix
-
           ./hosts/junixos/configuration.nix
 
           nixos-hardware.nixosModules.common-cpu-intel-cpu-only
@@ -68,6 +83,8 @@
       nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
+          { nixpkgs.overlays = myOverlays; }
+
           ./hosts/junixbook/configuration.nix
 
           nixos-hardware.nixosModules.common-cpu-intel
@@ -83,5 +100,4 @@
         ];
       };
     };
-
 }
