@@ -17,6 +17,7 @@
     ../../modules/nixos/bluetooth.nix
     ../../modules/nixos/android.nix
     ../../modules/nixos/nh.nix
+    ../../modules/nixos/obs-studio.nix
 
     ../../modules/nixvim/nixvim.nix
 
