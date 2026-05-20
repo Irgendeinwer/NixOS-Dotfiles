@@ -7,6 +7,7 @@
 
   wayland.windowManager.hyprland = {
     enable = true;
+    configType = "hyprlang";
     plugins = [ ];
     systemd.enable = true;
     systemd.variables = [ "--all" ];
@@ -45,7 +46,6 @@
       ];
 
       general = {
-
         gaps_in = 2;
         gaps_out = 4;
         border_size = 1;
@@ -59,7 +59,6 @@
       };
 
       misc = {
-        vfr = true;
         vrr = 3;
         key_press_enables_dpms = true;
 
@@ -71,7 +70,6 @@
       };
 
       dwindle = {
-        pseudotile = true;
         smart_split = true;
       };
 
@@ -97,7 +95,7 @@
         "$mainMod, D, killactive,"
         "$mainMod, M, exit,"
         "$mainMod, F, togglefloating,"
-        "$mainMod, J, togglesplit,"
+        "$mainMod, J, layoutmsg, togglesplit"
 
         "$mainMod, Escape, exec, loginctl lock-session"
 
@@ -193,8 +191,6 @@
       };
 
       workspace = [
-        # Only gap settings belong here.
-        # Border/rounding settings must be in windowrule.
         "w[t1], gapsout:0, gapsin:0"
         "f[1], gapsout:0, gapsin:0"
       ];
