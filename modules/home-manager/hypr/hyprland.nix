@@ -62,7 +62,6 @@
         vfr = true;
         vrr = 3;
         key_press_enables_dpms = true;
-        disable_autoreload = true;
 
         force_default_wallpaper = 0;
         disable_hyprland_logo = true;
