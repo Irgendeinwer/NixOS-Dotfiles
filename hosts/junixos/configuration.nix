@@ -204,10 +204,10 @@
 
   networking.hotspot = {
     enable = true;
-    wifiInterface = "wlp0s20f0u7";
+    wifiInterface = "wlp0s20f0u3";
     ethernetInterface = "enp7s0";
-    ssid = "6-7";
-    password = "IlikeFemboys69";
+    ssid = "6+7";
+    password = "unpure-thoughts-about-ubuntu-and-arch";
   };
 
   # ADDED THIS BLOCK TO ENABLE THE ARK SERVER
