@@ -36,7 +36,7 @@
 
   networking.networkmanager.enable = true;
 
-  environment.etc."ssl/certs/iserv.pem".source = ../../iserv.pem;
+  environment.etc."ssl/certs/iserv.pem".source = ../../assets/iserv.pem;
 
   time.timeZone = "Europe/Berlin";
 
