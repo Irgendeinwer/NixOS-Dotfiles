@@ -11,13 +11,21 @@
       quality-menu
     ];
 
+    profiles = {
+      multichannel = {
+        profile-cond = "audio_channels > 2";
+        audio-device = "pipewire/effect_input.virtual-surround-7.1-hesuvi";
+      };
+    };
+
     config = {
       # Playback & Hardware
       vo = "gpu-next";
-      gpu-context = "wayland";
+      gpu-api = "vulkan";
+      gpu-context = "waylandvk";
       hwdec = "auto-safe";
       profile = "high-quality";
-      target-colorspace-hint = "no";
+      target-colorspace-hint = "yes";
 
       loop-file = "inf";
       shuffle = "yes";
@@ -27,7 +35,7 @@
 
       # Audio
       ao = "pipewire";
-      audio-channels = "stereo";
+      audio-channels = "auto-safe";
       gapless-audio = "yes";
       volume-max = 100;
 
