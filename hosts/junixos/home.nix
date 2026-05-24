@@ -18,6 +18,7 @@
     ../../modules/home-manager/rofi/rofi.nix
     ../../modules/home-manager/gtk.nix
     ../../modules/home-manager/mpv.nix
+    ../../modules/home-manager/virtual-surround.nix
   ];
 
   home.packages = with pkgs; [ ];
