@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ ... }:
 
 let
-  atmosWav = ../../assets/oal_dflt.wav;
+  hrirWav = ../../assets/oal_dflt.wav;
 in
 {
   xdg.configFile."pipewire/pipewire.conf.d/99-hesuvi.conf".text = ''
@@ -24,24 +24,24 @@ in
                         { type = builtin label = copy name = copyLFE }
 
                         # apply hrir - HeSuVi 14-channel WAV
-                        { type = builtin label = convolver name = convFL_L config = { filename = "${atmosWav}" channel =  0 } }
-                        { type = builtin label = convolver name = convFL_R config = { filename = "${atmosWav}" channel =  1 } }
-                        { type = builtin label = convolver name = convSL_L config = { filename = "${atmosWav}" channel =  2 } }
-                        { type = builtin label = convolver name = convSL_R config = { filename = "${atmosWav}" channel =  3 } }
-                        { type = builtin label = convolver name = convRL_L config = { filename = "${atmosWav}" channel =  4 } }
-                        { type = builtin label = convolver name = convRL_R config = { filename = "${atmosWav}" channel =  5 } }
-                        { type = builtin label = convolver name = convFC_L config = { filename = "${atmosWav}" channel =  6 } }
-                        { type = builtin label = convolver name = convFR_R config = { filename = "${atmosWav}" channel =  7 } }
-                        { type = builtin label = convolver name = convFR_L config = { filename = "${atmosWav}" channel =  8 } }
-                        { type = builtin label = convolver name = convSR_R config = { filename = "${atmosWav}" channel =  9 } }
-                        { type = builtin label = convolver name = convSR_L config = { filename = "${atmosWav}" channel = 10 } }
-                        { type = builtin label = convolver name = convRR_R config = { filename = "${atmosWav}" channel = 11 } }
-                        { type = builtin label = convolver name = convRR_L config = { filename = "${atmosWav}" channel = 12 } }
-                        { type = builtin label = convolver name = convFC_R config = { filename = "${atmosWav}" channel = 13 } }
+                        { type = builtin label = convolver name = convFL_L  config = { filename = "${hrirWav}" channel =  0 } }
+                        { type = builtin label = convolver name = convFL_R  config = { filename = "${hrirWav}" channel =  1 } }
+                        { type = builtin label = convolver name = convSL_L  config = { filename = "${hrirWav}" channel =  2 } }
+                        { type = builtin label = convolver name = convSL_R  config = { filename = "${hrirWav}" channel =  3 } }
+                        { type = builtin label = convolver name = convRL_L  config = { filename = "${hrirWav}" channel =  4 } }
+                        { type = builtin label = convolver name = convRL_R  config = { filename = "${hrirWav}" channel =  5 } }
+                        { type = builtin label = convolver name = convFC_L  config = { filename = "${hrirWav}" channel =  6 } }
+                        { type = builtin label = convolver name = convFR_R  config = { filename = "${hrirWav}" channel =  7 } }
+                        { type = builtin label = convolver name = convFR_L  config = { filename = "${hrirWav}" channel =  8 } }
+                        { type = builtin label = convolver name = convSR_R  config = { filename = "${hrirWav}" channel =  9 } }
+                        { type = builtin label = convolver name = convSR_L  config = { filename = "${hrirWav}" channel = 10 } }
+                        { type = builtin label = convolver name = convRR_R  config = { filename = "${hrirWav}" channel = 11 } }
+                        { type = builtin label = convolver name = convRR_L  config = { filename = "${hrirWav}" channel = 12 } }
+                        { type = builtin label = convolver name = convFC_R  config = { filename = "${hrirWav}" channel = 13 } }
 
                         # treat LFE as FC
-                        { type = builtin label = convolver name = convLFE_L config = { filename = "${atmosWav}" channel =  6 } }
-                        { type = builtin label = convolver name = convLFE_R config = { filename = "${atmosWav}" channel = 13 } }
+                        { type = builtin label = convolver name = convLFE_L config = { filename = "${hrirWav}" channel =  6 } }
+                        { type = builtin label = convolver name = convLFE_R config = { filename = "${hrirWav}" channel = 13 } }
 
                         # stereo output
                         { type = builtin label = mixer name = mixL }
