@@ -84,7 +84,7 @@ in
                         { output = "convLFE_R:Out" input="mixR:In 8" }
                         { output = "convLFE_L:Out" input="mixL:In 8" }
                     ]
-                    inputs  = [ "copyFL:In" "copyFR:In" "copyFC:In" "copyLFE:In" "copyRL:In" "copyRR:In", "copySL:In", "copySR:In" ]
+                    inputs  = [ "copyFL:In" "copyFR:In" "copyFC:In" "copyLFE:In" "copyRL:In" "copyRR:In" "copySL:In" "copySR:In" ]
                     outputs = [ "mixL:Out" "mixR:Out" ]
                 }
                 capture.props = {

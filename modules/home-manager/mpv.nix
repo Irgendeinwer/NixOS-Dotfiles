@@ -13,7 +13,7 @@
 
     profiles = {
       multichannel = {
-        profile-cond = "audio_channels > 2";
+        profile-cond = "p[\"audio-params/channel-count\"] > 2";
         audio-device = "pipewire/effect_input.virtual-surround-7.1-hesuvi";
       };
     };
