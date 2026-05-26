@@ -11,5 +11,6 @@
     ./hotspot.nix
     ./printing.nix
     ./immich.nix
+    ./isolated-gaming.nix
   ];
 }
