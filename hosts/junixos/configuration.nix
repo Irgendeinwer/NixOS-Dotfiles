@@ -162,10 +162,6 @@
     };
   };
 
-  networking.hosts = {
-    "192.168.100.2" = [ "yuno.hadiag.selfhost.bz" ];
-  };
-
   security.polkit.enable = true;
 
   programs.mtr.enable = true;
