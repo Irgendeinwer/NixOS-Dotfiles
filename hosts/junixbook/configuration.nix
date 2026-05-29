@@ -57,7 +57,6 @@
 
   users.users.julian = {
     isNormalUser = true;
-    
     extraGroups = [
       "networkmanager"
       "wheel"
