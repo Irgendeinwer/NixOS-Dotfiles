@@ -11,7 +11,6 @@
     ../../modules/nixos/sound.nix
     ../../modules/nixos/hypr.nix
     ../../modules/nixos/fonts.nix
-    ../../modules/nixos/direnv.nix
     ../../modules/nixos/gaming.nix
     ../../modules/nixos/direnv.nix
     ../../modules/nixos/bluetooth.nix
