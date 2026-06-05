@@ -13,6 +13,19 @@
     systemd.variables = [ "--all" ];
     settings = {
       "$mainMod" = "SUPER";
+
+      monitor = [
+        # DP-2: Lenovo G27qe-20 (Left, 1440p @ 100Hz)
+        "DP-2, 2560x1440@100, 0x0, 1"
+
+        # DP-1: KTC M27T6 (Right, 1440p @ 180Hz) - Starts in standard SDR mode
+        "DP-1, 2560x1440@180, 2560x0, 1"
+      ];
+
+      render = {
+        cm_auto_hdr = 2; # Auto-switch to HDR (hdredid) when applications support it
+      };
+
       exec-once = [
         "hyprlock"
         "systemctl --user start hyprpolkitagent"
@@ -59,7 +72,7 @@
       };
 
       misc = {
-        vrr = 3;
+        vrr = 3; # Fullscreen-only
         key_press_enables_dpms = true;
 
         force_default_wallpaper = 0;
@@ -99,21 +112,18 @@
 
         "$mainMod, Escape, exec, loginctl lock-session"
 
+        # Toggle HDR Mode on DP-1 (Right Monitor) on/off
+        # Detects if the current format is 10-bit (XRGB2101010). If it is, swaps to SDR. If not, swaps to HDR.
+        "$mainMod SHIFT, H, exec, hyprctl monitors | grep -q 'XRGB2101010' && hyprctl keyword monitor 'DP-1, 2560x1440@180, 2560x0, 1' || hyprctl keyword monitor 'DP-1, 2560x1440@180, 2560x0, 1, bitdepth, 10, cm, hdr, sdrbrightness, 1.2'"
+
         # Hyprshot
         ",PRINT, exec, hyprshot -m region --freeze -o ${config.programs.hyprshot.saveLocation}"
 
         # Clipboard history
         "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
 
-        # Peace and tranquility
-        "$mainMod, Y, exec, xdg-open https://www.youtube.com/watch?v=Eni9PPPPBpg"
-
         # Time
         ''$mainMod, T, exec, notify-send -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"''
-
-        # Quick access to the bone keyboard layout
-        # ",F7, exec, hyprctl keyword input:kb_layout de"
-        # ",F8, exec, hyprctl keyword input:kb_layout de\\(bone\\)"
 
         # Media and volume controls
         ",F8, exec, playerctl play-pause"
@@ -215,6 +225,5 @@
         "rounding 0, match:workspace f[1]"
       ];
     };
-    extraConfig = "\n	monitor = eDP-1, preferred, auto, 1\n	monitor = HDMI-A-1, preferred, 0x0, 1\n	";
   };
 }
