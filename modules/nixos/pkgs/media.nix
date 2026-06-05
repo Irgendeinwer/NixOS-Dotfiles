@@ -5,5 +5,6 @@
     celluloid
     vlc
     feishin
+    rush-lyrics
   ];
 }
