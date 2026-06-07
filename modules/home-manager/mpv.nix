@@ -44,6 +44,8 @@ in
       target-colorspace-hint = "yes";
       glsl-shaders = "";
 
+      "inverse-tone-mapping" = "no";
+
       "secondary-sub-visibility" = "yes";
 
       loop-file = "inf";
@@ -122,6 +124,9 @@ in
 
       # Shader Controls
       "ctrl+1" = "cycle secondary-sub-visibility; show-text \"Upscaling: \${secondary-sub-visibility}\"";
+
+      # HDR Controls
+      "ctrl+2" = "cycle inverse-tone-mapping; show-text \"SDR-to-HDR Upmap: \${inverse-tone-mapping}\"";
     };
   };
 }
