@@ -1,4 +1,8 @@
 { pkgs, ... }:
+
+let
+  anime4kShaders = "${pkgs.anime4k}/Anime4K_Clamp_Highlights.glsl:${pkgs.anime4k}/Anime4K_Restore_CNN_S.glsl";
+in
 {
   programs.mpv = {
     enable = true;
@@ -16,6 +20,18 @@
         profile-cond = "p[\"audio-params/channel-count\"] > 2";
         audio-device = "pipewire/effect_input.virtual-surround-7.1-hesuvi";
       };
+
+      # Active shader Profile
+      upscale-low-res = {
+        profile-cond = "height < 1440 and secondary_sub_visibility";
+        glsl-shaders = anime4kShaders;
+      };
+
+      # Revert shader Profile
+      upscale-low-res-revert = {
+        profile-cond = "not (height < 1440 and secondary_sub_visibility)";
+        glsl-shaders = "";
+      };
     };
 
     config = {
@@ -26,6 +42,9 @@
       hwdec = "auto-safe";
       profile = "high-quality";
       target-colorspace-hint = "yes";
+      glsl-shaders = "";
+
+      "secondary-sub-visibility" = "yes";
 
       loop-file = "inf";
       shuffle = "yes";
@@ -100,6 +119,9 @@
       "i" = "show-text \"\${path}\" 3000";
       "I" = "script-binding stats/display-stats";
       "ctrl+i" = "script-binding stats/display-stats-toggle";
+
+      # Shader Controls
+      "ctrl+1" = "cycle secondary-sub-visibility; show-text \"Upscaling: \${secondary-sub-visibility}\"";
     };
   };
 }
