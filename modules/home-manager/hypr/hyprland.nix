@@ -15,6 +15,9 @@
       "$mainMod" = "SUPER";
 
       monitor = [
+        # eDP-1: Laptop built-in display
+        "eDP-1, preferred, auto, 1"
+
         # DP-2: Lenovo G27qe-20 (Left, 1440p @ 100Hz)
         "DP-2, 2560x1440@100, 0x0, 1"
 
