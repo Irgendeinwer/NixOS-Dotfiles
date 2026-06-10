@@ -4,6 +4,7 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.home-manager
+    ../../modules/nixos/lix.nix
     ../../modules/nixos/flakes.nix
     ../../modules/nixos/kernel.nix
     ../../modules/nixos/plymouth.nix
