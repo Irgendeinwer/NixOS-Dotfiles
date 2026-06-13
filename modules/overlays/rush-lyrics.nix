@@ -7,11 +7,11 @@ final: prev: {
     }:
     let
       pname = "rush-lyrics";
-      version = "6.3.2";
+      version = "6.3.3";
 
       src = fetchurl {
         url = "https://github.com/shub39/Rush/releases/download/${version}/rush-${version}-linux-x86_64.AppImage";
-        hash = "sha256-xyIr4aUTj7raQS+XNqOhfb5rrOyRR/CXgE4TS5iaXHE=";
+        hash = "sha256-Jf6i8/tJqeBGS0wJOowvIl+ipmsB4BD+KwKEtmvGztI=";
       };
 
       appimageContents = appimageTools.extractType2 {
