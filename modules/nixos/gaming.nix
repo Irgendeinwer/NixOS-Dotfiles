@@ -32,7 +32,11 @@
   programs = {
     steam.enable = true;
     gamemode.enable = true;
-    gamescope.enable = true;
+    gamescope = {
+      enable = true;
+      capSysNice = true;
+    };
+
   };
 
   users.users.julian.extraGroups = [ "gamemode" ];
