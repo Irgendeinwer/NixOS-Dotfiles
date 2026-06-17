@@ -5,7 +5,7 @@
 
   systemd.tmpfiles.rules = [
     "d /var/lib/flatpak/overrides 0755 root root - -"
-    
+
     # Override for Bottles: Isolated to ~/UntrustedGames (Read/Write)
     "L+ /var/lib/flatpak/overrides/com.usebottles.bottles - - - - ${pkgs.writeText "bottles-override" ''
       [Context]
@@ -30,10 +30,10 @@
       ExecStart = pkgs.writeShellScript "setup-bottles-steam" ''
         # Ensure Flathub repository is registered
         ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-        
+
         # Install Bottles
         ${pkgs.flatpak}/bin/flatpak install -y flathub com.usebottles.bottles
-        
+
         # Install Sandboxed Steam
         ${pkgs.flatpak}/bin/flatpak install -y flathub com.valvesoftware.Steam
       '';
