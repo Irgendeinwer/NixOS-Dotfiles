@@ -25,6 +25,7 @@
 
     ../../modules/services/syncthing.nix
     ../../modules/services/printing.nix
+    ../../modules/services/playerctl.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
