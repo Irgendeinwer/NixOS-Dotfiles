@@ -19,6 +19,7 @@
     ../../modules/home-manager/gtk.nix
     ../../modules/home-manager/mpv.nix
     ../../modules/home-manager/virtual-surround.nix
+    ../../modules/home-manager/listen.nix
   ];
 
   home.packages = with pkgs; [ ];
