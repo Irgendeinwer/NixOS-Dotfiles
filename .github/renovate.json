@@ -3,6 +3,9 @@
   "extends": [
     "config:recommended"
   ],
+  "enabledManagers": [
+    "nix"
+  ],
   "nix": {
     "enabled": true
   },
@@ -14,7 +17,8 @@
       "matchManagers": ["nix"],
       "groupName": "all nix flake updates",
       "groupSlug": "nix-flake-updates",
-      "matchPackageNames": ["*"]
+      "matchPackageNames": ["*"],
+      "automerge": true
     }
   ]
 }
