@@ -17,7 +17,7 @@ jobs:
         uses: wimpysworld/nothing-but-nix@v2
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v16
+        uses: DeterminateSystems/nix-installer-action@v22
 
       - name: Setup Magic Nix Cache
         uses: DeterminateSystems/magic-nix-cache-action@v9
