@@ -9,16 +9,16 @@
   "nix": {
     "enabled": true
   },
-  "ignoreDeps": [
-    "wallpaper"
-  ],
   "packageRules": [
     {
       "matchManagers": ["nix"],
-      "groupName": "all nix flake updates",
-      "groupSlug": "nix-flake-updates",
-      "matchPackageNames": ["*"],
+      "matchPackageNames": ["nixpkgs"],
       "automerge": true
+    },
+    {
+      "matchManagers": ["nix"],
+      "matchPackageNames": ["!nixpkgs"],
+      "enabled": false
     }
   ]
 }
