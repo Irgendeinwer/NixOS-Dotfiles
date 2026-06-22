@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "nix": {
+    "enabled": true
+  },
+  "ignoreDeps": [
+    "wallpaper"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["nix"],
+      "matchPackagePatterns": ["*"],
+      "groupName": "all nix flake updates",
+      "groupSlug": "nix-flake-updates"
+    }
+  ]
+}
