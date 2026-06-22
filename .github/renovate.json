@@ -12,9 +12,11 @@
   "packageRules": [
     {
       "matchManagers": ["nix"],
-      "matchPackagePatterns": ["*"],
       "groupName": "all nix flake updates",
-      "groupSlug": "nix-flake-updates"
+      "groupSlug": "nix-flake-updates",
+      "matchPackageNames": [
+        "*"
+      ]
     }
   ]
 }
