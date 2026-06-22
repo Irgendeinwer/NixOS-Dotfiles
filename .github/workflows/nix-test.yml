@@ -20,7 +20,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v16
 
       - name: Setup Magic Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@v9
+        uses: DeterminateSystems/magic-nix-cache-action@v14
 
       - name: Create dummy wallpaper files
         run: |
