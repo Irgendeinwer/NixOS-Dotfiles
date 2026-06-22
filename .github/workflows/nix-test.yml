@@ -1,0 +1,36 @@
+name: "Nix Build Test"
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build NixOS Configurations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: wimpysworld/nothing-but-nix@v2
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Setup Magic Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@v9
+
+      - name: Create dummy wallpaper files
+        run: |
+          mkdir -p dummy-wallpaper/video
+          mkdir -p dummy-wallpaper/image
+          touch dummy-wallpaper/video/neko-anime-girl-streamer-moewalls-com.mp4
+          touch dummy-wallpaper/image/pigeon.jpg
+
+      - name: Build junixos
+        run: nix build .#nixosConfigurations.junixos.config.system.build.toplevel --no-link --override-input wallpaper ./dummy-wallpaper
+
+      - name: Build junixbook
+        run: nix build .#nixosConfigurations.junixbook.config.system.build.toplevel --no-link --override-input wallpaper ./dummy-wallpaper

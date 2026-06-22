@@ -14,7 +14,8 @@
       "matchManagers": ["nix"],
       "groupName": "all nix flake updates",
       "groupSlug": "nix-flake-updates",
-      "matchPackageNames": ["*"]
+      "matchPackageNames": ["*"],
+      "automerge": true
     }
   ]
 }
