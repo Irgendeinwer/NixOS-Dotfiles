@@ -2,34 +2,35 @@
   description = "Nixos config flake";
 
   inputs = {
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     home-manager = {
       url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     disko = {
       url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Preserve kernel binary cache compatibility by keeping this isolated
     nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
 
     nixvim = {
       url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs = {
-        nixpkgs.follows = "nixpkgs-unstable";
+        nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
       };
     };
@@ -43,13 +44,11 @@
   outputs =
     {
       self,
-      nixpkgs-unstable,
+      nixpkgs,
       nixos-hardware,
       ...
     }@inputs:
     let
-      nixpkgs = nixpkgs-unstable;
-
       loadOverlays =
         dir:
         if builtins.pathExists dir then
@@ -65,11 +64,7 @@
     in
     {
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          inputs = inputs // {
-            nixpkgs = nixpkgs-unstable;
-          };
-        };
+        specialArgs = { inherit inputs; };
         modules = [
           { nixpkgs.overlays = myOverlays; }
 
@@ -93,11 +88,7 @@
       };
 
       nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          inputs = inputs // {
-            nixpkgs = nixpkgs-unstable;
-          };
-        };
+        specialArgs = { inherit inputs; };
         modules = [
           { nixpkgs.overlays = myOverlays; }
 
