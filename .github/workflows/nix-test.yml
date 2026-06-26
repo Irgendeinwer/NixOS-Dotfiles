@@ -22,7 +22,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@v16
 
       - name: Evaluate junixos
-        run: nix eval .#nixosConfigurations.junixos.config.system.build.toplevel.drvPath
+        run: nix eval .#nixosConfigurations.junixos.config.system.build.toplevel.drvPath --show-trace
 
       - name: Evaluate junixbook
-        run: nix eval .#nixosConfigurations.junixbook.config.system.build.toplevel.drvPath
+        run: nix eval .#nixosConfigurations.junixbook.config.system.build.toplevel.drvPath --show-trace
