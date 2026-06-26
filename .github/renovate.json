@@ -12,12 +12,12 @@
   "packageRules": [
     {
       "matchManagers": ["nix"],
-      "matchPackageNames": ["nixpkgs"],
+      "matchDepNames": ["nixpkgs"],
       "automerge": true
     },
     {
       "matchManagers": ["nix"],
-      "matchPackageNames": ["!nixpkgs"],
+      "excludeDepNames": ["nixpkgs"],
       "enabled": false
     }
   ]
