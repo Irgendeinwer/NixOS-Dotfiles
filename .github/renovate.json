@@ -17,7 +17,7 @@
     },
     {
       "matchManagers": ["nix"],
-      "matchPackageNames": ["!nixpkgs"],
+      "excludePackageNames": ["nixpkgs"],
       "enabled": false
     }
   ]
