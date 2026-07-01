@@ -9,6 +9,7 @@
     ./openrgb.nix
     ./playerctl.nix
     ./hotspot.nix
+    ./zapret.nix
     ./printing.nix
     ./immich.nix
     ./isolated-gaming.nix
