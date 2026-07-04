@@ -92,6 +92,7 @@ shuffle=false
 dir_mode=false
 gui_mode=false
 auto_mode="album" # Options: "album", "artist", "single"
+auto_appended=false
 
 # Parse options safely
 while getopts "sdgoAh" opt; do
@@ -168,8 +169,6 @@ else
   for track in "${selected_tracks[@]}"; do
     playlist+=("$MUSIC_DIR/$track")
   done
-
-  auto_appended=false
 
   # Auto-queue logic when exactly one track is selected
   if [ "${#selected_tracks[@]}" -eq 1 ]; then
