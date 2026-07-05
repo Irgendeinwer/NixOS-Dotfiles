@@ -13,7 +13,10 @@ let
       xdg-user-dirs
     ];
 
-    excludeShellChecks = [ "SC2016" ];
+    excludeShellChecks = [
+      "SC2016"
+      "SC2154"
+    ];
 
     text = builtins.readFile ./scripts/listen.sh;
   };

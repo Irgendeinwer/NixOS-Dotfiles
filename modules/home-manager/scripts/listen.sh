@@ -60,6 +60,7 @@ show_help() {
   printf '  %s-g%s             GUI mode (opens an MPV window for cover art & visual playlist)\n' "${C_GREEN}" "${C_RESET}"
   printf '  %s-A%s             Artist mode (auto-appends all albums/tracks by the same artist)\n' "${C_GREEN}" "${C_RESET}"
   printf '  %s-o%s             One-shot mode (disables auto-append; plays only the selected track)\n' "${C_GREEN}" "${C_RESET}"
+  printf '  %s-f%s             Fast-play mode (instantly plays the first match without opening the UI)\n' "${C_GREEN}" "${C_RESET}"
   printf '  %s-h, --help%s     Show this help screen\n\n' "${C_GREEN}" "${C_RESET}"
   printf '%sBehavior:%s\n' "${C_YELLOW}" "${C_RESET}"
   printf '  By default, selecting a single track will automatically queue the rest of\n'
@@ -70,7 +71,8 @@ show_help() {
   printf '  listen daft punk      Search and play (instantly queues the matches)\n'
   printf '  listen -s             Browse and play tracks on shuffle\n'
   printf '  listen -d "discovery" Play matching folder contents ("Daft Punk/Discovery")\n'
-  printf '  listen -g -s          Browse on shuffle with visual cover art/playlist preview window\n\n'
+  printf '  listen -g -s          Browse on shuffle with visual cover art/playlist preview window\n'
+  printf '  listen -f daft punk   Instantly plays the top Daft Punk match and queues the album\n\n'
   printf '%sControls (during playback):%s\n' "${C_YELLOW}" "${C_RESET}"
   printf '  %s[Space]%s / Left Click  Play/Pause\n' "${C_CYAN}" "${C_RESET}"
   printf '  %s[Left] / [Right]%s      Seek back/forward 5s\n' "${C_CYAN}" "${C_RESET}"
@@ -91,17 +93,19 @@ done
 shuffle=false
 dir_mode=false
 gui_mode=false
+fast_mode=false
 auto_mode="album" # Options: "album", "artist", "single"
 auto_appended=false
 
 # Parse options safely
-while getopts "sdgoAh" opt; do
+while getopts "sdgoAhf" opt; do
   case "$opt" in
     s) shuffle=true ;;
     d) dir_mode=true ;;
     g) gui_mode=true ;;
     o) auto_mode="single" ;;
     A) auto_mode="artist" ;;
+    f) fast_mode=true ;;
     h) show_help; exit 0 ;;
     *)
       echo "" >&2
@@ -117,16 +121,24 @@ query="$*"
 cd "$MUSIC_DIR" || exit 1
 
 if [ "$dir_mode" = "true" ]; then
-  # Browse directories with symbolic link support (-L)
-  selected_dir=$(fd -L --type d --max-depth 2 --mindepth 1 . \
-    | fzf \
-        --query="$query" \
-        --prompt="📁 Select Artist/Album > " \
-        --layout=reverse \
-        --height=50% \
-        --border \
-        --preview 'fd -L -e opus -e flac -e mp3 -e wav -e m4a --max-depth 2 . {} | sed "s|^.*/||"' \
-        --preview-window=right:50%:wrap || true)
+  if [ "$fast_mode" = "true" ] && [ -n "$query" ]; then
+    # Grab the top directory match non-interactively
+    selected_dir=$(fd -L --type d --max-depth 2 --mindepth 1 . \
+      | fzf --filter="$query" | head -n 1 || true)
+  else
+    # Browse directories interactively with symbolic link support (-L)
+    selected_dir=$(fd -L --type d --max-depth 2 --mindepth 1 . \
+      | fzf \
+          --select-1 \
+          --exit-0 \
+          --query="$query" \
+          --prompt="📁 Select Artist/Album > " \
+          --layout=reverse \
+          --height=50% \
+          --border \
+          --preview 'fd -L -e opus -e flac -e mp3 -e wav -e m4a --max-depth 2 . -- {} | sed "s|^.*/||"' \
+          --preview-window=right:50%:wrap || true)
+  fi
 
   if [ -z "$selected_dir" ]; then
     echo "No folder selected."
@@ -134,29 +146,48 @@ if [ "$dir_mode" = "true" ]; then
   fi
 
   # Resolve absolute paths from target directory
-  selected_tracks=$(fd -L -e opus -e flac -e mp3 -e wav -e m4a -a . "$selected_dir")
+  selected_dir_abs="$MUSIC_DIR/$selected_dir"
+  target_dir="$selected_dir_abs"
+
+  # If Artist mode is enabled, target the parent of the chosen directory (Artist folder)
+  if [ "$auto_mode" = "artist" ]; then
+    artist_dir=$(dirname -- "$selected_dir_abs")
+    # Verify the parent directory is valid and doesn't escape the root music directory
+    if [ "$artist_dir" != "$MUSIC_DIR" ] && [[ "$artist_dir" == "$MUSIC_DIR"/* ]]; then
+      target_dir="$artist_dir"
+    fi
+  fi
+
+  # Resolve absolute paths from target directory
+  selected_tracks=$(fd -L -e opus -e flac -e mp3 -e wav -e m4a -a . -- "$target_dir" || true)
   
   if [ -z "$selected_tracks" ]; then
-    echo "Error: No music files found in '$selected_dir'." >&2
+    echo "Error: No music files found in '$target_dir'." >&2
     exit 1
   fi
 
   mapfile -t playlist <<< "$selected_tracks"
 else
-  # Browse individual tracks relative to the current directory
-  fzf_out=$(fd -L -e opus -e flac -e mp3 -e wav -e m4a . \
-    | fzf \
-        --multi \
-        --query="$query" \
-        --select-1 \
-        --exit-0 \
-        --prompt="🎵 Select music > " \
-        --header="[Tab] Multi-select | [Enter] Play" \
-        --layout=reverse \
-        --height=50% \
-        --border \
-        --preview 'dir=$(dirname {}); fd -L -e opus -e flac -e mp3 -e wav -e m4a --max-depth 1 . "$dir" | sed "s|^.*/||"' \
-        --preview-window=right:50%:wrap || true)
+  if [ "$fast_mode" = "true" ] && [ -n "$query" ]; then
+    # Grab the top track match non-interactively
+    fzf_out=$(fd -L -e opus -e flac -e mp3 -e wav -e m4a . \
+      | fzf --filter="$query" | head -n 1 || true)
+  else
+    # Browse individual tracks relative to the current directory
+    fzf_out=$(fd -L -e opus -e flac -e mp3 -e wav -e m4a . \
+      | fzf \
+          --multi \
+          --query="$query" \
+          --select-1 \
+          --exit-0 \
+          --prompt="🎵 Select music > " \
+          --header="[Tab] Multi-select | [Enter] Play" \
+          --layout=reverse \
+          --height=50% \
+          --border \
+          --preview 'dir=$(dirname -- {}); fd -L -e opus -e flac -e mp3 -e wav -e m4a --max-depth 1 . -- "$dir" | sed "s|^.*/||"' \
+          --preview-window=right:50%:wrap || true)
+  fi
 
   if [ -z "$fzf_out" ]; then
     echo "No music selected."
@@ -179,7 +210,7 @@ else
       artist_dir=$(dirname "$album_dir")
       # Ensure safety constraints to avoid traversing flat configurations to root directories
       if [ "$artist_dir" != "$MUSIC_DIR" ] && [[ "$artist_dir" == "$MUSIC_DIR"/* ]]; then
-        mapfile -t artist_tracks < <(fd -L -e opus -e flac -e mp3 -e wav -e m4a . "$artist_dir" | sort -V)
+        mapfile -t artist_tracks < <(fd -L -e opus -e flac -e mp3 -e wav -e m4a . -- "$artist_dir" | sort -V || true)
         for track in "${artist_tracks[@]}"; do
           if [ "$track" != "$selected_track_path" ]; then
             playlist+=("$track")
@@ -189,7 +220,7 @@ else
       fi
     elif [ "$auto_mode" = "album" ]; then
       if [ -d "$album_dir" ]; then
-        mapfile -t album_tracks < <(fd -L -e opus -e flac -e mp3 -e wav -e m4a --max-depth 1 . "$album_dir" | sort -V)
+        mapfile -t album_tracks < <(fd -L -e opus -e flac -e mp3 -e wav -e m4a --max-depth 1 . -- "$album_dir" | sort -V || true)
         for track in "${album_tracks[@]}"; do
           if [ "$track" != "$selected_track_path" ]; then
             playlist+=("$track")
@@ -224,7 +255,7 @@ fi
 # in place (so playback starts instantly on your selection) and shuffle the rest.
 if [ "$shuffle" = "true" ] && [ "${#playlist[@]}" -gt 1 ]; then
   if [ "$auto_appended" = "true" ]; then
-    mapfile -t shuffled_rest < <(printf "%s\n" "${playlist[@]:1}" | shuf)
+    mapfile -t shuffled_rest < <(printf "%s\n" "${playlist[@]:1}" | shuf || true)
     playlist=("${playlist[0]}" "${shuffled_rest[@]}")
     mpv_args+=("--no-shuffle")
   else
@@ -234,11 +265,13 @@ else
   mpv_args+=("--no-shuffle")
 fi
 
-# Generate the custom terminal player details safely using backslash escapes to preserve MPV variables
+# Generate the custom terminal player details safely using nested conditional 
+# statements, completely preventing "(error)" outputs for missing metadata.
+# shellcheck disable=SC2154
 term_msg="
 ${C_GREEN}\${media-title}${C_RESET}
-${C_CYAN}\${metadata/artist} ${C_GRAY}on ${C_WHITE}\${metadata/album}${C_RESET}
-${C_GOLD}\${metadata/date} ${C_GRAY}• ${C_MAGENTA}\${metadata/genre}${C_RESET}"
+\${?metadata/artist:${C_CYAN}\${metadata/artist}\${?metadata/album:${C_GRAY} on ${C_WHITE}\${metadata/album}}}\${!metadata/artist:\${?metadata/album:${C_CYAN}\${metadata/album}}}${C_RESET}
+\${?metadata/date:${C_GOLD}\${metadata/date}\${?metadata/genre: ${C_GRAY}• ${C_MAGENTA}\${metadata/genre}}}\${!metadata/date:\${?metadata/genre:${C_MAGENTA}\${metadata/genre}}}${C_RESET}"
 
 mpv_args+=("--term-playing-msg=$term_msg")
 
