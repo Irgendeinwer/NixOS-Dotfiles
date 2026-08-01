@@ -79,10 +79,8 @@
     dunst
     wl-clipboard
     cliphist
-    # xdg-desktop-portal-gtk
     dconf
     obsidian
-    # waybar
     btop
     easyeffects
     zip
@@ -92,7 +90,6 @@
     dig
     qimgv
     bat
-    # anki
     python3
     yt-dlp
     zathura
@@ -102,8 +99,6 @@
     brightnessctl
     wev
     networkmanagerapplet
-    # swww
-    gruvbox-gtk-theme
   ];
 
   users.defaultUserShell = pkgs.zsh;

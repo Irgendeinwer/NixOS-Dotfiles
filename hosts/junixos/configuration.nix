@@ -112,10 +112,8 @@
     dunst
     wl-clipboard
     cliphist
-    # xdg-desktop-portal-gtk
     dconf
     obsidian
-    # waybar
     btop
     easyeffects
     gparted
@@ -142,9 +140,7 @@
     gimp
     brightnessctl
     wev
-    # swww
     ffmpeg
-    gruvbox-gtk-theme
     pdf4qt
   ];
 
@@ -156,10 +152,7 @@
     portal = {
       enable = true;
       xdgOpenUsePortal = true;
-      extraPortals = [
-        pkgs.xdg-desktop-portal-hyprland
-        # pkgs.xdg-desktop-portal-gtk
-      ];
+      extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
     };
   };
 
@@ -206,7 +199,6 @@
     password = "unpure-thoughts-about-ubuntu-and-arch";
   };
 
-  # ADDED THIS BLOCK TO ENABLE THE ARK SERVER
   gaming.arkServer = {
     enable = true;
     user = "julian";
