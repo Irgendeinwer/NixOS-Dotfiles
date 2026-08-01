@@ -1,10 +1,17 @@
 { pkgs, ... }:
 {
+  dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      color-scheme = "prefer-dark";
+    };
+  };
+
   gtk = {
     enable = true;
+
     theme = {
-      package = pkgs.gruvbox-gtk-theme;
-      name = "gruvbox-gtk-theme";
+      name = "gruvbox-dark-gtk";
+      package = pkgs.gruvbox-dark-gtk;
     };
 
     gtk3.extraConfig = {
