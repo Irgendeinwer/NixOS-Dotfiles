@@ -40,7 +40,9 @@ in
       gpu-api = "vulkan";
       gpu-context = "waylandvk";
       hwdec = "auto-safe";
+
       profile = "high-quality";
+      deband = "yes";
       target-colorspace-hint = "yes";
       glsl-shaders = "";
 
@@ -114,8 +116,14 @@ in
       "]" = "add speed 0.1";
       "BS" = "set speed 1.0";
 
+      # Subtitle Position
+      "t" = "add sub-pos +1";
+      "shift+t" = "add sub-pos -1";
+      "ctrl+t" = "set sub-pos 100";
+
       # Video adjustments
       "r" = "cycle_values video-rotate 90 180 270 0";
+      "h" = "cycle deband; show-text \"Deband: \${deband}\"";
 
       # Information & Utilities
       "i" = "show-text \"\${path}\" 3000";
