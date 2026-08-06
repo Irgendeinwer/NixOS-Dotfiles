@@ -6,5 +6,6 @@
     vlc
     feishin
     rush-lyrics
+    imv
   ];
 }
