@@ -52,14 +52,24 @@
         "[::1]:53"
       ];
 
+      ipv4_servers = true;
       ipv6_servers = true;
+      dnscrypt_servers = true;
+      doh_servers = true;
 
       require_dnssec = true;
+      require_nofilter = false;
 
-      # SPECIFIC MULLVAD CONFIGURATION
-      # 'mullvad-adblock-doh' is the pre-defined name for:
-      # https://adblock.dns.mullvad.net/dns-query
-      server_names = [ "mullvad-adblock-doh" ];
+      bootstrap_resolvers = [
+        "9.9.9.9:53"
+      ];
+
+      server_names = [
+        "quad9-dnscrypt-ip4-filter-pri"
+        "quad9-dnscrypt-ip6-filter-pri"
+        "quad9-doh-ip4-port443-filter-pri"
+        "quad9-doh-ip6-port443-filter-pri"
+      ];
 
       sources.public-resolvers = {
         urls = [
