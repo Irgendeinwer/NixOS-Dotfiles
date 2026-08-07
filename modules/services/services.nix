@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./lact.nix
     ./syncthing.nix
     ./i2pd.nix
     ./jellyfin.nix
