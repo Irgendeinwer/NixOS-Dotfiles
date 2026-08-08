@@ -1,7 +1,17 @@
 { pkgs, ... }:
 
 let
-  anime4kShaders = "${pkgs.anime4k}/Anime4K_Clamp_Highlights.glsl:${pkgs.anime4k}/Anime4K_Restore_CNN_S.glsl";
+  a4k = "${pkgs.anime4k}";
+
+  # Anime4K Mode A (Very Large / High-End GPU)
+  anime4kShaders = builtins.concatStringsSep ":" [
+    "${a4k}/Anime4K_Clamp_Highlights.glsl"
+    "${a4k}/Anime4K_Restore_CNN_VL.glsl"
+    "${a4k}/Anime4K_Upscale_CNN_x2_VL.glsl"
+    "${a4k}/Anime4K_AutoDownsamplePre_x2.glsl"
+    "${a4k}/Anime4K_AutoDownsamplePre_x4.glsl"
+    "${a4k}/Anime4K_Upscale_CNN_x2_M.glsl"
+  ];
 in
 {
   programs.mpv = {
