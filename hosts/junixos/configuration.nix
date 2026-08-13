@@ -69,6 +69,8 @@
         "quad9-dnscrypt-ip6-filter-pri"
         "quad9-doh-ip4-port443-filter-pri"
         "quad9-doh-ip6-port443-filter-pri"
+        "mullvad-base-doh"
+        "mullvad-base-doh-ipv6"
       ];
 
       sources.public-resolvers = {
