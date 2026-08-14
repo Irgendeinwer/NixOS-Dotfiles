@@ -12,6 +12,11 @@
     systemd.enable = true;
     systemd.variables = [ "--all" ];
     settings = {
+      env = [
+        "QT_QPA_PLATFORM,wayland;xcb"
+        "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
+      ];
+
       "$mainMod" = "SUPER";
 
       monitor = [
