@@ -3,7 +3,6 @@
   imports = [
     ./lact.nix
     ./syncthing.nix
-    ./i2pd.nix
     ./jellyfin.nix
     ./meilisearch.nix
     ./ArchiSteamFarm.nix
