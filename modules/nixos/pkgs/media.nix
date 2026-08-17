@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
+    mediainfo
     pear-desktop
     celluloid
     vlc
