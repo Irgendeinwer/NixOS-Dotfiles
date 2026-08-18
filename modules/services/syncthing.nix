@@ -51,6 +51,15 @@
             "MobileF6"
           ];
         };
+        "E-Books" = {
+          path = "/home/julian/E-Books";
+          devices = [
+            "junixos"
+            "junixbook"
+            "MobileF6"
+          ];
+        };
+
         "#Noice" = {
           path = "/home/julian/stuff/#Noice";
           devices = [
