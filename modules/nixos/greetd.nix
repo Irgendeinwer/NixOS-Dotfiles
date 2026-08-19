@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.custom.desktop.greetd;
@@ -32,12 +37,15 @@ in
     (lib.mkIf cfg.enable {
       services.greetd = {
         enable = true;
-        settings = rec {
+        settings = {
           initial_session = {
             command = "${cfg.command}";
             user = cfg.user;
           };
-          default_session = initial_session;
+          default_session = {
+            command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd ${cfg.command}";
+            user = "greeter";
+          };
         };
       };
     })
