@@ -1,24 +1,38 @@
-{ pkgs, ... }:
 {
-  programs.obs-studio = {
-    enable = true;
-    enableVirtualCamera = true;
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  cfg = config.custom.desktop.obs;
+in
+{
+  options.custom.desktop.obs = {
+    enable = lib.mkEnableOption "OBS Studio with recording/streaming plugins";
+  };
 
-    plugins = with pkgs.obs-studio-plugins; [
-      # --- Minimal Essentials (Performance & System Integration) ---
-      wlrobs # Screen capture for Hyprland
-      obs-pipewire-audio-capture # Audio capture with PipeWire
-      obs-vkcapture # High-performance game capture
-      obs-vaapi # Hardware encoding (AMD/Intel)
-      obs-gstreamer # Dependency for VA-API
+  config = lib.mkIf cfg.enable {
+    programs.obs-studio = {
+      enable = true;
+      enableVirtualCamera = true;
 
-      # --- High-Impact Workflow & Visuals (Your List) ---
-      obs-websocket # Remote control (Stream Deck, etc.)
-      obs-move-transition # Professional animated scene transitions
-      advanced-scene-switcher # Automate your scene switching
-      obs-source-record # Record clean, individual sources for editing
-      obs-backgroundremoval # AI background removal without a green screen
-      input-overlay # Display keyboard/mouse/gamepad inputs
-    ];
+      plugins = with pkgs.obs-studio-plugins; [
+        # --- Minimal Essentials (Performance & System Integration) ---
+        wlrobs # Screen capture for Hyprland
+        obs-pipewire-audio-capture # Audio capture with PipeWire
+        obs-vkcapture # High-performance game capture
+        obs-vaapi # Hardware encoding (AMD/Intel)
+        obs-gstreamer # Dependency for VA-API
+
+        # --- High-Impact Workflow & Visuals (Your List) ---
+        obs-websocket # Remote control (Stream Deck, etc.)
+        obs-move-transition # Professional animated scene transitions
+        advanced-scene-switcher # Automate your scene switching
+        obs-source-record # Record clean, individual sources for editing
+        obs-backgroundremoval # AI background removal without a green screen
+        input-overlay # Display keyboard/mouse/gamepad inputs
+      ];
+    };
   };
 }

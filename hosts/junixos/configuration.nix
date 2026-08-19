@@ -91,11 +91,17 @@
   # --------------------custom options---------------
 
   custom = {
-    system.kernel = "cachyos";
+    system = {
+      kernel = "cachyos";
+      boot.silent.enable = true;
+      android.enable = true;
+    };
 
     desktop = {
+      hyprland.enable = true;
       greetd.enable = true;
       sound.enable = true;
+      obs.enable = true;
       gaming = {
         enable = true;
         arkServer.enable = true;
