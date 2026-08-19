@@ -3,7 +3,8 @@
 {
   imports = [
     ./hardware-configuration.nix
-    inputs.home-manager.nixosModules.home-manager
+    ../../modules/nixos/base.nix
+
     ../../modules/nixos/lix.nix
     ../../modules/nixos/flakes.nix
     ../../modules/nixos/kernel.nix
@@ -20,115 +21,26 @@
     ../../modules/nixos/obs-studio.nix
 
     ../../modules/nixvim/nixvim.nix
-
     ../../modules/nixos/pkgs.nix
-
     ../../modules/services/services.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  boot.initrd.systemd.enable = true;
-
+  # Host identification
   networking.hostName = "junixbook";
 
-  networking.networkmanager.enable = true;
-
+  # Corporate/School SSL Certificate
   environment.etc."ssl/certs/iserv.pem".source = ../../assets/iserv.pem;
 
-  time.timeZone = "Europe/Berlin";
-
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "de_DE.UTF-8";
-    LC_IDENTIFICATION = "de_DE.UTF-8";
-    LC_MEASUREMENT = "de_DE.UTF-8";
-    LC_MONETARY = "de_DE.UTF-8";
-    LC_NAME = "de_DE.UTF-8";
-    LC_NUMERIC = "de_DE.UTF-8";
-    LC_PAPER = "de_DE.UTF-8";
-    LC_TELEPHONE = "de_DE.UTF-8";
-    LC_TIME = "de_DE.UTF-8";
-  };
-
-  console.keyMap = "de";
-
-  users.users.julian = {
-    isNormalUser = true;
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "input"
-    ];
-  };
-
-  nixpkgs.config.allowUnfree = true;
-
-  environment.systemPackages = with pkgs; [
-    scrcpy
-    wget
-    curl
-    kitty
-    ripgrep
-    mako
-    libnotify
-    dunst
-    wl-clipboard
-    cliphist
-    dconf
-    obsidian
-    btop
-    easyeffects
-    zip
-    unzip
-    traceroute
-    whois
-    dig
-    qimgv
-    bat
-    python3
-    yt-dlp
-    zathura
-    pdf4qt
-    libreoffice
-    inkscape
-    brightnessctl
-    wev
-    networkmanagerapplet
-  ];
-
-  users.defaultUserShell = pkgs.zsh;
-  environment.shells = with pkgs; [ zsh ];
-  programs.zsh.enable = true;
-
-  xdg = {
-    portal = {
-      enable = true;
-      xdgOpenUsePortal = true;
-      extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
-    };
-  };
-
+  # Laptop power management & behavior
   services.logind.settings.Login.HandlePowerKey = "ignore";
-
   services.upower.enable = true;
 
-  security.polkit.enable = true;
-
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
-  hardware = {
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-  };
+  # Laptop-specific system packages
+  environment.systemPackages = with pkgs; [
+    libreoffice
+    networkmanagerapplet
+    scrcpy
+  ];
 
   networking.firewall.enable = false;
 
@@ -158,8 +70,4 @@
   };
 
   # --------------------custom options end-----------
-
-  # DO NOT EDIT!!!
-  system.stateVersion = "24.05"; # Did you read the comment?
-
 }
