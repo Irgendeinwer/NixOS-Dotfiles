@@ -34,11 +34,15 @@
   # --------------------custom options---------------
 
   custom = {
-    system.kernel = "latest";
+    system = {
+      kernel = "latest";
+      boot.silent.enable = true;
+    };
 
     hardware.bluetooth.enable = true;
 
     desktop = {
+      hyprland.enable = true;
       greetd.enable = true;
       sound.enable = true;
       gaming.enable = true;

@@ -81,7 +81,6 @@
   xdg.portal = {
     enable = true;
     xdgOpenUsePortal = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
   };
   security.polkit.enable = true;
 

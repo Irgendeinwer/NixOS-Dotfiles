@@ -1,34 +1,46 @@
-{ pkgs, ... }:
 {
-  boot = {
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  cfg = config.custom.system.boot.silent;
+in
+{
+  options.custom.system.boot.silent = {
+    enable = lib.mkEnableOption "Silent boot with Plymouth boot splash theme";
+  };
 
-    plymouth = {
-      enable = true;
-      theme = "rings_2";
-      themePackages = with pkgs; [
-        # By default we would install all themes
-        (adi1090x-plymouth-themes.override {
-          selected_themes = [ "rings_2" ];
-        })
+  config = lib.mkIf cfg.enable {
+    boot = {
+      plymouth = {
+        enable = true;
+        theme = "rings_2";
+        themePackages = with pkgs; [
+          # By default we would install all themes
+          (adi1090x-plymouth-themes.override {
+            selected_themes = [ "rings_2" ];
+          })
+        ];
+      };
+
+      # Enable "Silent Boot"
+      consoleLogLevel = 0;
+      initrd.verbose = false;
+      kernelParams = [
+        "quiet"
+        "splash"
+        "boot.shell_on_fail"
+        "loglevel=3"
+        "rd.systemd.show_status=false"
+        "rd.udev.log_level=3"
+        "udev.log_priority=3"
       ];
+      # Hide the OS choice for bootloaders.
+      # It's still possible to open the bootloader list by pressing any key
+      # It will just not appear on screen unless a key is pressed
+      loader.timeout = 0;
     };
-
-    # Enable "Silent Boot"
-    consoleLogLevel = 0;
-    initrd.verbose = false;
-    kernelParams = [
-      "quiet"
-      "splash"
-      "boot.shell_on_fail"
-      "loglevel=3"
-      "rd.systemd.show_status=false"
-      "rd.udev.log_level=3"
-      "udev.log_priority=3"
-    ];
-    # Hide the OS choice for bootloaders.
-    # It's still possible to open the bootloader list by pressing any key
-    # It will just not appear on screen unless a key is pressed
-    loader.timeout = 0;
-
   };
 }
