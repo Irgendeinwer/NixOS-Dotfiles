@@ -15,9 +15,9 @@ in
 
     user = lib.mkOption {
       type = lib.types.str;
-      default = "julian";
+      default = config.custom.user;
       description = "The user who can start/stop the server without a password.";
-      example = "julian";
+      example = "myuser";
     };
   };
 

@@ -12,7 +12,7 @@ in
     enable = lib.mkEnableOption "Android tools and Waydroid virtualization";
     user = lib.mkOption {
       type = lib.types.str;
-      default = "julian";
+      default = config.custom.user;
       description = "User to add to adbusers and kvm groups";
     };
   };

@@ -1,4 +1,9 @@
-{ inputs, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 
 {
   imports = [
@@ -84,7 +89,7 @@
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {
-      "julian" = import ./home.nix;
+      "${config.custom.user}" = import ./home.nix;
     };
   };
 
