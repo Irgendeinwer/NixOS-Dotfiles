@@ -51,12 +51,14 @@ in
         scale = 1,
       })
 
-      -- DP-1: KTC M27T6 (Right, 1440p @ 180Hz) - Starts in standard SDR mode
+      -- DP-1: KTC M27T6 (Right, 1440p @ 180Hz) - Starts in 10-bit SDR mode
       hl.monitor({
         output = "DP-1",
         mode = "2560x1440@180",
         position = "2560x0",
         scale = 1,
+        bitdepth = 10,
+        cm = "srgb",
       })
 
       --------------------------------------------------
@@ -189,26 +191,18 @@ in
       local hdr_on = false
       local function toggle_hdr()
         hdr_on = not hdr_on
-        if hdr_on then
-          hl.monitor({
-            output = "DP-1",
-            mode = "2560x1440@180",
-            position = "2560x0",
-            scale = 1,
-            bitdepth = 10,
-            cm = "hdr",
-            sdrbrightness = 1.2,
-          })
-          hl.exec_cmd([[${notifySend} "Display" "HDR Enabled on DP-1" -t 2000]])
-        else
-          hl.monitor({
-            output = "DP-1",
-            mode = "2560x1440@180",
-            position = "2560x0",
-            scale = 1,
-          })
-          hl.exec_cmd([[${notifySend} "Display" "HDR Disabled (SDR)" -t 2000]])
-        end
+        hl.monitor({
+          output = "DP-1",
+          mode = "2560x1440@180",
+          position = "2560x0",
+          scale = 1,
+          bitdepth = 10,
+          cm = hdr_on and "hdr" or "srgb",
+          sdrbrightness = hdr_on and 1.2 or 1.0,
+        })
+
+        local status = hdr_on and "HDR Enabled (10-bit)" or "SDR Mode (10-bit)"
+        hl.exec_cmd(string.format([[${notifySend} "Display" "%s" -t 5000]], status))
       end
       hl.bind(mainMod .. " + SHIFT + H", toggle_hdr)
 
