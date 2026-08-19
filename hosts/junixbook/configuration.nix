@@ -35,6 +35,8 @@
   custom = {
     system.kernel = "latest";
 
+    hardware.bluetooth.enable = true;
+
     desktop = {
       greetd.enable = true;
       sound.enable = true;
