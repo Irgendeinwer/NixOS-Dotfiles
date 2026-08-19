@@ -97,7 +97,4 @@
     enable = true;
     enable32Bit = true;
   };
-
-  # System state version
-  system.stateVersion = "24.05";
 }

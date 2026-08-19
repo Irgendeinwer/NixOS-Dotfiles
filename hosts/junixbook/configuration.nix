@@ -8,6 +8,7 @@
 
   # Host identification
   networking.hostName = "junixbook";
+  system.stateVersion = "24.05";
 
   # Corporate/School SSL Certificate
   environment.etc."ssl/certs/iserv.pem".source = ../../assets/iserv.pem;
