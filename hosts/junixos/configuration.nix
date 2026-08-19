@@ -3,7 +3,8 @@
 {
   imports = [
     ./hardware-configuration.nix
-    inputs.home-manager.nixosModules.home-manager
+    ../../modules/nixos/base.nix
+
     ../../modules/nixos/lix.nix
     ../../modules/nixos/flakes.nix
     ../../modules/nixos/kernel.nix
@@ -20,29 +21,21 @@
     ../../modules/nixos/nh.nix
 
     ../../modules/nixvim/nixvim.nix
-
     ../../modules/nixos/pkgs.nix
-
     ../../modules/services/services.nix
   ];
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-
-  boot.initrd.systemd.enable = true;
-
-  # Setting up networking + dns
-  services.resolved.enable = false;
-
+  # Host identification & Network DNS
   networking = {
     hostName = "junixos";
-    networkmanager.enable = true;
     networkmanager.dns = "none";
     nameservers = [
       "127.0.0.1"
       "::1"
     ];
   };
+
+  services.resolved.enable = false;
 
   services.dnscrypt-proxy = {
     enable = true;
@@ -84,110 +77,24 @@
     };
   };
 
-  time.timeZone = "Europe/Berlin";
-
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "de_DE.UTF-8";
-    LC_IDENTIFICATION = "de_DE.UTF-8";
-    LC_MEASUREMENT = "de_DE.UTF-8";
-    LC_MONETARY = "de_DE.UTF-8";
-    LC_NAME = "de_DE.UTF-8";
-    LC_NUMERIC = "de_DE.UTF-8";
-    LC_PAPER = "de_DE.UTF-8";
-    LC_TELEPHONE = "de_DE.UTF-8";
-    LC_TIME = "de_DE.UTF-8";
-  };
-
-  console.keyMap = "de";
-
-  users.users.julian = {
-    isNormalUser = true;
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "input"
-    ];
-  };
-
-  nixpkgs.config.allowUnfree = true;
-
+  # Host-specific system packages
   environment.systemPackages = with pkgs; [
-    wget
-    curl
-    kitty
-    tree
-    mako
-    ripgrep
-    libnotify
-    dunst
-    wl-clipboard
-    cliphist
-    dconf
-    obsidian
-    btop
-    easyeffects
+    ffmpeg
+    gimp
     gparted
-    zip
-    unzip
-    traceroute
-    whois
-    dig
-    qimgv
-    bat
-    python3
-    yt-dlp
-
-    zathura
-
-    libreoffice-fresh
     hunspell
     hunspellDicts.de_DE
     hunspellDicts.en_US
     hyphenDicts.de_DE
     hyphenDicts.en_US
-
-    inkscape
-    gimp
-    brightnessctl
-    wev
-    ffmpeg
-    pdf4qt
+    libreoffice-fresh
+    tree
   ];
 
-  users.defaultUserShell = pkgs.zsh;
-  environment.shells = with pkgs; [ zsh ];
-  programs.zsh.enable = true;
-
-  xdg = {
-    portal = {
-      enable = true;
-      xdgOpenUsePortal = true;
-      extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
-    };
-  };
-
-  security.polkit.enable = true;
-
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
-  hardware = {
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-    amdgpu.opencl.enable = true;
-  };
-
+  # Host-specific hardware and daemons
+  hardware.amdgpu.opencl.enable = true;
   services.fstrim.enable = true;
-
   services.openssh.enable = true;
-
   networking.firewall.enable = false;
 
   home-manager = {
@@ -235,8 +142,4 @@
   };
 
   # --------------------custom options end-----------
-
-  # DO NOT EDIT!!!
-  system.stateVersion = "24.05"; # Did you read the comment?
-
 }
