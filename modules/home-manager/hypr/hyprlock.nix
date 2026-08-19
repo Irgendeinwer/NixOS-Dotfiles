@@ -24,7 +24,7 @@
       label = [
         {
           monitor = "";
-          text = "     Julian";
+          text = "     $USER";
           text_align = "center";
           color = "rgba(255, 255, 255, 0.90)";
           font_size = 36;

@@ -11,7 +11,7 @@ in
     enable = lib.mkEnableOption "Syncthing file synchronization";
     user = lib.mkOption {
       type = lib.types.str;
-      default = "julian";
+      default = config.custom.user;
       description = "User to run Syncthing under";
     };
     openFirewall = lib.mkOption {

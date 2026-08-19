@@ -1,47 +1,61 @@
-{ pkgs, ... }:
-
 {
-  # Boot loader
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.initrd.systemd.enable = true;
-
-  # Networking & Firewall baseline
-  networking = {
-    networkmanager.enable = true;
-    firewall.enable = true;
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  user = config.custom.user;
+in
+{
+  options.custom.user = lib.mkOption {
+    type = lib.types.str;
+    default = "julian";
+    description = "Primary user account for the system.";
   };
 
-  # Time and Locale
-  time.timeZone = "Europe/Berlin";
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "de_DE.UTF-8";
-    LC_IDENTIFICATION = "de_DE.UTF-8";
-    LC_MEASUREMENT = "de_DE.UTF-8";
-    LC_MONETARY = "de_DE.UTF-8";
-    LC_NAME = "de_DE.UTF-8";
-    LC_NUMERIC = "de_DE.UTF-8";
-    LC_PAPER = "de_DE.UTF-8";
-    LC_TELEPHONE = "de_DE.UTF-8";
-    LC_TIME = "de_DE.UTF-8";
-  };
-  console.keyMap = "de";
+  config = {
+    # Boot loader
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
+    boot.initrd.systemd.enable = true;
 
-  # User account configuration
-  users.users.julian = {
-    isNormalUser = true;
-    extraGroups = [
-      "networkmanager"
-      "wheel"
-      "input"
-    ];
-  };
+    # Networking & Firewall baseline
+    networking = {
+      networkmanager.enable = true;
+      firewall.enable = true;
+    };
 
-  # Shell configuration
-  users.defaultUserShell = pkgs.zsh;
-  environment.shells = with pkgs; [ zsh ];
-  programs.zsh.enable = true;
+    # Time and Locale
+    time.timeZone = "Europe/Berlin";
+    i18n.defaultLocale = "en_US.UTF-8";
+    i18n.extraLocaleSettings = {
+      LC_ADDRESS = "de_DE.UTF-8";
+      LC_IDENTIFICATION = "de_DE.UTF-8";
+      LC_MEASUREMENT = "de_DE.UTF-8";
+      LC_MONETARY = "de_DE.UTF-8";
+      LC_NAME = "de_DE.UTF-8";
+      LC_NUMERIC = "de_DE.UTF-8";
+      LC_PAPER = "de_DE.UTF-8";
+      LC_TELEPHONE = "de_DE.UTF-8";
+      LC_TIME = "de_DE.UTF-8";
+    };
+    console.keyMap = "de";
+
+    # User account configuration
+    users.users.${user} = {
+      isNormalUser = true;
+      extraGroups = [
+        "networkmanager"
+        "wheel"
+        "input"
+      ];
+    };
+
+    # Shell configuration
+    users.defaultUserShell = pkgs.zsh;
+    environment.shells = with pkgs; [ zsh ];
+    programs.zsh.enable = true;
 
   # Package manager settings
   nixpkgs.config.allowUnfree = true;
@@ -95,5 +109,6 @@
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
+  };
   };
 }

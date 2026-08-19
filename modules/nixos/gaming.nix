@@ -12,7 +12,7 @@ in
     enable = lib.mkEnableOption "gaming configuration (Steam, Lutris, Heroic, Prism Launcher, Gamemode)";
     user = lib.mkOption {
       type = lib.types.str;
-      default = "julian";
+      default = config.custom.user;
       description = "Primary user for gaming group assignment";
     };
   };

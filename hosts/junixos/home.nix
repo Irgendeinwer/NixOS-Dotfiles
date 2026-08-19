@@ -1,11 +1,15 @@
 {
   inputs,
   pkgs,
+  osConfig,
   ...
 }:
+let
+  user = osConfig.custom.user;
+in
 {
-  home.username = "julian";
-  home.homeDirectory = "/home/julian";
+  home.username = user;
+  home.homeDirectory = "/home/${user}";
 
   imports = [
     ../../modules/home-manager
@@ -26,7 +30,6 @@
 
   home.sessionVariables = {
     EDITOR = "nvim";
-    # SHELL = "/home/julian/.nix-profile/bin/zsh";
     STEAM_EXTRA_COMPAT_TOOLS_PATH = "~/.steam/root/compatibilitytools.d";
   };
 

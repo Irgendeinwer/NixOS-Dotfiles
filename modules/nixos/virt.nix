@@ -13,7 +13,7 @@ in
     enable = lib.mkEnableOption "Libvirt virtualization and GPU passthrough";
     user = lib.mkOption {
       type = lib.types.str;
-      default = "julian";
+      default = config.custom.user;
       description = "User to add to libvirtd group";
     };
   };

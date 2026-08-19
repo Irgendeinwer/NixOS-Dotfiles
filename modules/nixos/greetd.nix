@@ -14,7 +14,7 @@ in
       };
       user = lib.mkOption {
         type = lib.types.str;
-        default = "julian";
+        default = config.custom.user;
         description = "User to start session for";
       };
     };
@@ -22,7 +22,7 @@ in
       enable = lib.mkEnableOption "getty";
       user = lib.mkOption {
         type = lib.types.str;
-        default = "julian";
+        default = config.custom.user;
         description = "User to autologin";
       };
     };
