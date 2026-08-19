@@ -75,6 +75,7 @@ in
     };
 
     networking.networkmanager.unmanaged = [ "interface-name:${cfg.wifiInterface}" ];
+    networking.firewall.trustedInterfaces = [ cfg.wifiInterface ];
 
     environment.systemPackages = [
       pkgs.linux-wifi-hotspot
