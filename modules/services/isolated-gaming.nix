@@ -1,42 +1,55 @@
-{ pkgs, ... }:
-
 {
-  services.flatpak.enable = true;
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  cfg = config.custom.services.isolatedGaming;
+in
+{
+  options.custom.services.isolatedGaming = {
+    enable = lib.mkEnableOption "isolated Flatpak gaming environment (Bottles & Sandboxed Steam)";
+  };
 
-  systemd.tmpfiles.rules = [
-    "d /var/lib/flatpak/overrides 0755 root root - -"
+  config = lib.mkIf cfg.enable {
+    services.flatpak.enable = true;
 
-    # Override for Bottles: Isolated to ~/UntrustedGames (Read/Write)
-    "L+ /var/lib/flatpak/overrides/com.usebottles.bottles - - - - ${pkgs.writeText "bottles-override" ''
-      [Context]
-      filesystems=!home;!host;~/UntrustedGames:create;
-    ''}"
+    systemd.tmpfiles.rules = [
+      "d /var/lib/flatpak/overrides 0755 root root - -"
 
-    # Override for Sandboxed Steam: Isolated to ~/UntrustedGames (Read/Write)
-    "L+ /var/lib/flatpak/overrides/com.valvesoftware.Steam - - - - ${pkgs.writeText "steam-override" ''
-      [Context]
-      filesystems=!home;!host;~/UntrustedGames:create;
-    ''}"
-  ];
+      # Override for Bottles: Isolated to ~/UntrustedGames (Read/Write)
+      "L+ /var/lib/flatpak/overrides/com.usebottles.bottles - - - - ${pkgs.writeText "bottles-override" ''
+        [Context]
+        filesystems=!home;!host;~/UntrustedGames:create;
+      ''}"
 
-  systemd.services.configure-flatpak-bottles = {
-    description = "Declarative Flatpak installation for Steam and Bottles";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ];
-    requires = [ "network-online.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "setup-bottles-steam" ''
-        # Ensure Flathub repository is registered
-        ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      # Override for Sandboxed Steam: Isolated to ~/UntrustedGames (Read/Write)
+      "L+ /var/lib/flatpak/overrides/com.valvesoftware.Steam - - - - ${pkgs.writeText "steam-override" ''
+        [Context]
+        filesystems=!home;!host;~/UntrustedGames:create;
+      ''}"
+    ];
 
-        # Install Bottles
-        ${pkgs.flatpak}/bin/flatpak install -y flathub com.usebottles.bottles
+    systemd.services.configure-flatpak-bottles = {
+      description = "Declarative Flatpak installation for Steam and Bottles";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" ];
+      requires = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "setup-bottles-steam" ''
+          # Ensure Flathub repository is registered
+          ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-        # Install Sandboxed Steam
-        ${pkgs.flatpak}/bin/flatpak install -y flathub com.valvesoftware.Steam
-      '';
+          # Install Bottles
+          ${pkgs.flatpak}/bin/flatpak install -y flathub com.usebottles.bottles
+
+          # Install Sandboxed Steam
+          ${pkgs.flatpak}/bin/flatpak install -y flathub com.valvesoftware.Steam
+        '';
+      };
     };
   };
 }

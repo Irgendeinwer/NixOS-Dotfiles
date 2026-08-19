@@ -7,10 +7,10 @@
 }:
 
 let
-  cfg = config.kernel;
+  cfg = config.custom.system.kernel;
 in
 {
-  options.kernel = lib.mkOption {
+  options.custom.system.kernel = lib.mkOption {
     type = lib.types.enum [
       "cachyos"
       "latest"

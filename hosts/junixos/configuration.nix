@@ -199,27 +199,39 @@
 
   # --------------------custom options---------------
 
-  kernel = "cachyos";
+  custom = {
+    system.kernel = "cachyos";
 
-  greetd.enable = true;
-  sound-module.enable = true;
+    desktop = {
+      greetd.enable = true;
+      sound.enable = true;
+      gaming = {
+        enable = true;
+        arkServer.enable = true;
+        factorioServer.enable = true;
+      };
+    };
 
-  networking.hotspot = {
-    enable = true;
-    wifiInterface = "wlp0s20f0u3";
-    ethernetInterface = "enp7s0";
-    ssid = "6+7";
-    password = "unpure-thoughts-about-ubuntu-and-arch";
-  };
-
-  gaming.arkServer = {
-    enable = true;
-    user = "julian";
-  };
-
-  gaming.factorioServer = {
-    enable = true;
-    user = "julian";
+    services = {
+      hotspot = {
+        enable = true;
+        wifiInterface = "wlp0s20f0u3";
+        ethernetInterface = "enp7s0";
+        ssid = "6+7";
+        password = "unpure-thoughts-about-ubuntu-and-arch";
+      };
+      syncthing.enable = true;
+      jellyfin.enable = true;
+      immich.enable = true;
+      meilisearch.enable = true;
+      archisteamfarm.enable = true;
+      openrgb.enable = true;
+      lact.enable = true;
+      zapret.enable = true;
+      isolatedGaming.enable = true;
+      printing.enable = true;
+      playerctl.enable = true;
+    };
   };
 
   # --------------------custom options end-----------

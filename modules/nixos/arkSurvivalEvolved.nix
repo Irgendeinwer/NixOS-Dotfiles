@@ -4,9 +4,12 @@
   lib,
   ...
 }:
+let
+  cfg = config.custom.desktop.gaming.arkServer;
+in
 {
   # 1. Define options
-  options.gaming.arkServer = {
+  options.custom.desktop.gaming.arkServer = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -15,13 +18,14 @@
 
     user = lib.mkOption {
       type = lib.types.str;
+      default = "julian";
       description = "The user who can start/stop the server without a password.";
       example = "julian";
     };
   };
 
   # 2. Apply configuration
-  config = lib.mkIf config.gaming.arkServer.enable {
+  config = lib.mkIf cfg.enable {
     nixpkgs.config.allowUnfree = true;
 
     environment.systemPackages = with pkgs; [
@@ -115,7 +119,7 @@
 
     security.sudo.extraRules = [
       {
-        users = [ config.gaming.arkServer.user ];
+        users = [ cfg.user ];
         commands = [
           {
             command = "/run/current-system/sw/bin/systemctl start ark-server";
