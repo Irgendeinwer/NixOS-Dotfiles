@@ -15,6 +15,7 @@
       "::1"
     ];
   };
+  system.stateVersion = "24.05";
 
   services.resolved.enable = false;
 
