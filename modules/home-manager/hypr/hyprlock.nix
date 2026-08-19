@@ -41,7 +41,7 @@ let
     TITLE=$(${pkgs.playerctl}/bin/playerctl metadata --format '{{title}}' 2>/dev/null)
     if [ -n "$TITLE" ]; then
       [ ''${#TITLE} -gt 22 ] && TITLE="''${TITLE:0:20}…"
-      echo "$TITLE" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
+      echo "$TITLE" | ${pkgs.gnused}/bin/sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
     else
       echo "No media playing"
     fi
@@ -60,7 +60,7 @@ let
         TEXT="$ALBUM"
       fi
       [ ''${#TEXT} -gt 27 ] && TEXT="''${TEXT:0:25}…"
-      echo "$TEXT" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
+      echo "$TEXT" | ${pkgs.gnused}/bin/sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g'
     else
       echo "Playerctl idle"
     fi
@@ -106,11 +106,11 @@ let
 
   # CPU Temp & Load (<0.1ms via /sys & /proc)
   cpuScript = pkgs.writeShellScript "hyprlock-cpu" ''
-    LOAD=$(awk '{printf "%.2f", $1}' /proc/loadavg)
+    LOAD=$(${pkgs.gawk}/bin/awk '{printf "%.2f", $1}' /proc/loadavg)
     TEMP=""
     for t in /sys/class/thermal/thermal_zone*/temp; do
       if [ -f "$t" ]; then
-        V=$(cat "$t" 2>/dev/null || echo 0)
+        V=$(${pkgs.coreutils}/bin/cat "$t" 2>/dev/null || echo 0)
         if [ "$V" -gt 10000 ] 2>/dev/null; then
           TEMP="$(( V / 1000 ))°C"
           break
@@ -126,48 +126,48 @@ let
 
   # Instant Memory (GiB & %)
   memScript = pkgs.writeShellScript "hyprlock-mem" ''
-    ${pkgs.procps}/bin/free -b | awk '/^Mem:/ {
+    ${pkgs.procps}/bin/free -b | ${pkgs.gawk}/bin/awk '/^Mem:/ {
       used = $3 / 1024 / 1024 / 1024;
       total = $2 / 1024 / 1024 / 1024;
       pct = ($3 / $2) * 100;
-      printf "󰍛  %.1f / %.1f GiB (%.0f%%)", used, total, pct;
+      printf "󰍛  %.1f / %.1f GiB (%.0f%%)\n", used, total, pct;
     }'
   '';
 
   # Root Disk Usage
   diskScript = pkgs.writeShellScript "hyprlock-disk" ''
-    ${pkgs.coreutils}/bin/df -h / | awk 'NR==2 {printf "󰋊  / : %s / %s (%s)", $3, $2, $5}'
+    ${pkgs.coreutils}/bin/df -h / | ${pkgs.gawk}/bin/awk 'NR==2 {printf "󰋊  / : %s / %s (%s)\n", $3, $2, $5}'
   '';
 
   # NixOS Gen & Uptime
   nixUptimeScript = pkgs.writeShellScript "hyprlock-nixuptime" ''
-    GEN=$(readlink /nix/var/nix/profiles/system 2>/dev/null | grep -oE '[0-9]+' | tail -n 1)
+    GEN=$(${pkgs.coreutils}/bin/readlink /nix/var/nix/profiles/system 2>/dev/null | ${pkgs.gnugrep}/bin/grep -oE '[0-9]+' | ${pkgs.coreutils}/bin/tail -n 1)
     GEN=''${GEN:-"Flake"}
-    UPTIME=$(awk '{printf "%dh %dm", $1/3600, ($1%3600)/60}' /proc/uptime)
+    UPTIME=$(${pkgs.gawk}/bin/awk '{printf "%dh %dm", $1/3600, ($1%3600)/60}' /proc/uptime)
     echo "󱄅  Gen #$GEN  •  󰅐  $UPTIME"
   '';
 
   # Top-Left: Distro & Kernel
   topLeftScript = pkgs.writeShellScript "hyprlock-topleft" ''
-    KERNEL=$(uname -r | cut -d'-' -f1)
+    KERNEL=$(${pkgs.coreutils}/bin/uname -r | ${pkgs.coreutils}/bin/cut -d'-' -f1)
     echo "󱄅  NixOS  •  Linux $KERNEL"
   '';
 
   # Top-Right: Battery (if Laptop) or Hostname & Arch
   topRightScript = pkgs.writeShellScript "hyprlock-topright" ''
-    BAT=$(cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | head -n 1)
-    STATUS=$(cat /sys/class/power_supply/BAT*/status 2>/dev/null | head -n 1)
+    BAT=$(${pkgs.coreutils}/bin/cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | ${pkgs.coreutils}/bin/head -n 1)
+    STATUS=$(${pkgs.coreutils}/bin/cat /sys/class/power_supply/BAT*/status 2>/dev/null | ${pkgs.coreutils}/bin/head -n 1)
     if [ -n "$BAT" ]; then
       [ "$STATUS" = "Charging" ] && ICON="󰂄" || ICON="󰁹"
       echo "$ICON  $BAT% ($STATUS)"
     else
-      echo "󰌢  $(hostname)  •  x86_64"
+      echo "󰌢  $(${pkgs.nettools}/bin/hostname 2>/dev/null || ${pkgs.coreutils}/bin/cat /etc/hostname 2>/dev/null || uname -n)  •  x86_64"
     fi
   '';
 
   # Instant Caps Lock status
   capsLockScript = pkgs.writeShellScript "hyprlock-capslock" ''
-    if grep -q 1 /sys/class/leds/*capslock*/brightness 2>/dev/null; then
+    if ${pkgs.gnugrep}/bin/grep -q 1 /sys/class/leds/*capslock*/brightness 2>/dev/null; then
       echo "󰌾  CAPS LOCK ACTIVE"
     else
       echo ""
@@ -181,7 +181,7 @@ in
       general = {
         hide_cursor = true;
         ignore_empty_input = true;
-        immediate_render = true;
+        immediate_render = false;
         text_trim = true;
       };
 
@@ -461,19 +461,19 @@ in
           valign = "bottom";
         }
 
-        # --- BOTTOM-RIGHT: SYSTEM TELEMETRY LABELS (CENTER-ALIGNED) ---
+        # --- BOTTOM-RIGHT: SYSTEM TELEMETRY LABELS (RIGHT-ALIGNED) ---
         # CPU Temp & Load
         {
           monitor = "";
           text = "cmd[update:2000] ${cpuScript}";
-          text_align = "center";
+          text_align = "right";
           color = "rgb(255, 255, 255)";
           font_size = 12;
           font_family = "Noto Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
-          position = "-76, 138";
+          position = "-64, 138";
           halign = "right";
           valign = "bottom";
         }
@@ -481,44 +481,44 @@ in
         {
           monitor = "";
           text = "cmd[update:2000] ${memScript}";
-          text_align = "center";
+          text_align = "right";
           color = "rgb(250, 189, 47)"; # Vibrant Gold
           font_size = 11;
           font_family = "Noto Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
-          position = "-76, 114";
+          position = "-64, 114";
           halign = "right";
           valign = "bottom";
         }
         # Disk Space (Root /)
         {
           monitor = "";
-          text = "cmd[update:10000] ${diskScript}";
-          text_align = "center";
+          text = "cmd[update:5000] ${diskScript}";
+          text_align = "right";
           color = "rgb(235, 219, 178)";
           font_size = 11;
           font_family = "Noto Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
-          position = "-76, 90";
+          position = "-64, 90";
           halign = "right";
           valign = "bottom";
         }
         # NixOS Gen & System Uptime
         {
           monitor = "";
-          text = "cmd[update:10000] ${nixUptimeScript}";
-          text_align = "center";
+          text = "cmd[update:5000] ${nixUptimeScript}";
+          text_align = "right";
           color = "rgb(189, 174, 147)";
           font_size = 11;
           font_family = "Noto Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
-          position = "-76, 66";
+          position = "-64, 66";
           halign = "right";
           valign = "bottom";
         }
