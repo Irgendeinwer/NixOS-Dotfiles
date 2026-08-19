@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.networking.hotspot;
+  cfg = config.custom.services.hotspot;
 in
 {
-  options.networking.hotspot = {
+  options.custom.services.hotspot = {
     enable = lib.mkEnableOption "High-Speed 5GHz Hotspot";
 
     wifiInterface = lib.mkOption {

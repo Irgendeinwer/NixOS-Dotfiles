@@ -22,7 +22,7 @@
   qt.enable = true;
 
   # Custom options
-  theme.wallpaper = {
+  custom.theme.wallpaper = {
     path = "${inputs.wallpaper}/image/pigeon.jpg";
     backend = "hyprpaper";
   };

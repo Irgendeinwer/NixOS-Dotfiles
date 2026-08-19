@@ -8,7 +8,7 @@
 with lib;
 
 let
-  cfg = config.theme.wallpaper;
+  cfg = config.custom.theme.wallpaper;
 
   # Binary references using Nix Best Practices
   hyprctl = getExe' pkgs.hyprland "hyprctl";
@@ -31,7 +31,7 @@ let
   ];
 in
 {
-  options.theme.wallpaper = {
+  options.custom.theme.wallpaper = {
     path = mkOption {
       type = types.nullOr types.str;
       default = null;

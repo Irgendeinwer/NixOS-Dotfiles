@@ -23,9 +23,7 @@
 
     ../../modules/nixos/pkgs.nix
 
-    ../../modules/services/syncthing.nix
-    ../../modules/services/printing.nix
-    ../../modules/services/playerctl.nix
+    ../../modules/services/services.nix
   ];
 
   boot.loader.systemd-boot.enable = true;
@@ -143,10 +141,21 @@
 
   # --------------------custom options---------------
 
-  kernel = "latest";
+  custom = {
+    system.kernel = "latest";
 
-  greetd.enable = true;
-  sound-module.enable = true;
+    desktop = {
+      greetd.enable = true;
+      sound.enable = true;
+      gaming.enable = true;
+    };
+
+    services = {
+      syncthing.enable = true;
+      printing.enable = true;
+      playerctl.enable = true;
+    };
+  };
 
   # --------------------custom options end-----------
 

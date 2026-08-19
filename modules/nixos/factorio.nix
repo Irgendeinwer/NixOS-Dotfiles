@@ -5,20 +5,24 @@
   ...
 }:
 
+let
+  cfg = config.custom.desktop.gaming.factorioServer;
+in
 {
   # 1. Define options
-  options.gaming.factorioServer = {
+  options.custom.desktop.gaming.factorioServer = {
     enable = lib.mkEnableOption "the Factorio dedicated server";
 
     user = lib.mkOption {
       type = lib.types.str;
+      default = "julian";
       description = "The user who can start/stop the server without a password.";
       example = "julian";
     };
   };
 
   # 2. Apply configuration
-  config = lib.mkIf config.gaming.factorioServer.enable {
+  config = lib.mkIf cfg.enable {
     # Allow the proprietary Factorio headless server package
     nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "factorio-headless" ];
 
@@ -35,7 +39,7 @@
     # Allow the specified user to manage the server without a sudo password
     security.sudo.extraRules = [
       {
-        users = [ config.gaming.factorioServer.user ];
+        users = [ cfg.user ];
         commands = [
           {
             command = "/run/current-system/sw/bin/systemctl start factorio";

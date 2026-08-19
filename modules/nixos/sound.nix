@@ -5,12 +5,10 @@
   ...
 }:
 {
-  options = {
-    sound-module = {
-      enable = lib.mkEnableOption "sound-module";
-    };
+  options.custom.desktop.sound = {
+    enable = lib.mkEnableOption "desktop sound configuration (PipeWire, virtual routing)";
   };
-  config = lib.mkIf config.sound-module.enable {
+  config = lib.mkIf config.custom.desktop.sound.enable {
     environment.systemPackages = with pkgs; [
       alsa-utils
       qpwgraph # Essential for visual routing

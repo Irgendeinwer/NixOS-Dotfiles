@@ -23,7 +23,7 @@
   qt.enable = true;
 
   # Custom options
-  theme.wallpaper = {
+  custom.theme.wallpaper = {
     path = "${inputs.wallpaper}/video/neko-anime-girl-streamer-moewalls-com.mp4";
     backend = "mpvpaper";
   };

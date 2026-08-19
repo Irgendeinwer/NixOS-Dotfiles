@@ -1,9 +1,21 @@
-{ ... }:
-
 {
-  services.lact.enable = true;
+  config,
+  lib,
+  ...
+}:
+let
+  cfg = config.custom.services.lact;
+in
+{
+  options.custom.services.lact = {
+    enable = lib.mkEnableOption "LACT Linux AMDGPU Controller daemon";
+  };
 
-  boot.kernelParams = [
-    "amdgpu.ppfeaturemask=0xffffffff"
-  ];
+  config = lib.mkIf cfg.enable {
+    services.lact.enable = true;
+
+    boot.kernelParams = [
+      "amdgpu.ppfeaturemask=0xffffffff"
+    ];
+  };
 }
