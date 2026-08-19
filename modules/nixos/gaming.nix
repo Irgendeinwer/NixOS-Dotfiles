@@ -8,11 +8,6 @@ let
   cfg = config.custom.desktop.gaming;
 in
 {
-  imports = [
-    ./factorio.nix
-    ./arkSurvivalEvolved.nix
-  ];
-
   options.custom.desktop.gaming = {
     enable = lib.mkEnableOption "gaming configuration (Steam, Lutris, Heroic, Prism Launcher, Gamemode)";
     user = lib.mkOption {
