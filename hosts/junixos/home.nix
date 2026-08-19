@@ -8,14 +8,7 @@
   home.homeDirectory = "/home/julian";
 
   imports = [
-    ../../modules/home-manager/hypr/default.nix
-    ../../modules/home-manager/zsh.nix
-    ../../modules/home-manager/git.nix
-    ../../modules/home-manager/rofi/rofi.nix
-    ../../modules/home-manager/gtk.nix
-    ../../modules/home-manager/mpv.nix
-    ../../modules/home-manager/virtual-surround.nix
-    ../../modules/home-manager/listen.nix
+    ../../modules/home-manager
   ];
 
   home.packages = with pkgs; [ ];
@@ -23,9 +16,12 @@
   qt.enable = true;
 
   # Custom options
-  custom.theme.wallpaper = {
-    path = "${inputs.wallpaper}/video/neko-anime-girl-streamer-moewalls-com.mp4";
-    backend = "mpvpaper";
+  custom = {
+    theme.wallpaper = {
+      path = "${inputs.wallpaper}/video/neko-anime-girl-streamer-moewalls-com.mp4";
+      backend = "mpvpaper";
+    };
+    audio.virtualSurround.enable = true;
   };
 
   home.sessionVariables = {

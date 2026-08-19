@@ -3,26 +3,7 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ../../modules/nixos/base.nix
-
-    ../../modules/nixos/lix.nix
-    ../../modules/nixos/flakes.nix
-    ../../modules/nixos/kernel.nix
-    ../../modules/nixos/plymouth.nix
-    ../../modules/nixos/greetd.nix
-    ../../modules/nixos/sound.nix
-    ../../modules/nixos/hypr.nix
-    ../../modules/nixos/fonts.nix
-    ../../modules/nixos/direnv.nix
-    ../../modules/nixos/gaming.nix
-    ../../modules/nixos/obs-studio.nix
-    ../../modules/nixos/android.nix
-    #../../modules/nixos/virt.nix
-    ../../modules/nixos/nh.nix
-
-    ../../modules/nixvim/nixvim.nix
-    ../../modules/nixos/pkgs.nix
-    ../../modules/services/services.nix
+    ../../modules
   ];
 
   # Host identification & Network DNS

@@ -8,13 +8,7 @@
   home.homeDirectory = "/home/julian";
 
   imports = [
-    ../../modules/home-manager/hypr/default.nix
-    ../../modules/home-manager/zsh.nix
-    ../../modules/home-manager/git.nix
-    ../../modules/home-manager/rofi/rofi.nix
-    ../../modules/home-manager/gtk.nix
-    ../../modules/home-manager/mpv.nix
-    ../../modules/home-manager/listen.nix
+    ../../modules/home-manager
   ];
 
   home.packages = with pkgs; [ ];
