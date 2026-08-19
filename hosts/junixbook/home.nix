@@ -1,6 +1,5 @@
 {
   inputs,
-  config,
   pkgs,
   ...
 }:
@@ -9,11 +8,7 @@
   home.homeDirectory = "/home/julian";
 
   imports = [
-    ../../modules/home-manager/hypr/hyprland.nix
-    ../../modules/home-manager/hypr/wallpaper.nix
-    ../../modules/home-manager/hypr/hyprlock.nix
-    ../../modules/home-manager/hypr/hypridle.nix
-    ../../modules/home-manager/hypr/hyprcursor.nix
+    ../../modules/home-manager/hypr/default.nix
     ../../modules/home-manager/zsh.nix
     ../../modules/home-manager/git.nix
     ../../modules/home-manager/rofi/rofi.nix

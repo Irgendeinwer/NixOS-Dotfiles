@@ -1,237 +1,272 @@
-{ config, ... }:
-{
-  programs.hyprshot = {
-    enable = true;
-    saveLocation = "${config.home.homeDirectory}/Screenshots";
-  };
+{ config, pkgs, ... }:
 
+let
+  # Apps & UI
+  kitty = "${pkgs.kitty}/bin/kitty";
+  rofi = "${pkgs.rofi}/bin/rofi";
+  signal = "${pkgs.signal-desktop}/bin/signal-desktop";
+  easyeffects = "${pkgs.easyeffects}/bin/easyeffects";
+  hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+
+  # CLI Utilities
+  brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
+  pamixer = "${pkgs.pamixer}/bin/pamixer";
+  playerctl = "${pkgs.playerctl}/bin/playerctl";
+  cliphist = "${pkgs.cliphist}/bin/cliphist";
+  wlPaste = "${pkgs.wl-clipboard}/bin/wl-paste";
+  wlCopy = "${pkgs.wl-clipboard}/bin/wl-copy";
+  notifySend = "${pkgs.libnotify}/bin/notify-send";
+  hyprshot = "${pkgs.hyprshot}/bin/hyprshot";
+in
+{
   wayland.windowManager.hyprland = {
     enable = true;
-    configType = "hyprlang";
+    configType = "lua";
     plugins = [ ];
     systemd.enable = true;
     systemd.variables = [ "--all" ];
-    settings = {
-      env = [
-        "QT_QPA_PLATFORM,wayland;xcb"
-        "QT_WAYLAND_DISABLE_WINDOWDECORATION,1"
-      ];
+    extraConfig = ''
+      --------------------------------------------------
+      -- Environment Variables
+      --------------------------------------------------
+      hl.env("QT_QPA_PLATFORM", "wayland;xcb")
+      hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
 
-      "$mainMod" = "SUPER";
+      --------------------------------------------------
+      -- Monitors
+      --------------------------------------------------
+      -- eDP-1: Laptop built-in display
+      hl.monitor({
+        output = "eDP-1",
+        mode = "preferred",
+        position = "auto",
+        scale = 1,
+      })
 
-      monitor = [
-        # eDP-1: Laptop built-in display
-        "eDP-1, preferred, auto, 1"
+      -- DP-2: Lenovo G27qe-20 (Left, 1440p @ 100Hz)
+      hl.monitor({
+        output = "DP-2",
+        mode = "2560x1440@100",
+        position = "0x0",
+        scale = 1,
+      })
 
-        # DP-2: Lenovo G27qe-20 (Left, 1440p @ 100Hz)
-        "DP-2, 2560x1440@100, 0x0, 1"
+      -- DP-1: KTC M27T6 (Right, 1440p @ 180Hz) - Starts in standard SDR mode
+      hl.monitor({
+        output = "DP-1",
+        mode = "2560x1440@180",
+        position = "2560x0",
+        scale = 1,
+      })
 
-        # DP-1: KTC M27T6 (Right, 1440p @ 180Hz) - Starts in standard SDR mode
-        "DP-1, 2560x1440@180, 2560x0, 1"
-      ];
+      --------------------------------------------------
+      -- Autostart (exec-once)
+      --------------------------------------------------
+      hl.on("hyprland.start", function()
+        hl.exec_cmd("${hyprlock}")
+        hl.exec_cmd("systemctl --user start hyprpolkitagent")
 
-      render = {
-        cm_auto_hdr = 2; # Auto-switch to HDR (hdredid) when applications support it
-      };
+        hl.exec_cmd("${wlPaste} --type text --watch ${cliphist} store")
+        hl.exec_cmd("${wlPaste} --type image --watch ${cliphist} store")
 
-      exec-once = [
-        "hyprlock"
-        "systemctl --user start hyprpolkitagent"
+        hl.exec_cmd("${brightnessctl} set 100%")
 
-        "wl-paste --type text --watch cliphist store"
-        "wl-paste --type image --watch cliphist store"
+        hl.exec_cmd("${signal}", { workspace = "10 silent" })
+        hl.exec_cmd("${easyeffects}", { workspace = "10 silent" })
+      end)
 
-        "nm-applet --indicator"
-        "brightnessctl set 100%"
+      --------------------------------------------------
+      -- General Configurations
+      --------------------------------------------------
+      hl.config({
+        render = {
+          cm_auto_hdr = 2,
+        },
+        input = {
+          kb_layout = "de",
+          numlock_by_default = false,
+          follow_mouse = 2,
+          sensitivity = 0,
+          accel_profile = "flat",
+          touchpad = {
+            natural_scroll = false,
+            disable_while_typing = false,
+          },
+        },
+        general = {
+          gaps_in = 2,
+          gaps_out = 4,
+          border_size = 1,
+          col = {
+            active_border = {
+              colors = { "rgba(33ccffee)", "rgba(00ff99ee)" },
+              angle = 45,
+            },
+            inactive_border = "rgba(595959aa)",
+          },
+          allow_tearing = false,
+          layout = "dwindle",
+        },
+        misc = {
+          vrr = 3,
+          key_press_enables_dpms = true,
+          force_default_wallpaper = 0,
+          disable_hyprland_logo = true,
+          enable_swallow = true,
+          swallow_regex = "^(kitty)$",
+        },
+        dwindle = {
+          smart_split = true,
+        },
+        decoration = {
+          rounding = 3,
+          blur = {
+            enabled = false,
+          },
+          shadow = {
+            enabled = false,
+          },
+        },
+        animations = {
+          enabled = true,
+        },
+        cursor = {
+          hide_on_key_press = true,
+        },
+      })
 
-        "[workspace 10 silent] signal-desktop"
-        "[workspace 10 silent] easyeffects"
-      ];
+      --------------------------------------------------
+      -- Gestures & Workspace Rules
+      --------------------------------------------------
+      hl.gesture({
+        fingers = 3,
+        direction = "horizontal",
+        action = "workspace",
+      })
 
-      input = {
-        kb_layout = "de";
-        numlock_by_default = false;
+      hl.workspace_rule({ workspace = "w[t1]", gaps_out = 0, gaps_in = 0 })
+      hl.workspace_rule({ workspace = "f[1]", gaps_out = 0, gaps_in = 0 })
 
-        follow_mouse = 2;
-        sensitivity = 0;
-        accel_profile = "flat";
+      --------------------------------------------------
+      -- Window Rules
+      --------------------------------------------------
+      -- Picture-in-Picture
+      hl.window_rule({
+        match = { title = "^(Picture-in-Picture)$" },
+        float = true,
+        pin = true,
+        move = { 2038, 10 },
+        size = { 512, 288 },
+        no_initial_focus = true,
+        opacity = "1.0 override 1.0 override",
+      })
 
-        touchpad = {
-          natural_scroll = false;
-          disable_while_typing = false;
-        };
-      };
+      -- General
+      hl.window_rule({
+        match = { class = ".*" },
+        suppress_event = "maximize",
+      })
 
-      gesture = [
-        "3, horizontal, workspace"
-      ];
+      -- Smart Gaps
+      hl.window_rule({ match = { workspace = "w[t1]" }, border_size = 0, rounding = 0 })
+      hl.window_rule({ match = { workspace = "f[1]" }, border_size = 0, rounding = 0 })
 
-      general = {
-        gaps_in = 2;
-        gaps_out = 4;
-        border_size = 1;
+      --------------------------------------------------
+      -- Keybindings
+      --------------------------------------------------
+      local mainMod = "SUPER"
 
-        "col.active_border" = "rgba(33ccffee) rgba(00ff99ee) 45deg"; # blue
-        "col.inactive_border" = "rgba(595959aa)";
+      -- App shortcuts
+      hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("${kitty}"))
+      hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("${rofi} -show drun -show-icons"))
+      hl.bind(mainMod .. " + D", hl.dsp.window.close())
+      hl.bind(mainMod .. " + M", hl.dsp.exit())
+      hl.bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }))
+      hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
+      hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd("loginctl lock-session"))
 
-        allow_tearing = false;
+      -- Native Lua HDR Toggle for DP-1
+      local hdr_on = false
+      local function toggle_hdr()
+        hdr_on = not hdr_on
+        if hdr_on then
+          hl.monitor({
+            output = "DP-1",
+            mode = "2560x1440@180",
+            position = "2560x0",
+            scale = 1,
+            bitdepth = 10,
+            cm = "hdr",
+            sdrbrightness = 1.2,
+          })
+          hl.exec_cmd([[${notifySend} "Display" "HDR Enabled on DP-1" -t 2000]])
+        else
+          hl.monitor({
+            output = "DP-1",
+            mode = "2560x1440@180",
+            position = "2560x0",
+            scale = 1,
+          })
+          hl.exec_cmd([[${notifySend} "Display" "HDR Disabled (SDR)" -t 2000]])
+        end
+      end
+      hl.bind(mainMod .. " + SHIFT + H", toggle_hdr)
 
-        layout = "dwindle";
-      };
+      -- Utilities
+      hl.bind("PRINT", hl.dsp.exec_cmd("${hyprshot} -m region --freeze -o ${config.programs.hyprshot.saveLocation}"))
+      hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("${cliphist} list | ${rofi} -dmenu | ${cliphist} decode | ${wlCopy}"))
+      hl.bind(mainMod .. " + T", hl.dsp.exec_cmd([[${notifySend} -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"]]))
 
-      misc = {
-        vrr = 3; # Fullscreen-only
-        key_press_enables_dpms = true;
+      -- Media & Volume Controls (with repeat and lockscreen support)
+      hl.bind("F8", hl.dsp.exec_cmd("${playerctl} play-pause"), { locked = true })
+      hl.bind("F9", hl.dsp.exec_cmd("${pamixer} -d 2"), { repeating = true, locked = true})
+      hl.bind("F10", hl.dsp.exec_cmd("${pamixer} -i 2"), { repeating = true, locked = true })
 
-        force_default_wallpaper = 0;
-        disable_hyprland_logo = true;
+      hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("${pamixer} -i 2"), { repeating = true, locked = true })
+      hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("${pamixer} -d 2"), { repeating = true, locked = true })
+      hl.bind("XF86AudioMute", hl.dsp.exec_cmd("${pamixer} -t"), { locked = true })
+      hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("${playerctl} play-pause"), { locked = true })
+      hl.bind("XF86AudioNext", hl.dsp.exec_cmd("${playerctl} next"), { locked = true })
+      hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("${playerctl} previous"), { locked = true })
+      hl.bind("XF86AudioStop", hl.dsp.exec_cmd("${playerctl} stop"), { locked = true })
+      hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("${pamixer} --default-source -t"), { locked = true })
+      hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${brightnessctl} set 10%+"), { repeating = true, locked = true })
+      hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${brightnessctl} set 10%-"), { repeating = true, locked = true })
 
-        enable_swallow = true;
-        swallow_regex = "^(kitty)$";
-      };
+      -- Directional Navigation & Movement
+      local directions = { left = "l", right = "r", up = "u", down = "d" }
+      for key, dir in pairs(directions) do
+        hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ direction = dir }))
+        hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ direction = dir }))
+      end
 
-      dwindle = {
-        smart_split = true;
-      };
+      -- Workspaces 1 - 10
+      for i = 1, 10 do
+        local key = tostring(i % 10)
+        hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = tostring(i) }))
+        hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = tostring(i), follow = false }))
+      end
 
-      decoration = {
-        rounding = 3;
+      -- Special Workspace & Scrolling
+      hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"))
+      hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
+      hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e-1" }))
+      hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e+1" }))
 
-        blur = {
-          enabled = false;
-        };
+      -- Window Resizing & Moving (Relative offsets)
+      hl.bind(mainMod .. " + CTRL + left", hl.dsp.window.resize({ x = -40, y = 0, relative = true }), { repeating = true })
+      hl.bind(mainMod .. " + CTRL + right", hl.dsp.window.resize({ x = 40, y = 0, relative = true }), { repeating = true })
+      hl.bind(mainMod .. " + CTRL + up", hl.dsp.window.resize({ x = 0, y = -40, relative = true }), { repeating = true })
+      hl.bind(mainMod .. " + CTRL + down", hl.dsp.window.resize({ x = 0, y = 40, relative = true }), { repeating = true })
 
-        shadow = {
-          enabled = false;
-        };
-      };
+      hl.bind(mainMod .. " + ALT + left", hl.dsp.window.move({ x = -40, y = 0, relative = true }), { repeating = true })
+      hl.bind(mainMod .. " + ALT + right", hl.dsp.window.move({ x = 40, y = 0, relative = true }), { repeating = true })
+      hl.bind(mainMod .. " + ALT + up", hl.dsp.window.move({ x = 0, y = -40, relative = true }), { repeating = true })
+      hl.bind(mainMod .. " + ALT + down", hl.dsp.window.move({ x = 0, y = 40, relative = true }), { repeating = true })
 
-      animations = {
-        enabled = true;
-      };
-
-      bind = [
-        "$mainMod, Q, exec, kitty"
-        "$mainMod, W, exec, rofi -show drun -show-icons"
-        "$mainMod, D, killactive,"
-        "$mainMod, M, exit,"
-        "$mainMod, F, togglefloating,"
-        "$mainMod, J, layoutmsg, togglesplit"
-
-        "$mainMod, Escape, exec, loginctl lock-session"
-
-        # Toggle HDR Mode on DP-1 (Right Monitor) on/off
-        # Detects if the current format is 10-bit (XRGB2101010). If it is, swaps to SDR. If not, swaps to HDR.
-        "$mainMod SHIFT, H, exec, hyprctl monitors | grep -q 'XRGB2101010' && hyprctl keyword monitor 'DP-1, 2560x1440@180, 2560x0, 1' || hyprctl keyword monitor 'DP-1, 2560x1440@180, 2560x0, 1, bitdepth, 10, cm, hdr, sdrbrightness, 1.2'"
-
-        # Hyprshot
-        ",PRINT, exec, hyprshot -m region --freeze -o ${config.programs.hyprshot.saveLocation}"
-
-        # Clipboard history
-        "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-
-        # Time
-        ''$mainMod, T, exec, notify-send -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"''
-
-        # Media and volume controls
-        ",F8, exec, playerctl play-pause"
-        ",F9, exec, pamixer -d 2"
-        ",F10, exec, pamixer -i 2"
-
-        ",XF86AudioRaiseVolume, exec, pamixer -i 2"
-        ",XF86AudioLowerVolume, exec, pamixer -d 2"
-        ",XF86AudioMute, exec, pamixer -t"
-        ",XF86AudioPlay, exec, playerctl play-pause"
-        ",XF86AudioNext, exec, playerctl next"
-        ",XF86AudioPrev, exec, playerctl previous"
-        ",XF86AudioStop, exec, playerctl stop"
-        ",XF86AudioMicMute, exec, pamixer --default-source -t"
-        ",XF86MonBrightnessUp, exec, brightnessctl set 10%+"
-        ",XF86MonBrightnessDown, exec, brightnessctl set 10%-"
-
-        # switch focus
-        "$mainMod, left, movefocus, l"
-        "$mainMod, right, movefocus, r"
-        "$mainMod, up, movefocus, u"
-        "$mainMod, down, movefocus, d"
-
-        # switch workspace
-        "$mainMod, 1, workspace, 1"
-        "$mainMod, 2, workspace, 2"
-        "$mainMod, 3, workspace, 3"
-        "$mainMod, 4, workspace, 4"
-        "$mainMod, 5, workspace, 5"
-        "$mainMod, 6, workspace, 6"
-        "$mainMod, 7, workspace, 7"
-        "$mainMod, 8, workspace, 8"
-        "$mainMod, 9, workspace, 9"
-        "$mainMod, 0, workspace, 10"
-
-        # move window
-        "$mainMod SHIFT, 1, movetoworkspacesilent, 1"
-        "$mainMod SHIFT, 2, movetoworkspacesilent, 2"
-        "$mainMod SHIFT, 3, movetoworkspacesilent, 3"
-        "$mainMod SHIFT, 4, movetoworkspacesilent, 4"
-        "$mainMod SHIFT, 5, movetoworkspacesilent, 5"
-        "$mainMod SHIFT, 6, movetoworkspacesilent, 6"
-        "$mainMod SHIFT, 7, movetoworkspacesilent, 7"
-        "$mainMod SHIFT, 8, movetoworkspacesilent, 8"
-        "$mainMod SHIFT, 9, movetoworkspacesilent, 9"
-        "$mainMod SHIFT, 0, movetoworkspacesilent, 10"
-
-        "$mainMod, S, togglespecialworkspace, magic"
-        "$mainMod SHIFT, S, movetoworkspace, special:magic"
-        "$mainMod, mouse_down, workspace, e-1"
-        "$mainMod, mouse_up, workspace, e+1"
-
-        # window control
-        "$mainMod SHIFT, left, movewindow, l"
-        "$mainMod SHIFT, right, movewindow, r"
-        "$mainMod SHIFT, up, movewindow, u"
-        "$mainMod SHIFT, down, movewindow, d"
-        "$mainMod CTRL, left, resizeactive, -40 0"
-        "$mainMod CTRL, right, resizeactive, 40 0"
-        "$mainMod CTRL, up, resizeactive, 0 -40"
-        "$mainMod CTRL, down, resizeactive, 0 40"
-        "$mainMod ALT, left, moveactive,  -40 0"
-        "$mainMod ALT, right, moveactive, 40 0"
-        "$mainMod ALT, up, moveactive, 0 -40"
-        "$mainMod ALT, down, moveactive, 0 40"
-      ];
-
-      bindm = [
-        "$mainMod, mouse:272, movewindow"
-        "$mainMod, mouse:273, resizewindow"
-      ];
-
-      cursor = {
-        hide_on_key_press = true;
-      };
-
-      workspace = [
-        "w[t1], gapsout:0, gapsin:0"
-        "f[1], gapsout:0, gapsin:0"
-      ];
-
-      windowrule = [
-        # --- Picture-in-Picture ---
-        "float 1, match:title ^(Picture-in-Picture)$"
-        "pin 1, match:title ^(Picture-in-Picture)$"
-        "move 2038 10, match:title ^(Picture-in-Picture)$"
-        "size 512 288, match:title ^(Picture-in-Picture)$"
-        "no_initial_focus 1, match:title ^(Picture-in-Picture)$"
-        "opacity 1.0 override 1.0 override, match:title ^(Picture-in-Picture)$"
-
-        # --- General ---
-        "suppress_event maximize, match:class .*"
-
-        # --- Smart Gaps ---
-        "border_size 0, match:workspace w[t1]"
-        "rounding 0, match:workspace w[t1]"
-
-        "border_size 0, match:workspace f[1]"
-        "rounding 0, match:workspace f[1]"
-      ];
-    };
+      -- Mouse drag & resize
+      hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
+      hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+    '';
   };
 }
