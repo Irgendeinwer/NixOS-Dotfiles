@@ -14,9 +14,22 @@ in
       default = "julian";
       description = "User to run Syncthing under";
     };
+    openFirewall = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = "Open Syncthing sync (TCP/UDP 22000) and discovery (UDP 21027) ports in firewall";
+    };
   };
 
   config = lib.mkIf cfg.enable {
+    networking.firewall = lib.mkIf cfg.openFirewall {
+      allowedTCPPorts = [ 22000 ];
+      allowedUDPPorts = [
+        22000
+        21027
+      ];
+    };
+
     services.syncthing = {
       enable = true;
       group = "users";

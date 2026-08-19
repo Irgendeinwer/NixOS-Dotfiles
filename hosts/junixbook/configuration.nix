@@ -23,8 +23,6 @@
     scrcpy
   ];
 
-  networking.firewall.enable = false;
-
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {

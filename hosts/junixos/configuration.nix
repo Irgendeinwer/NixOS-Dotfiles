@@ -75,8 +75,10 @@
   # Host-specific hardware and daemons
   hardware.amdgpu.opencl.enable = true;
   services.fstrim.enable = true;
-  services.openssh.enable = true;
-  networking.firewall.enable = false;
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+  };
 
   home-manager = {
     extraSpecialArgs = { inherit inputs; };

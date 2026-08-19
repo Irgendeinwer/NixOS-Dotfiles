@@ -6,8 +6,11 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.initrd.systemd.enable = true;
 
-  # Networking baseline
-  networking.networkmanager.enable = true;
+  # Networking & Firewall baseline
+  networking = {
+    networkmanager.enable = true;
+    firewall.enable = true;
+  };
 
   # Time and Locale
   time.timeZone = "Europe/Berlin";
