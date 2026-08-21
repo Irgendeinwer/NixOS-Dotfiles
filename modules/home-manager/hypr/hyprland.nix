@@ -116,6 +116,7 @@ in
           disable_hyprland_logo = true,
           enable_swallow = true,
           swallow_regex = "^(kitty)$",
+          allow_session_lock_restore = true,
         },
         dwindle = {
           smart_split = true,
@@ -157,7 +158,7 @@ in
         match = { title = "^(Picture-in-Picture)$" },
         float = true,
         pin = true,
-        move = { 2038, 10 },
+        move = "100%-w-10 10",
         size = { 512, 288 },
         no_initial_focus = true,
         opacity = "1.0 override 1.0 override",
