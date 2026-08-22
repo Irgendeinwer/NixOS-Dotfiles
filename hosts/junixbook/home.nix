@@ -21,7 +21,7 @@ in
 
   # Custom options
   custom.theme.wallpaper = {
-    path = "${inputs.wallpaper}/image/pigeon.jpg";
+    path = "${inputs.wallpaper}/image/wallhaven-gwq117.jpg";
     backend = "hyprpaper";
   };
 
