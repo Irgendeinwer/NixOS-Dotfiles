@@ -241,6 +241,7 @@ mpv_args=(
   "--display-tags="
   "--loop-file=no"
   "--loop-playlist=no"
+  "--load-auto-profiles=no"
 )
 
 # Window configuration
