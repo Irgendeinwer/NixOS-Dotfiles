@@ -8,8 +8,8 @@ let
     "${a4k}/Anime4K_Clamp_Highlights.glsl"
     "${a4k}/Anime4K_Restore_CNN_VL.glsl"
     "${a4k}/Anime4K_Upscale_CNN_x2_VL.glsl"
-    "${a4k}/Anime4K_AutoDownsamplePre_x2.glsl"
-    "${a4k}/Anime4K_AutoDownsamplePre_x4.glsl"
+    "${a4k}/Anime4K_AutoDownscalePre_x2.glsl"
+    "${a4k}/Anime4K_AutoDownscalePre_x4.glsl"
     "${a4k}/Anime4K_Upscale_CNN_x2_M.glsl"
   ];
 in
