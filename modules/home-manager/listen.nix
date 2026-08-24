@@ -1,6 +1,14 @@
 { pkgs, ... }:
 
 let
+  mpvWithScripts = pkgs.mpv.override {
+    scripts = with pkgs.mpvScripts; [
+      mpris
+      uosc
+      thumbfast
+    ];
+  };
+
   listen = pkgs.writeShellApplication {
     name = "listen";
 
@@ -9,7 +17,7 @@ let
       fzf
       gnused
       coreutils
-      mpv
+      mpvWithScripts
       xdg-user-dirs
     ];
 
@@ -18,9 +26,10 @@ let
       "SC2154"
     ];
 
-    text = builtins.readFile ./scripts/listen.sh;
+    text = builtins.readFile ./listen.sh;
   };
 in
 {
   home.packages = [ listen ];
 }
+
