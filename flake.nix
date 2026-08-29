@@ -35,6 +35,11 @@
       };
     };
 
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     wallpaper = {
       url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
       flake = false;
@@ -75,6 +80,7 @@
           nixos-hardware.nixosModules.common-cpu-intel-cpu-only
           nixos-hardware.nixosModules.common-pc-ssd
 
+          inputs.sops-nix.nixosModules.sops
           inputs.home-manager.nixosModules.default
           {
             home-manager.useGlobalPkgs = true;
@@ -97,6 +103,7 @@
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
 
+          inputs.sops-nix.nixosModules.sops
           inputs.home-manager.nixosModules.default
           {
             home-manager.useGlobalPkgs = true;
