@@ -137,6 +137,10 @@
       isolatedGaming.enable = true;
       printing.enable = true;
       playerctl.enable = true;
+      backup = {
+        enable = true;
+        deviceUuid = "1756e51a-bb5f-4480-9c81-69dda3d3318b";
+      };
     };
   };
 
