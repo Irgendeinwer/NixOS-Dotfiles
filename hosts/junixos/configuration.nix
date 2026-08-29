@@ -86,6 +86,10 @@
     openFirewall = true;
   };
 
+  sops.secrets.hotspot_password = {
+    sopsFile = ../../secrets/junixos.yaml;
+  };
+
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {
@@ -120,7 +124,7 @@
         wifiInterface = "wlp0s20f0u3";
         ethernetInterface = "enp7s0";
         ssid = "6+7";
-        password = "unpure-thoughts-about-ubuntu-and-arch";
+        passwordFile = config.sops.secrets.hotspot_password.path;
       };
       syncthing.enable = true;
       jellyfin.enable = true;
