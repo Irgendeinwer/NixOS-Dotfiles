@@ -42,9 +42,16 @@ in
     };
     console.keyMap = "de";
 
+    # Declarative user password from sops
+    sops.secrets.user_password = {
+      sopsFile = ../../secrets/common.yaml;
+      neededForUsers = true;
+    };
+
     # User account configuration
     users.users.${user} = {
       isNormalUser = true;
+      hashedPasswordFile = config.sops.secrets.user_password.path;
       extraGroups = [
         "networkmanager"
         "wheel"
