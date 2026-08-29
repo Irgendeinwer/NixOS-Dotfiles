@@ -28,7 +28,15 @@ in
     };
 
     password = lib.mkOption {
-      type = lib.types.str;
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Plaintext password (fallback). Prefer passwordFile for declarative secrets.";
+    };
+
+    passwordFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Path to file containing hotspot password (e.g. from sops-nix).";
     };
   };
 
@@ -60,13 +68,19 @@ in
       serviceConfig = {
         Type = "simple";
         ExecStartPre = "${pkgs.iw}/bin/iw reg set DE";
-        ExecStart = ''
-          ${pkgs.linux-wifi-hotspot}/bin/create_ap \
+        ExecStart = pkgs.writeShellScript "start-hotspot" ''
+          ${lib.optionalString (cfg.passwordFile != null) ''
+            PASS="$(${pkgs.coreutils}/bin/cat "${cfg.passwordFile}")"
+          ''}
+          ${lib.optionalString (cfg.passwordFile == null && cfg.password != null) ''
+            PASS="${cfg.password}"
+          ''}
+          exec ${pkgs.linux-wifi-hotspot}/bin/create_ap \
             --ieee80211n --ieee80211ac \
             --ht_capab '[HT40+][SHORT-GI-20][SHORT-GI-40]' \
             --vht_capab '[MAX-A-MPDU-LEN-EXP-7][VHT80][SHORT-GI-80][RX-STBC1]' \
             --freq-band 5 -c 36 \
-            ${cfg.wifiInterface} ${cfg.ethernetInterface} "${cfg.ssid}" "${cfg.password}"
+            ${cfg.wifiInterface} ${cfg.ethernetInterface} "${cfg.ssid}" ''${PASS:+"$PASS"}
         '';
         ExecStop = "${pkgs.linux-wifi-hotspot}/bin/create_ap --stop ${cfg.wifiInterface}";
         Restart = "on-failure";
