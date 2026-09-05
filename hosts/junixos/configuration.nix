@@ -104,6 +104,7 @@
       kernel = "cachyos";
       boot.silent.enable = true;
       android.enable = true;
+      security.hardening.enable = true;
     };
 
     desktop = {

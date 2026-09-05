@@ -42,6 +42,7 @@
     system = {
       kernel = "latest";
       boot.silent.enable = true;
+      security.hardening.enable = true;
     };
 
     hardware.bluetooth.enable = true;
