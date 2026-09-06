@@ -40,6 +40,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     wallpaper = {
       url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
       flake = false;
@@ -81,6 +86,7 @@
           nixos-hardware.nixosModules.common-pc-ssd
 
           inputs.sops-nix.nixosModules.sops
+          inputs.lanzaboote.nixosModules.lanzaboote
           inputs.home-manager.nixosModules.default
           {
             home-manager.useGlobalPkgs = true;
@@ -104,6 +110,7 @@
           nixos-hardware.nixosModules.common-pc-ssd
 
           inputs.sops-nix.nixosModules.sops
+          inputs.lanzaboote.nixosModules.lanzaboote
           inputs.home-manager.nixosModules.default
           {
             home-manager.useGlobalPkgs = true;
