@@ -102,7 +102,10 @@
   custom = {
     system = {
       kernel = "cachyos";
-      boot.silent.enable = true;
+      boot = {
+        silent.enable = true;
+        secureboot.enable = true;
+      };
       android.enable = true;
       security.hardening.enable = true;
     };

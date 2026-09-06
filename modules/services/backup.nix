@@ -82,6 +82,7 @@ in
         "/media/fun/gallery"
         "/etc/ssh"
         "/var/lib/sops-nix"
+        "/var/lib/sbctl"
       ];
 
       exclude = [

@@ -41,7 +41,10 @@
   custom = {
     system = {
       kernel = "latest";
-      boot.silent.enable = true;
+      boot = {
+        silent.enable = true;
+        secureboot.enable = true;
+      };
       security.hardening.enable = true;
     };
 
