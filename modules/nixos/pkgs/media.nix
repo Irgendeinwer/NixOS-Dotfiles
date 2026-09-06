@@ -8,5 +8,6 @@
     feishin
     rush-lyrics
     imv
+    projectm-sdl-cpp
   ];
 }
