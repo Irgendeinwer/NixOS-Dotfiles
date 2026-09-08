@@ -26,10 +26,9 @@ let
       "SC2154"
     ];
 
-    text = builtins.readFile ./listen.sh;
+    text = builtins.readFile ./scripts/listen.sh;
   };
 in
 {
   home.packages = [ listen ];
 }
-
