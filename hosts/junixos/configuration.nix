@@ -117,8 +117,8 @@
       obs.enable = true;
       gaming = {
         enable = true;
-        arkServer.enable = true;
-        factorioServer.enable = true;
+        arkServer.enable = false;
+        factorioServer.enable = false;
       };
       vscode.enable = true;
     };
