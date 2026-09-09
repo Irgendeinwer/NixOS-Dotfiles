@@ -26,8 +26,6 @@ in
 
   # 2. Apply configuration
   config = lib.mkIf cfg.enable {
-    nixpkgs.config.allowUnfree = true;
-
     environment.systemPackages = with pkgs; [
       steamcmd
       steam-run

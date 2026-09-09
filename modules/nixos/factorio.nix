@@ -23,9 +23,6 @@ in
 
   # 2. Apply configuration
   config = lib.mkIf cfg.enable {
-    # Allow the proprietary Factorio headless server package
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "factorio-headless" ];
-
     services.factorio = {
       enable = true;
       openFirewall = true;
