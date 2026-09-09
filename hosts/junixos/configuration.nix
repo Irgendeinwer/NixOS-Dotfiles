@@ -123,6 +123,7 @@
     };
 
     services = {
+      ai.enable = true;
       hotspot = {
         enable = true;
         wifiInterface = "wlp0s20f0u3";
