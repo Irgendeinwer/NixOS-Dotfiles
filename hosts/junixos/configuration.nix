@@ -120,6 +120,7 @@
         arkServer.enable = true;
         factorioServer.enable = true;
       };
+      vscode.enable = true;
     };
 
     services = {
