@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import multiprocessing as mp
 import os
 import re
 import shutil
@@ -26,14 +27,33 @@ def get_audio_info(audio_path):
         '-v', 'quiet',
         '-print_format', 'json',
         '-show_format',
+        '-show_streams',
         audio_path,
     ]
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=10)
         data = json.loads(res.stdout)
+
         fmt = data.get('format', {})
         duration = round(float(fmt['duration'])) if 'duration' in fmt else None
-        tags = {k.lower(): v for k, v in fmt.get('tags', {}).items()}
+
+        tags = {}
+        # Audio stream tags & fallback duration (common in Opus/AAC/M4A)
+        for stream in data.get('streams', []):
+            if stream.get('codec_type') != 'audio':
+                continue
+            for k, v in stream.get('tags', {}).items():
+                tags[k.lower()] = v
+            if not duration and 'duration' in stream:
+                try:
+                    duration = round(float(stream['duration']))
+                except (ValueError, TypeError):
+                    pass
+
+        # Container tags take precedence
+        for k, v in fmt.get('tags', {}).items():
+            tags[k.lower()] = v
+
         return duration, tags
     except Exception:
         return None, {}
@@ -49,20 +69,31 @@ def parse_lrc(lrc_path):
     meta = {}
     timed_entries = []
 
+    tag_aliases = {
+        'title': 'ti',
+        'artist': 'ar',
+        'album': 'al',
+        'author': 'au',
+    }
+
     for raw_line in lines:
         line = raw_line.strip()
         if not line:
             continue
 
-        m_tag = re.match(r'^\[(ti|ar|al|length|by|offset):(.*)\]$', line, re.IGNORECASE)
+        # Match specific LRC metadata tags and their aliases
+        m_tag = re.match(r'^\[(ti|title|ar|artist|al|album|au|author|by|length|offset|re|ve)\s*:\s*(.*)\]$', line, re.IGNORECASE)
         if m_tag:
-            meta[m_tag.group(1).lower()] = m_tag.group(2).strip()
+            key = m_tag.group(1).lower()
+            key = tag_aliases.get(key, key)
+            meta[key] = m_tag.group(2).strip()
             continue
 
         time_tags = re.findall(r'\[(\d+):(\d{2}(?:\.\d{1,3})?)\]', line)
         if time_tags:
-            lyric_text = re.sub(r'^(\[\d+:\d{2}(?:\.\d{1,3})?\])+', '', line).strip()
-            plain_text = re.sub(r'<\d+:\d{2}(?:\.\d{1,3})?>', '', lyric_text)
+            # Strip all leading bracket timestamps, even if space-separated
+            lyric_text = re.sub(r'^(\s*\[\d+:\d{2}(?:\.\d{1,3})?\]\s*)+', '', line).strip()
+            plain_text = re.sub(r'<\d+:\d{2}(?:\.\d{1,3})?>', '', lyric_text).strip()
 
             for m, s in time_tags:
                 total_sec = int(m) * 60 + float(s)
@@ -138,9 +169,18 @@ def find_files(target_path, is_instrumental=False):
         if ext == '.lrc':
             lrc_file = target_path
             audio_file = find_file_case_insensitive(dir_name, base_name, AUDIO_EXTS)
+            if not audio_file:
+                # Fallback: if there's only 1 audio file in that folder, use it
+                candidates = [os.path.join(dir_name, f) for f in os.listdir(dir_name) if os.path.splitext(f)[1].lower() in AUDIO_EXTS]
+                if len(candidates) == 1:
+                    audio_file = candidates[0]
         elif ext in AUDIO_EXTS:
             audio_file = target_path
             lrc_file = find_file_case_insensitive(dir_name, base_name, ['.lrc'])
+            if not lrc_file and not is_instrumental:
+                candidates = [os.path.join(dir_name, f) for f in os.listdir(dir_name) if f.lower().endswith('.lrc')]
+                if len(candidates) == 1:
+                    lrc_file = candidates[0]
             if not lrc_file and not is_instrumental:
                 sys.exit(
                     f"[-] No matching LRC file found for '{target_path}'!\n"
@@ -160,6 +200,12 @@ def find_files(target_path, is_instrumental=False):
             lrc_file = select_from_list(lrcs, 'Multiple .lrc files found:')
             base_name = os.path.splitext(os.path.basename(lrc_file))[0]
             audio_file = find_file_case_insensitive(target_path, base_name, AUDIO_EXTS)
+            if not audio_file:
+                candidates = [os.path.join(target_path, f) for f in os.listdir(target_path) if os.path.splitext(f)[1].lower() in AUDIO_EXTS]
+                if len(candidates) == 1:
+                    audio_file = candidates[0]
+                elif len(candidates) > 1 and sys.stdin.isatty():
+                    audio_file = select_from_list(candidates, 'Select matching audio file:')
         else:
             if is_instrumental:
                 audios = [
@@ -179,20 +225,67 @@ def find_files(target_path, is_instrumental=False):
     return lrc_file, audio_file
 
 
+def _pow_worker(prefix_bytes, target_bytes, worker_id, num_workers, batch_size, stop_event, found_nonce):
+    stride = num_workers * batch_size
+    nonce_start = worker_id * batch_size
+    sha256 = hashlib.sha256
+
+    try:
+        while not stop_event.is_set():
+            batch_end = nonce_start + batch_size
+            for nonce in range(nonce_start, batch_end):
+                if sha256(prefix_bytes + b'%d' % nonce).digest() <= target_bytes:
+                    with found_nonce.get_lock():
+                        if found_nonce.value == -1:
+                            found_nonce.value = nonce
+                    stop_event.set()
+                    return
+            nonce_start += stride
+    except KeyboardInterrupt:
+        pass
+
+
 def solve_challenge(prefix, target_hex):
     target_bytes = bytes.fromhex(target_hex)
     prefix_bytes = prefix.encode('utf-8')
-    nonce = 0
-    start_time = time.time()
-    print('[*] Solving Proof-of-Work challenge...', end='', flush=True)
+    num_workers = max(1, os.cpu_count() or 4)
 
-    while True:
-        candidate = hashlib.sha256(prefix_bytes + b'%d' % nonce).digest()
-        if candidate <= target_bytes:
-            elapsed = time.time() - start_time
-            print(f' done! ({elapsed:.2f}s, Nonce: {nonce})')
-            return str(nonce)
-        nonce += 1
+    start_time = time.time()
+    print(f'[*] Solving Proof-of-Work challenge using {num_workers} workers...', end='', flush=True)
+
+    stop_event = mp.Event()
+    found_nonce = mp.Value('q', -1)
+    workers = []
+
+    for i in range(num_workers):
+        p = mp.Process(
+            target=_pow_worker,
+            args=(prefix_bytes, target_bytes, i, num_workers, 50000, stop_event, found_nonce),
+            daemon=True,
+        )
+        p.start()
+        workers.append(p)
+
+    try:
+        while not stop_event.wait(timeout=0.1):
+            if not any(p.is_alive() for p in workers):
+                break
+    except KeyboardInterrupt:
+        stop_event.set()
+        for p in workers:
+            p.terminate()
+        sys.exit('\n[-] Aborted by user.')
+    finally:
+        for p in workers:
+            p.join(timeout=0.2)
+
+    nonce = found_nonce.value
+    if nonce == -1:
+        sys.exit('\n[-] Failed to solve challenge: workers exited without solution.')
+
+    elapsed = time.time() - start_time
+    print(f' done! ({elapsed:.2f}s, Nonce: {nonce})')
+    return str(nonce)
 
 
 def main():
