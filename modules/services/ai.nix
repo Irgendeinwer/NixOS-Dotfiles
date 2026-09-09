@@ -99,7 +99,7 @@ in
           num_retries = 5;
           allowed_fails = 1;
           cooldown_time = 30;
-          retry_after = 0.5;
+          retry_after = 1;
           fallbacks = [
             {
               "gemini-flash" = [
