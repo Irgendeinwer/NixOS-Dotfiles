@@ -97,13 +97,23 @@ def parse_lrc(lrc_path):
 
             for m, s in time_tags:
                 total_sec = int(m) * 60 + float(s)
-                synced_line = f'[{int(m):02d}:{float(s):05.2f}]{lyric_text}'
+                # If lyric_text is present, add a space after the timestamp.
+                # If lyric_text is empty (synced empty line), preserve as an empty tag [mm:ss.xx]
+                if lyric_text:
+                    synced_line = f'[{int(m):02d}:{float(s):05.2f}] {lyric_text}'
+                else:
+                    synced_line = f'[{int(m):02d}:{float(s):05.2f}]'
+
                 timed_entries.append((total_sec, synced_line, plain_text))
 
     timed_entries.sort(key=lambda x: x[0])
 
     synced_lyrics = '\n'.join(entry[1] for entry in timed_entries)
-    plain_lyrics = '\n'.join(entry[2] for entry in timed_entries if entry[2])
+
+    # Do NOT filter out entry[2] when empty.
+    # Strip leading/trailing empty lines (from intro/outro marks) and collapse multiple blank lines.
+    plain_lyrics = '\n'.join(entry[2] for entry in timed_entries).strip('\n')
+    plain_lyrics = re.sub(r'\n{3,}', '\n\n', plain_lyrics)
 
     return meta, synced_lyrics, plain_lyrics
 
