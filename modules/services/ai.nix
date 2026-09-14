@@ -10,7 +10,7 @@ let
   # List of environment variable names: GEMINI_KEY_1 ... GEMINI_KEY_x
   keyEnvVars = map (i: "GEMINI_KEY_${toString i}") (lib.range 1 cfg.geminiKeyCount);
 
-  # Fallback priority tiers
+  # Fallback priority tiers and distinct model endpoints
   models = [
     {
       name = "gemini-flash";
@@ -23,6 +23,10 @@ let
     {
       name = "gemini-3.6";
       target = "gemini/gemini-3.6-flash";
+    }
+    {
+      name = "gemini-flash-lite";
+      target = "gemini/gemini-3.5-flash-lite";
     }
   ];
 
