@@ -19,6 +19,11 @@
     ];
     security.rtkit.enable = true;
 
+    networking.firewall = {
+      allowedTCPPorts = [ 54345 ]; # AndroidMic
+      allowedUDPPorts = [ 54345 ];
+    };
+
     services.pipewire = {
       enable = true;
       alsa = {
