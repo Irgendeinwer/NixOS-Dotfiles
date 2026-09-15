@@ -66,8 +66,8 @@ in
               };
             };
           };
-          "Schule-25-26" = {
-            path = "/home/${cfg.user}/Schule-25-26";
+          "Schule-26-27" = {
+            path = "/home/${cfg.user}/Schule-26-27";
             devices = [
               "junixos"
               "junixbook"
