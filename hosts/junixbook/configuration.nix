@@ -59,7 +59,7 @@
 
     services = {
       syncthing.enable = true;
-      printing.enable = true;
+      printing.enable = false;
       playerctl.enable = true;
     };
   };
