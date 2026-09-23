@@ -74,7 +74,7 @@
     hunspellDicts.en_US
     hyphenDicts.de_DE
     hyphenDicts.en_US
-    libreoffice-fresh
+    libreoffice
     tree
   ];
 
