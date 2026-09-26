@@ -26,8 +26,7 @@ in
       "iommu.strict=1"
       "iommu.passthrough=0"
     ] ++ lib.optionals cfg.lockdownEmergencyShell [
-      "rd.shell=0"
-      "rd.emergency=reboot"
+      "boot.panic_on_fail"
       "panic=10"
     ];
 
@@ -58,9 +57,9 @@ in
       "kernel.yama.ptrace_scope" = 1;
     };
 
-    # 4. Per-SSID Stable MAC Address Randomization
-    # 'stable' derives a unique pseudorandom MAC per network SSID, preventing cross-network
-    # tracking without causing DHCP lease instability on the same network.
+    # 4. Connection-stable MAC Address Randomization
+    # 'stable' derives a unique pseudorandom MAC per connection profile (stable-id + host secret),
+    # preventing cross-network tracking without causing DHCP lease instability on reconnects.
     networking.networkmanager.wifi.macAddress = "stable";
   };
 }
