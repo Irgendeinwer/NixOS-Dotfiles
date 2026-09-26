@@ -64,8 +64,12 @@ in
     environment.shells = with pkgs; [ zsh ];
     programs.zsh.enable = true;
 
-  # Package manager settings
-  nixpkgs.config.allowUnfree = true;
+    # Package manager settings
+    nixpkgs.config.allowUnfree = true;
+    nix.settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
 
   # Core system packages shared across all hosts
   environment.systemPackages = with pkgs; [

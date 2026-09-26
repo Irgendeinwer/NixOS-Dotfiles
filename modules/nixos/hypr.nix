@@ -10,6 +10,12 @@ in
 {
   options.custom.desktop.hyprland = {
     enable = lib.mkEnableOption "Hyprland Wayland compositor";
+
+    monitors = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      default = [ ];
+      description = "Declarative monitor configurations for Hyprland.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
