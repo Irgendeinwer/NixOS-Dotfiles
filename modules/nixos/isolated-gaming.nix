@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.custom.services.isolatedGaming;
+  cfg = config.custom.desktop.gaming.isolated;
 in
 {
-  options.custom.services.isolatedGaming = {
+  options.custom.desktop.gaming.isolated = {
     enable = lib.mkEnableOption "isolated Flatpak gaming environment (Bottles & Sandboxed Steam)";
   };
 

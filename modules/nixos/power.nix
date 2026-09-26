@@ -8,6 +8,12 @@ let
 in
 {
   options.custom.system.power = {
+    upower = {
+      enable = lib.mkEnableOption "UPower daemon for power and battery status";
+    };
+
+    ignorePowerKey = lib.mkEnableOption "Ignore physical power key in logind to prevent accidental shutdowns";
+
     suspendThenHibernate = {
       enable = lib.mkEnableOption "Suspend-then-hibernate after a configured timeout (clears RAM keys to encrypted swap)";
 
@@ -19,14 +25,24 @@ in
     };
   };
 
-  config = lib.mkIf cfg.suspendThenHibernate.enable {
-    systemd.sleep.settings.Sleep = {
-      HibernateDelaySec = "${toString cfg.suspendThenHibernate.hibernateDelaySec}s";
-    };
+  config = lib.mkMerge [
+    (lib.mkIf cfg.upower.enable {
+      services.upower.enable = true;
+    })
 
-    services.logind.settings.Login = {
-      HandleLidSwitch = "suspend-then-hibernate";
-      HandleLidSwitchExternalPower = "suspend-then-hibernate";
-    };
-  };
+    (lib.mkIf cfg.ignorePowerKey {
+      services.logind.settings.Login.HandlePowerKey = "ignore";
+    })
+
+    (lib.mkIf cfg.suspendThenHibernate.enable {
+      systemd.sleep.settings.Sleep = {
+        HibernateDelaySec = "${toString cfg.suspendThenHibernate.hibernateDelaySec}s";
+      };
+
+      services.logind.settings.Login = {
+        HandleLidSwitch = "suspend-then-hibernate";
+        HandleLidSwitchExternalPower = "suspend-then-hibernate";
+      };
+    })
+  ];
 }
