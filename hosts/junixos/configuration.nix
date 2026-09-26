@@ -69,17 +69,10 @@
     ffmpeg
     gimp
     gparted
-    hunspell
-    hunspellDicts.de_DE
-    hunspellDicts.en_US
-    hyphenDicts.de_DE
-    hyphenDicts.en_US
-    libreoffice
     tree
   ];
 
-  # Host-specific hardware and daemons
-  hardware.amdgpu.opencl.enable = true;
+  # Host-specific daemons
   services.fstrim.enable = true;
   services.openssh = {
     enable = true;
@@ -110,17 +103,49 @@
       security.hardening.enable = true;
     };
 
+    hardware = {
+      amdgpu = {
+        enable = true;
+        lact.enable = true;
+      };
+    };
+
     desktop = {
-      hyprland.enable = true;
+      hyprland = {
+        enable = true;
+        monitors = [
+          {
+            output = "DP-2";
+            mode = "2560x1440@100";
+            position = "0x0";
+            scale = 1;
+          }
+          {
+            output = "DP-1";
+            mode = "2560x1440@180";
+            position = "2560x0";
+            scale = 1;
+            bitdepth = 10;
+            cm = "srgb";
+          }
+        ];
+      };
       greetd.enable = true;
       sound.enable = true;
       obs.enable = true;
       gaming = {
         enable = true;
+        isolated.enable = true;
         arkServer.enable = false;
         factorioServer.enable = false;
       };
       vscode.enable = true;
+      tools.enable = true;
+      browsers.enable = true;
+      messaging.enable = true;
+      media.enable = true;
+      flexing.enable = true;
+      office.enable = true;
     };
 
     services = {
@@ -138,9 +163,7 @@
       meilisearch.enable = true;
       archisteamfarm.enable = true;
       openrgb.enable = true;
-      lact.enable = true;
       zapret.enable = true;
-      isolatedGaming.enable = true;
       printing.enable = true;
       playerctl.enable = true;
       backup = {
