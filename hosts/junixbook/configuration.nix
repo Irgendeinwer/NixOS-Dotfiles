@@ -18,13 +18,8 @@
   # Corporate/School SSL Certificate
   environment.etc."ssl/certs/iserv.pem".source = ../../assets/iserv.pem;
 
-  # Laptop power management & behavior
-  services.logind.settings.Login.HandlePowerKey = "ignore";
-  services.upower.enable = true;
-
   # Laptop-specific system packages
   environment.systemPackages = with pkgs; [
-    libreoffice
     networkmanagerapplet
     scrcpy
   ];
@@ -46,15 +41,35 @@
         secureboot.enable = true;
       };
       security.hardening.enable = true;
+      power = {
+        upower.enable = true;
+        ignorePowerKey = true;
+      };
     };
 
     hardware.bluetooth.enable = true;
 
     desktop = {
-      hyprland.enable = true;
+      hyprland = {
+        enable = true;
+        monitors = [
+          {
+            output = "eDP-1";
+            mode = "preferred";
+            position = "auto";
+            scale = 1;
+          }
+        ];
+      };
       greetd.enable = true;
       sound.enable = true;
       gaming.enable = true;
+      tools.enable = true;
+      browsers.enable = true;
+      messaging.enable = true;
+      media.enable = true;
+      flexing.enable = true;
+      office.enable = true;
     };
 
     services = {
