@@ -1,6 +1,14 @@
-{ config, pkgs, ... }:
+{
+  config,
+  osConfig ? null,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
+  hyprlandEnabled = if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+
   # Apps & UI
   kitty = "${pkgs.kitty}/bin/kitty";
   rofi = "${pkgs.rofi}/bin/rofi";
@@ -17,8 +25,45 @@ let
   wlCopy = "${pkgs.wl-clipboard}/bin/wl-copy";
   notifySend = "${pkgs.libnotify}/bin/notify-send";
   hyprshot = "${pkgs.hyprshot}/bin/hyprshot";
+
+  formatMonitor =
+    m:
+    let
+      bitdepthStr = if m ? bitdepth then "\n      bitdepth = ${toString m.bitdepth}," else "";
+      cmStr = if m ? cm then "\n      cm = \"${m.cm}\"," else "";
+      sdrbrightnessStr = if m ? sdrbrightness then "\n      sdrbrightness = ${toString m.sdrbrightness}," else "";
+    in
+    ''
+      hl.monitor({
+        output = "${m.output}",
+        mode = "${m.mode or "preferred"}",
+        position = "${m.position or "auto"}",
+        scale = ${toString (m.scale or 1)},${bitdepthStr}${cmStr}${sdrbrightnessStr}
+      })
+    '';
+
+  configuredMonitors = if osConfig != null then (osConfig.custom.desktop.hyprland.monitors or [ ]) else [ ];
+
+  monitorsLua =
+    if configuredMonitors != [ ] then
+      lib.concatMapStringsSep "\n\n" formatMonitor configuredMonitors
+    else ''
+      hl.monitor({
+        output = "",
+        mode = "preferred",
+        position = "auto",
+        scale = 1,
+      })
+    '';
+
+  dp1Config = lib.findFirst (m: (m.output or "") == "DP-1") null configuredMonitors;
+  hasDp1 = dp1Config != null;
+  dp1Mode = if hasDp1 then (dp1Config.mode or "preferred") else "preferred";
+  dp1Pos = if hasDp1 then (dp1Config.position or "auto") else "auto";
+  dp1Scale = if hasDp1 then toString (dp1Config.scale or 1) else "1";
+  dp1Bitdepth = if hasDp1 then toString (dp1Config.bitdepth or 10) else "10";
 in
-{
+lib.mkIf hyprlandEnabled {
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
@@ -35,31 +80,7 @@ in
       --------------------------------------------------
       -- Monitors
       --------------------------------------------------
-      -- eDP-1: Laptop built-in display
-      hl.monitor({
-        output = "eDP-1",
-        mode = "preferred",
-        position = "auto",
-        scale = 1,
-      })
-
-      -- DP-2: Lenovo G27qe-20 (Left, 1440p @ 100Hz)
-      hl.monitor({
-        output = "DP-2",
-        mode = "2560x1440@100",
-        position = "0x0",
-        scale = 1,
-      })
-
-      -- DP-1: KTC M27T6 (Right, 1440p @ 180Hz) - Starts in 10-bit SDR mode
-      hl.monitor({
-        output = "DP-1",
-        mode = "2560x1440@180",
-        position = "2560x0",
-        scale = 1,
-        bitdepth = 10,
-        cm = "srgb",
-      })
+      ${monitorsLua}
 
       --------------------------------------------------
       -- Autostart (exec-once)
@@ -188,24 +209,26 @@ in
       hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
       hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd("loginctl lock-session"))
 
-      -- Native Lua HDR Toggle for DP-1
-      local hdr_on = false
-      local function toggle_hdr()
-        hdr_on = not hdr_on
-        hl.monitor({
-          output = "DP-1",
-          mode = "2560x1440@180",
-          position = "2560x0",
-          scale = 1,
-          bitdepth = 10,
-          cm = hdr_on and "hdr" or "srgb",
-          sdrbrightness = hdr_on and 1.2 or 1.0,
-        })
+      ${lib.optionalString hasDp1 ''
+        -- Native Lua HDR Toggle for DP-1
+        local hdr_on = false
+        local function toggle_hdr()
+          hdr_on = not hdr_on
+          hl.monitor({
+            output = "${dp1Config.output}",
+            mode = "${dp1Mode}",
+            position = "${dp1Pos}",
+            scale = ${dp1Scale},
+            bitdepth = ${dp1Bitdepth},
+            cm = hdr_on and "hdr" or "srgb",
+            sdrbrightness = hdr_on and 1.2 or 1.0,
+          })
 
-        local status = hdr_on and "HDR Enabled (10-bit)" or "SDR Mode (10-bit)"
-        hl.exec_cmd(string.format([[${notifySend} "Display" "%s" -t 5000]], status))
-      end
-      hl.bind(mainMod .. " + SHIFT + H", toggle_hdr)
+          local status = hdr_on and "HDR Enabled (10-bit)" or "SDR Mode (10-bit)"
+          hl.exec_cmd(string.format([[${notifySend} "Display" "%s" -t 5000]], status))
+        end
+        hl.bind(mainMod .. " + SHIFT + H", toggle_hdr)
+      ''}
 
       -- Utilities
       hl.bind("PRINT", hl.dsp.exec_cmd("${hyprshot} -m region --freeze -o ${config.programs.hyprshot.saveLocation}"))
