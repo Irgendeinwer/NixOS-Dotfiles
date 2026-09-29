@@ -31,7 +31,7 @@ in
 
     (lib.mkIf (cfg == "cachyos") {
       boot.kernelPackages =
-        inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-latest;
+        inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-bore-lto-x86_64-v3;
 
       nix.settings = {
         substituters = [ "https://attic.xuyh0120.win/lantian" ];
