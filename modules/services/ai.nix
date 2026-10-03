@@ -46,10 +46,17 @@ let
     export TAVILY_API_KEY="$(${pkgs.coreutils}/bin/cat ${config.sops.secrets.tavily_key_1.path})"
     exec ${pkgs.nodejs}/bin/npx -y tavily-mcp@latest "$@"
   '';
+
+  # Wrapper script for Puppeteer MCP using NixOS Chromium
+  puppeteerMcp = pkgs.writeShellScriptBin "puppeteer-mcp" ''
+    export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+    export PUPPETEER_EXECUTABLE_PATH="${pkgs.chromium}/bin/chromium"
+    exec ${pkgs.nodejs}/bin/npx -y @modelcontextprotocol/server-puppeteer "$@"
+  '';
 in
 {
   options.custom.services.ai = {
-    enable = lib.mkEnableOption "AI developer stack (Gemini rotation, LiteLLM, and Tavily MCP)";
+    enable = lib.mkEnableOption "AI developer stack (Gemini rotation, LiteLLM, Tavily, and Puppeteer MCP)";
 
     user = lib.mkOption {
       type = lib.types.str;
@@ -100,10 +107,10 @@ in
         model_list = modelList;
         router_settings = {
           routing_strategy = "least-busy";
-          num_retries = 5;
-          allowed_fails = 1;
-          cooldown_time = 30;
-          retry_after = 1;
+          num_retries = 10;
+          allowed_fails = 3;
+          cooldown_time = 15;
+          retry_after = 3;
           fallbacks = [
             {
               "gemini-flash" = [
@@ -120,6 +127,7 @@ in
     environment.systemPackages = [
       pkgs.nodejs
       tavilyMcp
+      puppeteerMcp
     ];
   };
 }
