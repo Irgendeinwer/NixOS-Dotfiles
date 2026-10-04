@@ -8,10 +8,11 @@
   options.custom.desktop.sound = {
     enable = lib.mkEnableOption "desktop sound configuration (PipeWire, virtual routing)";
   };
+
   config = lib.mkIf config.custom.desktop.sound.enable {
     environment.systemPackages = with pkgs; [
       alsa-utils
-      qpwgraph # Essential for visual routing
+      qpwgraph
       pulseaudioFull
       pulsemixer
       pavucontrol
@@ -32,19 +33,16 @@
       };
       pulse.enable = true;
 
-      # Define Virtual Sinks and Sources
       extraConfig.pipewire = {
-        # 1. THE MIC SOURCE (For Chromium/Discord)
-        # This creates a loopback: audio sent to 'obs_mic_sink'
-        # comes out of 'obs_mic_source' which Chromium sees as a Mic.
-        "10-obs-virtual-mic" = {
+        # 1. VIRTUAL MICROPHONE (For Discord / Chromium / AndroidMic destination)
+        "10-virtual-mic" = {
           "context.modules" = [
             {
               name = "libpipewire-module-loopback";
               args = {
-                "node.description" = "OBS Virtual Microphone";
+                "node.description" = "Virtual Microphone";
                 "capture.props" = {
-                  "node.name" = "obs_mic_sink";
+                  "node.name" = "mic_sink";
                   "media.class" = "Audio/Sink";
                   "audio.position" = [
                     "FL"
@@ -52,7 +50,7 @@
                   ];
                 };
                 "playback.props" = {
-                  "node.name" = "obs_mic_source";
+                  "node.name" = "mic_source";
                   "media.class" = "Audio/Source";
                   "audio.position" = [
                     "FL"
@@ -64,29 +62,79 @@
           ];
         };
 
-        # 2. YOUR ORIGINAL DEVICES
-        "99-virtual-devices" = {
+        # 2. 3-CHANNEL RECORDING DEVICE & AUTOMATIC ROUTING
+        "20-multichannel-rec" = {
           "context.objects" = [
-            # The Raw Input (From Android)
+            # The 3-channel null sink (Desktop = 1 & 2 [FL, FR], Mic = 3 [FC])
             {
               factory = "adapter";
               args = {
                 "factory.name" = "support.null-audio-sink";
-                "node.name" = "AndroidMic-Sink";
-                "node.description" = "Raw Android Input";
+                "node.name" = "Combined-Capture-Sink";
+                "node.description" = "Desktop & Mic Capture";
                 "media.class" = "Audio/Sink";
-                "audio.position" = "FL,FR";
+                "audio.position" = [
+                  "FL"
+                  "FR"
+                  "FC"
+                ];
+                # Priority 0 ensures WirePlumber never auto-selects this as the default output
+                "priority.driver" = 0;
+                "priority.session" = 0;
               };
             }
-            # The Processed Output (To Discord)
+          ];
+
+          "context.modules" = [
+            # Route Desktop Audio -> Channels 1 & 2 (FL, FR)
             {
-              factory = "adapter";
+              name = "libpipewire-module-loopback";
               args = {
-                "factory.name" = "support.null-audio-sink";
-                "node.name" = "VoiceChanger-Output";
-                "node.description" = "AI Voice Output";
-                "media.class" = "Audio/Sink";
-                "audio.position" = "FL,FR";
+                "node.description" = "Desktop to Combined Capture";
+                "capture.props" = {
+                  "node.name" = "capture.desktop_to_combined";
+                  "stream.capture.sink" = true;
+                  "audio.position" = [
+                    "FL"
+                    "FR"
+                  ];
+                  "node.passive" = true;
+                  "node.dont-fallback" = true;
+                };
+                "playback.props" = {
+                  "node.name" = "playback.desktop_to_combined";
+                  "target.object" = "Combined-Capture-Sink";
+                  "audio.position" = [
+                    "FL"
+                    "FR"
+                  ];
+                  "stream.dont-remix" = true;
+                };
+              };
+            }
+
+            # Route Microphone Audio -> Channel 3 (FC / Center)
+            {
+              name = "libpipewire-module-loopback";
+              args = {
+                "node.description" = "Mic to Combined Capture";
+                "capture.props" = {
+                  "node.name" = "capture.mic_to_combined";
+                  "target.object" = "mic_source";
+                  "audio.position" = [
+                    "MONO"
+                  ];
+                  "node.passive" = true;
+                  "node.dont-fallback" = true;
+                };
+                "playback.props" = {
+                  "node.name" = "playback.mic_to_combined";
+                  "target.object" = "Combined-Capture-Sink";
+                  "audio.position" = [
+                    "FC"
+                  ];
+                  "stream.dont-remix" = true;
+                };
               };
             }
           ];
