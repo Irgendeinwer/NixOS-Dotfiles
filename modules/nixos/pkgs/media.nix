@@ -22,6 +22,7 @@ in
       rush-lyrics
       imv
       projectm-sdl-cpp
+      audacity
     ];
   };
 }
