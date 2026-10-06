@@ -136,8 +136,6 @@
       gaming = {
         enable = true;
         isolated.enable = true;
-        arkServer.enable = false;
-        factorioServer.enable = false;
       };
       vscode.enable = true;
       tools.enable = true;

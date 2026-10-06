@@ -67,7 +67,6 @@ lib.mkIf hyprlandEnabled {
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
-    plugins = [ ];
     systemd.enable = true;
     systemd.variables = [ "--all" ];
     extraConfig = ''
