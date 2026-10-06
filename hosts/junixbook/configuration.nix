@@ -24,6 +24,9 @@
     scrcpy
   ];
 
+  # Host-specific daemons
+  services.fstrim.enable = true;
+
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {
