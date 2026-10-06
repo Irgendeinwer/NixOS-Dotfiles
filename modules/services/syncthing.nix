@@ -35,7 +35,8 @@ in
       group = "users";
       user = cfg.user;
       configDir = "/home/${cfg.user}/.config/syncthing";
-      guiAddress = "0.0.0.0:8384";
+      # Local-only: the firewall does not expose the web GUI port (8384).
+      guiAddress = "127.0.0.1:8384";
       overrideDevices = true;
       overrideFolders = true;
       settings = {
