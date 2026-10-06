@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
 
 let
   a4k = "${pkgs.anime4k}";
@@ -12,6 +17,11 @@ let
     "${a4k}/Anime4K_AutoDownscalePre_x4.glsl"
     "${a4k}/Anime4K_Upscale_CNN_x2_M.glsl"
   ];
+
+  # The multichannel profile routes audio to the HeSuVi virtual-surround sink,
+  # which only exists on hosts with custom.audio.virtualSurround enabled.
+  surroundEnabled =
+    if osConfig != null then (osConfig.custom.audio.virtualSurround.enable or false) else false;
 in
 {
   programs.mpv = {
@@ -25,24 +35,26 @@ in
       quality-menu
     ];
 
-    profiles = {
-      multichannel = {
-        profile-cond = "p[\"audio-params/channel-count\"] > 2";
-        audio-device = "pipewire/effect_input.virtual-surround-7.1-hesuvi";
-      };
+    profiles =
+      lib.optionalAttrs surroundEnabled {
+        multichannel = {
+          profile-cond = "p[\"audio-params/channel-count\"] > 2";
+          audio-device = "pipewire/effect_input.virtual-surround-7.1-hesuvi";
+        };
+      }
+      // {
+        # Active shader Profile
+        upscale-low-res = {
+          profile-cond = "height < 1440 and secondary_sub_visibility";
+          glsl-shaders = anime4kShaders;
+        };
 
-      # Active shader Profile
-      upscale-low-res = {
-        profile-cond = "height < 1440 and secondary_sub_visibility";
-        glsl-shaders = anime4kShaders;
+        # Revert shader Profile
+        upscale-low-res-revert = {
+          profile-cond = "not (height < 1440 and secondary_sub_visibility)";
+          glsl-shaders = "";
+        };
       };
-
-      # Revert shader Profile
-      upscale-low-res-revert = {
-        profile-cond = "not (height < 1440 and secondary_sub_visibility)";
-        glsl-shaders = "";
-      };
-    };
 
     config = {
       # Playback & Hardware
