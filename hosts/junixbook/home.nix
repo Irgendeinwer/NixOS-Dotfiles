@@ -1,6 +1,5 @@
 {
   inputs,
-  pkgs,
   osConfig,
   ...
 }:
@@ -14,8 +13,6 @@ in
   imports = [
     ../../modules/home-manager
   ];
-
-  home.packages = with pkgs; [ ];
 
   qt.enable = true;
 
