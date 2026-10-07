@@ -548,7 +548,7 @@ in
           fail_color = "rgb(204, 36, 29)"; # Gruvbox Red
           fail_text = "<i>Incorrect ($ATTEMPTS)</i>";
 
-          placeholder_text = ''<i><span foreground="##bdae93">Password...</span></i>'';
+          placeholder_text = ''<i><span foreground="#bdae93">Password...</span></i>'';
           shadow_passes = 0;
           zindex = 2;
 
