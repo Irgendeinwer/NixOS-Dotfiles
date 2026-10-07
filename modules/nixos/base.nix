@@ -80,12 +80,10 @@ in
     curl
     dconf
     dig
-    dunst
     easyeffects
     inkscape
     kitty
     libnotify
-    mako
     obsidian
     pdf4qt
     python3
