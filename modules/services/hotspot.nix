@@ -41,6 +41,13 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.password != null || cfg.passwordFile != null;
+        message = "custom.services.hotspot needs either password or passwordFile, otherwise the access point is created without encryption.";
+      }
+    ];
+
     boot.kernelParams = [ "usbcore.autosuspend=-1" ];
     boot.extraModprobeConfig = ''
       options rtw88_core disable_aspm=y
