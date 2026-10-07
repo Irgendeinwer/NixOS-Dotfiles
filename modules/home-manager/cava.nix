@@ -1,4 +1,3 @@
-{ ... }:
 {
   # No home-manager API exists for cava, so this is a literal config file.
   # The input section is intentionally left out: auto-detect already works
