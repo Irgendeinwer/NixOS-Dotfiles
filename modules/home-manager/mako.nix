@@ -1,4 +1,3 @@
-{ ... }:
 {
   # Declarative notification daemon (gruvbox). Started on demand via D-Bus
   # activation; replaces the previous mako/dunst provider ambiguity.
