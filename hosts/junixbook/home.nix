@@ -24,7 +24,6 @@ in
 
   home.sessionVariables = {
     EDITOR = "nvim";
-    STEAM_EXTRA_COMPAT_TOOLS_PATH = "~/.steam/root/compatibilitytools.d";
   };
 
   home.stateVersion = "24.05";
