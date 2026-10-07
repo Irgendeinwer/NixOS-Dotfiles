@@ -14,8 +14,6 @@ in
     ../../modules/home-manager
   ];
 
-  qt.enable = true;
-
   # Custom options
   custom = {
     theme.wallpaper = {
@@ -25,11 +23,5 @@ in
     audio.virtualSurround.enable = true;
   };
 
-  home.sessionVariables = {
-    EDITOR = "nvim";
-  };
-
   home.stateVersion = "24.05";
-
-  programs.home-manager.enable = true;
 }
