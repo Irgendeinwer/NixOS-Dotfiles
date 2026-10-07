@@ -86,6 +86,7 @@ in
     libnotify
     obsidian
     pdf4qt
+    playerctl
     python3
     qimgv
     ripgrep
