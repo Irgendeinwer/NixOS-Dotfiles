@@ -27,11 +27,11 @@ in
       ];
       fontconfig = {
         defaultFonts = {
-          serif = [ "Noto Nerd Font Serif" ];
-          sansSerif = [ "Noto Nerd Font Sans" ];
+          serif = [ "Noto Serif CJK JP" ];
+          sansSerif = [ "Noto Sans CJK JP" ];
           monospace = [
             "Fira Code Nerd Font Mono"
-            "Noto Nerd Font Sans Mono"
+            "Noto Sans Mono CJK JP"
           ];
         };
       };
