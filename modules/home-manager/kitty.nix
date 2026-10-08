@@ -60,5 +60,11 @@
       confirm_os_window_close = 0;
       enable_audio_bell = "no";
     };
+
+    # Word-wise deletion: ^W backward-kill-word, ESC d kill-word (zsh emacs mode).
+    keybindings = {
+      "ctrl+backspace" = "send_text all \\x17";
+      "ctrl+delete" = "send_text all \\ed";
+    };
   };
 }
