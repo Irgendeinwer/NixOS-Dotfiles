@@ -25,7 +25,7 @@ in
         obs-vaapi # Hardware encoding (AMD/Intel)
         obs-gstreamer # Dependency for VA-API
 
-        # --- High-Impact Workflow & Visuals (Your List) ---
+        # --- High-Impact Workflow & Visuals ---
         obs-websocket # Remote control (Stream Deck, etc.)
         obs-move-transition # Professional animated scene transitions
         advanced-scene-switcher # Automate your scene switching

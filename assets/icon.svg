@@ -1,0 +1,455 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -10 512 522" width="512" height="512">
+  <!-- 10px top padding: the -7° head tilt pushes the right ear apex above y=0 -->
+  <title>Nix AI icon</title>
+  <defs>
+    <!-- ================= GRUVBOX MATERIAL PALETTE ================= -->
+    <!-- Background Circle Radial Gradient -->
+    <radialGradient id="gb-bg" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#32302f" />
+      <stop offset="65%" stop-color="#282828" />
+      <stop offset="100%" stop-color="#1d2021" />
+    </radialGradient>
+
+    <!-- Glowing Nix Snowflake Halo Filter -->
+    <filter id="nix-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Pop-Out Drop Shadow for Mecha Ears (Top Rim Only) -->
+    <filter id="ear-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#141617" flood-opacity="0.8" />
+    </filter>
+
+    <!-- 3D Spherical Volume Gradients for Natural Medium Bust -->
+    <radialGradient id="bust-volume-l" cx="42%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#83a598" />
+      <stop offset="50%" stop-color="#458588" />
+      <stop offset="85%" stop-color="#076678" />
+      <stop offset="100%" stop-color="#054c5a" />
+    </radialGradient>
+    <radialGradient id="bust-volume-r" cx="44%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#83a598" />
+      <stop offset="50%" stop-color="#458588" />
+      <stop offset="85%" stop-color="#076678" />
+      <stop offset="100%" stop-color="#054c5a" />
+    </radialGradient>
+
+    <!-- Soft Fabric Sheen on Rounded Breasts -->
+    <radialGradient id="bust-sheen-l" cx="44%" cy="36%" r="48%">
+      <stop offset="0%" stop-color="#a9c5b8" stop-opacity="0.55" />
+      <stop offset="55%" stop-color="#83a598" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#458588" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="bust-sheen-r" cx="44%" cy="36%" r="48%">
+      <stop offset="0%" stop-color="#a9c5b8" stop-opacity="0.55" />
+      <stop offset="55%" stop-color="#83a598" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#458588" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Sparkling Anime Eye Gradient (Deep Blue -> Aqua -> Mint) -->
+    <linearGradient id="gb-iris-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1d2021" />
+      <stop offset="22%" stop-color="#076678" />
+      <stop offset="50%" stop-color="#458588" />
+      <stop offset="78%" stop-color="#7daea3" />
+      <stop offset="100%" stop-color="#8ec07c" />
+    </linearGradient>
+
+    <!-- Glowing Mecha Cat Ear Neon -->
+    <linearGradient id="gb-ear-neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7daea3" />
+      <stop offset="50%" stop-color="#458588" />
+      <stop offset="100%" stop-color="#83a598" />
+    </linearGradient>
+
+    <!-- Strap fabric shading (dark edges, lit middle) -->
+    <linearGradient id="gb-strap" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#076678" />
+      <stop offset="28%" stop-color="#458588" />
+      <stop offset="72%" stop-color="#458588" />
+      <stop offset="100%" stop-color="#076678" />
+    </linearGradient>
+
+    <!-- ================= CLIPPING PATHS ================= -->
+    <!-- Circular Badge Clip (Centered at 256, 260, Radius 225) -->
+    <clipPath id="badge-clip">
+      <circle cx="256" cy="260" r="225" />
+    </clipPath>
+
+    <!-- Eye Sclera Clips -->
+    <clipPath id="left-eye-clip">
+      <path d="M 188,198 C 188,184 199,176 212,176 C 225,176 236,184 236,198 C 236,212 225,220 212,220 C 199,220 188,212 188,198 Z" />
+    </clipPath>
+    <clipPath id="right-eye-clip">
+      <path d="M 276,198 C 276,184 287,176 300,176 C 313,176 324,184 324,198 C 324,212 313,220 300,220 C 287,220 276,212 276,198 Z" />
+    </clipPath>
+
+    <!-- ================= AUTHENTIC NIXOS SNOWFLAKE DEFINITION ================= -->
+    <g id="nix-snowflake">
+      <path d="M7.352 1.592l-1.364.002L5.32 2.75l1.557 2.713-3.137-.008-1.32 2.34H14.11l-1.353-2.332-3.192-.006-2.214-3.865z" fill="#7daea3"/>
+      <path d="M13.527 1.592l-2.687.025 5.846 10.127 1.341-2.34-1.59-2.765 2.24-3.85-.683-1.182h-1.336l-1.57 2.705-1.56-2.72z" fill="#a9b665"/>
+      <path d="M20.414 5.787l-5.846 10.125 2.696-.008 1.601-2.76 4.453.016.682-1.183-.666-1.157-3.13-.008L21.778 8.1l-1.365-2.313z" fill="#d8a657"/>
+      <path d="M9.432 8.086l-2.696.008-1.601 2.76-4.453-.016L0 12.02l.666 1.157 3.13.008-1.575 2.71 1.365 2.315L9.432 8.086z" fill="#e78a4e"/>
+      <path d="M7.33 12.25l-.006.01-.002-.004-1.342 2.34 1.59 2.765-2.24 3.85.684 1.182H7.35l.004-.006h.001l1.567-2.698 1.558 2.72 2.688-.026-.004-.006h.01L7.33 12.25z" fill="#ea6962"/>
+      <path d="M9.882 16.18l1.354 2.332 3.192.006 2.215 3.865 1.363-.002.668-1.156-1.557-2.713 3.137.008 1.32-2.34H9.881Z" fill="#d3869b"/>
+    </g>
+  </defs>
+
+  <!-- ================= LAYER 1: BASE BADGE, HALO & FULL SEAMLESS ANATOMY ================= -->
+  <g clip-path="url(#badge-clip)">
+    <!-- Dark Background Circle -->
+    <circle cx="256" cy="260" r="225" fill="url(#gb-bg)" />
+
+    <!-- Concentric HUD Tech Rings -->
+    <circle cx="256" cy="260" r="210" fill="none" stroke="#3c3836" stroke-width="1.8" stroke-dasharray="4 8" opacity="0.6" />
+    <circle cx="256" cy="260" r="182" fill="none" stroke="#504945" stroke-width="0.8" opacity="0.35" />
+    <circle cx="256" cy="225" r="152" fill="none" stroke="#7daea3" stroke-width="1.2" stroke-dasharray="10 14" opacity="0.3" />
+
+    <!-- Radiant NixOS Snowflake Halo (Centered Behind Head at 256, 225) -->
+    <g transform="translate(256, 225) scale(16.5) translate(-12.000, -12.000)" filter="url(#nix-glow)" opacity="0.95">
+      <use href="#nix-snowflake" />
+    </g>
+    <circle cx="256" cy="225" r="158" fill="none" stroke="#d8a657" stroke-width="1.2" stroke-dasharray="24 12 4 12" opacity="0.4" />
+
+    <!-- Full Back Hair Mass (Flows seamlessly from crown down behind shoulders) -->
+    <path d="M 172,110
+             C 140,150 118,220 114,285
+             C 110,350 116,410 132,460
+             C 146,490 190,505 256,505
+             C 322,505 366,490 380,460
+             C 396,410 402,350 398,285
+             C 394,220 372,150 340,110
+             Z"
+          fill="#1d2021" />
+
+    <!-- ================= 100% ATTACHED, CONTINUOUS SKIN SKELETON ================= -->
+    <!--
+      - The shoulders are 100% solid and continuous across the collarbones.
+      - Arm attaches firmly to the shoulder joint; the gap ONLY begins BELOW the armpit fold (y=385)!
+      - Full continuous midriff underneath the sheer mesh.
+    -->
+    <path d="M 126,485
+             C 132,445 142,395 152,365
+             C 162,345 180,332 206,324
+             C 224,318 232,312 235,248
+             L 277,254
+             C 280,312 288,318 306,324
+             C 332,332 350,345 360,365
+             C 370,395 380,445 386,485
+             L 348,485
+             C 342,445 334,410 326,385
+             C 324,380 320,380 316,385
+             C 310,415 312,450 316,485
+             L 196,485
+             C 200,450 202,415 196,385
+             C 192,380 188,380 186,385
+             C 178,410 170,445 164,485 Z"
+          fill="#fbf1c7" />
+
+    <!-- Left Armpit Crease & Bicep Contour (Natural attachment, no gap slicing the shoulder!) -->
+    <path d="M 186,385 C 182,415 174,450 164,485" fill="none" stroke="#d5c4a1" stroke-width="2" stroke-linecap="round" />
+    <path d="M 186,385 C 182,415 174,450 164,485 L 174,485 C 182,450 188,415 190,388 Z" fill="#ebdbb2" opacity="0.45" />
+
+    <!-- Right Armpit Crease & Bicep Contour -->
+    <path d="M 326,385 C 330,415 338,450 348,485" fill="none" stroke="#d5c4a1" stroke-width="2" stroke-linecap="round" />
+    <path d="M 326,385 C 330,415 338,450 348,485 L 338,485 C 330,450 324,415 322,388 Z" fill="#ebdbb2" opacity="0.45" />
+
+    <!-- Soft Anime Neck Shadow Under Chin -->
+    <path d="M 235,248 Q 256,278 277,254 L 277,270 Q 256,294 235,264 Z" fill="#ebdbb2" />
+
+    <!-- Black Tech Choker with Golden Nix Lambda Pendant -->
+    <path d="M 232,284 Q 256,290 280,286 L 283,297 Q 256,301 229,295 Z" fill="#282828" />
+    <path d="M 232,285.5 Q 256,291 280,287.5" fill="none" stroke="#3c3836" stroke-width="1.2" stroke-linecap="round" />
+    <path d="M 233,294 Q 256,298 279,296" fill="none" stroke="#7daea3" stroke-width="1.2" stroke-linecap="round" opacity="0.9" />
+    <circle cx="244" cy="291" r="1.6" fill="#fabd2f" />
+    <circle cx="268" cy="291" r="1.6" fill="#fabd2f" />
+    <circle cx="256" cy="300" r="2.2" fill="#fabd2f" />
+    <path d="M 253,301 L 258,312 M 256,307 L 253,312" stroke="#fabd2f" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Natural Collarbones (Clavicles) -->
+    <path d="M 200,333 C 214,336 234,342 248,335" fill="none" stroke="#d5c4a1" stroke-width="2.5" stroke-linecap="round" />
+    <path d="M 312,333 C 298,336 278,342 264,335" fill="none" stroke="#d5c4a1" stroke-width="2.5" stroke-linecap="round" />
+    <!-- Clavicle depth echo -->
+    <path d="M 200,333 C 214,336 234,342 248,335" fill="none" stroke="#bdae93" stroke-width="1.2" stroke-linecap="round" transform="translate(0, 1.3)" />
+    <path d="M 312,333 C 298,336 278,342 264,335" fill="none" stroke="#bdae93" stroke-width="1.2" stroke-linecap="round" transform="translate(0, 1.3)" />
+    <ellipse cx="256" cy="338" rx="3.5" ry="1.8" fill="#d5c4a1" opacity="0.7" />
+
+    <!-- 3D Cleavage Skin Shadows -->
+    <path d="M 256,368 C 251,376 248,388 254,396 C 258,396 261,376 256,368 Z" fill="#ebdbb2" opacity="0.75" />
+    <path d="M 256,370 Q 255.2,384 256,396" stroke="#d5c4a1" stroke-width="2.4" stroke-linecap="round" />
+
+    <!-- Cute Navel on Midriff (Subtly visible under translucent mesh!) -->
+    <ellipse cx="256" cy="442" rx="1.8" ry="2.4" fill="#d5c4a1" opacity="0.85" />
+    <ellipse cx="256" cy="443" rx="1.2" ry="0.8" fill="#fbf1c7" />
+
+    <!-- ================= TRANSLUCENT BLACK TECHWEAR CORSET / BELLY PANEL ================= -->
+    <!--
+      - Sheer black mesh fabric (opacity="0.65") layered over the belly!
+      - Skin and navel subtly show through with rich depth and visual interest.
+      - Styled with corset boning lines and cyan cyber accents.
+    -->
+    <!-- Sheer Mesh Base Panel -->
+    <path d="M 194,420
+             C 214,432 234,434 256,424
+             C 278,434 298,432 318,420
+             L 316,485
+             C 296,488 276,490 256,490
+             C 236,490 216,488 196,485 Z"
+          fill="#141617"
+          opacity="0.65" />
+
+    <!-- Opaque Techwear Flank Trim (Defines Hourglass Waist Silhouette) -->
+    <path d="M 194,420 C 198,440 200,465 196,485 L 206,485 C 210,465 208,440 204,420 Z" fill="#1d2021" opacity="0.9" />
+    <path d="M 318,420 C 314,440 312,465 316,485 L 306,485 C 302,465 304,440 308,420 Z" fill="#1d2021" opacity="0.9" />
+
+    <!-- Corset Boning / Tech Structural Seams -->
+    <path d="M 232,428 C 234,445 235,465 234,488" fill="none" stroke="#282828" stroke-width="2" />
+    <path d="M 232,428 C 234,445 235,465 234,488" fill="none" stroke="#7daea3" stroke-width="1.2" stroke-dasharray="3 5" opacity="0.75" />
+
+    <path d="M 280,428 C 278,445 277,465 278,488" fill="none" stroke="#282828" stroke-width="2" />
+    <path d="M 280,428 C 278,445 277,465 278,488" fill="none" stroke="#7daea3" stroke-width="1.2" stroke-dasharray="3 5" opacity="0.75" />
+
+    <!-- ================= BUST CUPS & FULLY CONNECTED STRAPS ================= -->
+    <!-- Form-Fitting Straps (Directly continuous into the breast cup peaks!) -->
+    <path d="M 216,370 C 212,354 209,338 206,324 Q 212,321 218,320 C 221,336 224,352 226,366 Z" fill="url(#gb-strap)" />
+    <path d="M 209,326 L 220,365" stroke="#83a598" stroke-width="1.6" />
+
+    <path d="M 296,370 C 300,354 303,338 306,324 Q 300,321 294,320 C 291,336 288,352 286,366 Z" fill="url(#gb-strap)" />
+    <path d="M 303,326 L 292,365" stroke="#83a598" stroke-width="1.6" />
+
+    <!-- LEFT BREAST CUP (Soft 3D Teardrop Volume) -->
+    <path d="M 214,364
+             C 226,366 240,372 250,385
+             C 256,392 256,398 256,398
+             C 256,398 250,424 234,428
+             C 214,430 196,424 192,408
+             C 188,394 198,374 214,364 Z"
+          fill="url(#bust-volume-l)" />
+    <ellipse cx="220" cy="396" rx="16" ry="14" fill="url(#bust-sheen-l)" />
+    <path d="M 202,384 Q 220,410 240,402" fill="none" stroke="#83a598" stroke-width="4" stroke-linecap="round" opacity="0.45" />
+
+    <!-- RIGHT BREAST CUP (Soft 3D Teardrop Volume) -->
+    <path d="M 298,364
+             C 286,366 272,372 262,385
+             C 256,392 256,398 256,398
+             C 256,398 262,424 278,428
+             C 298,430 316,424 320,408
+             C 324,394 314,374 298,364 Z"
+          fill="url(#bust-volume-r)" />
+    <ellipse cx="284" cy="396" rx="16" ry="14" fill="url(#bust-sheen-r)" />
+    <path d="M 310,384 Q 292,410 272,402" fill="none" stroke="#83a598" stroke-width="4" stroke-linecap="round" opacity="0.45" />
+
+    <!-- Plunging Sweetheart Trim (Continuous Across Both Cups) -->
+    <path d="M 212,366 C 224,372 238,380 256,394 C 274,380 288,372 300,366"
+          fill="none"
+          stroke="#83a598"
+          stroke-width="2.6"
+          stroke-linecap="round" />
+
+    <!-- Cup neckline piping (reuses exact cup edge geometry) -->
+    <path d="M 214,364 C 226,366 240,372 250,385" fill="none" stroke="#7daea3" stroke-width="1.6" stroke-linecap="round" opacity="0.85" />
+    <path d="M 298,364 C 286,366 272,372 262,385" fill="none" stroke="#7daea3" stroke-width="1.6" stroke-linecap="round" opacity="0.85" />
+
+    <!-- Fabric sheen streaks (translated pair: single light source) -->
+    <path d="M 210,378 Q 224,388 238,392" fill="none" stroke="#fbf1c7" stroke-width="2" stroke-linecap="round" opacity="0.25" />
+    <path d="M 274,378 Q 288,388 302,392" fill="none" stroke="#fbf1c7" stroke-width="2" stroke-linecap="round" opacity="0.25" />
+
+    <!-- Strap-cup hardware rings -->
+    <circle cx="218" cy="368" r="2.6" fill="#282828" stroke="#fabd2f" stroke-width="1.4" />
+    <circle cx="294" cy="368" r="2.6" fill="#282828" stroke="#fabd2f" stroke-width="1.4" />
+
+    <!-- Deep Cleavage Valley Shading -->
+    <path d="M 256,392 Q 255.4,406 256,418" stroke="#076678" stroke-width="3.5" stroke-linecap="round" />
+    <path d="M 256,394 Q 255.4,404 256,414" stroke="#1d2021" stroke-width="1.8" stroke-linecap="round" opacity="0.85" />
+
+    <!-- Center gore charm -->
+    <circle cx="256" cy="400" r="3.2" fill="#282828" stroke="#fabd2f" stroke-width="1.4" />
+    <circle cx="256" cy="400" r="1.4" fill="#7daea3" />
+
+    <!-- Underbust Cyber Belt Over the Mesh Corset -->
+    <path d="M 194,424 C 212,436 234,438 256,426 C 278,438 300,436 318,424" fill="none" stroke="#1d2021" stroke-width="4.5" stroke-linecap="round" />
+    <path d="M 196,424 C 212,436 234,438 256,426 C 278,438 300,436 316,424" fill="none" stroke="#7daea3" stroke-width="1.5" stroke-dasharray="4 6" stroke-linecap="round" />
+    <rect x="248" y="425" width="16" height="9" rx="2.5" fill="#282828" stroke="#fabd2f" stroke-width="1.5" />
+    <circle cx="256" cy="429.5" r="1.6" fill="#7daea3" />
+  </g>
+
+  <!-- ================= LAYER 2: OUTER BADGE FRAME ================= -->
+  <circle cx="256" cy="260" r="225" fill="none" stroke="#282828" stroke-width="8" />
+  <circle cx="256" cy="260" r="229" fill="none" stroke="#3c3836" stroke-width="2" />
+  <circle cx="256" cy="260" r="221" fill="none" stroke="#504945" stroke-width="1.2" />
+
+  <!-- ================= LAYER 3: TILTED ANIME HEAD, FACE & GAMER HEADSET (-7° TILT) ================= -->
+  <g transform="translate(256, 255) rotate(-7) translate(-256, -255)">
+
+    <!-- Headset Headband Arch -->
+    <path d="M 152,180 C 150,60 362,60 360,180"
+          fill="none"
+          stroke="#1d2021"
+          stroke-width="18"
+          stroke-linecap="round" />
+    <path d="M 152,180 C 150,60 362,60 360,180"
+          fill="none"
+          stroke="#3c3836"
+          stroke-width="11"
+          stroke-linecap="round" />
+    <path d="M 170,105 C 214,80 298,80 342,105"
+          fill="none"
+          stroke="#504945"
+          stroke-width="2.8"
+          stroke-linecap="round"
+          stroke-dasharray="7 5" />
+
+    <!-- Headset Earcups -->
+    <rect x="138" y="163" width="28" height="58" rx="14" fill="#282828" stroke="#3c3836" stroke-width="2.8" />
+    <rect x="142" y="169" width="20" height="46" rx="10" fill="#1d2021" />
+    <circle cx="152" cy="192" r="8" fill="#282828" stroke="#7daea3" stroke-width="2" />
+    <circle cx="152" cy="192" r="3" fill="#ea6962" />
+
+    <rect x="346" y="163" width="28" height="58" rx="14" fill="#282828" stroke="#3c3836" stroke-width="2.8" />
+    <rect x="350" y="169" width="20" height="46" rx="10" fill="#1d2021" />
+    <circle cx="360" cy="192" r="8" fill="#282828" stroke="#7daea3" stroke-width="2" />
+    <circle cx="360" cy="192" r="3" fill="#7daea3" />
+
+    <!-- Cute Anime Face Silhouette (Soft Rounded Anime Chin at Y=276) -->
+    <path d="M 174,172
+             C 174,218 184,244 206,260
+             C 222,272 244,276 256,276
+             C 268,276 290,272 306,260
+             C 328,244 338,218 338,172
+             Z"
+          fill="#fbf1c7" />
+
+    <!-- Soft Anime Cheek Blush -->
+    <ellipse cx="204" cy="226" rx="16" ry="8" fill="#ea6962" opacity="0.38" />
+    <ellipse cx="308" cy="226" rx="16" ry="8" fill="#ea6962" opacity="0.38" />
+    <!-- Manga Blush Lines (///) -->
+    <g stroke="#ea6962" stroke-width="1.8" stroke-linecap="round" opacity="0.85">
+      <line x1="198" y1="223" x2="203" y2="231" />
+      <line x1="204" y1="222" x2="209" y2="230" />
+      <line x1="210" y1="223" x2="215" y2="231" />
+
+      <line x1="302" y1="223" x2="307" y2="231" />
+      <line x1="308" y1="222" x2="313" y2="230" />
+      <line x1="314" y1="223" x2="319" y2="231" />
+    </g>
+
+    <!-- Dainty Anime Nose -->
+    <ellipse cx="256" cy="224" rx="1.6" ry="1.2" fill="#d5c4a1" />
+    <circle cx="255.4" cy="223.5" r="0.6" fill="#fbf1c7" />
+
+    <!-- Sweet Anime Smile with White Fang (`yaeba`) -->
+    <g>
+      <path d="M 244,240 Q 256,244 268,240 Q 262,260 247,246 Z" fill="#cc5555" />
+      <path d="M 243,240 Q 256,245 269,240" fill="none" stroke="#3c3836" stroke-width="2.2" stroke-linecap="round" />
+      <path d="M 250,257 Q 256,259.5 262,257" fill="none" stroke="#d5c4a1" stroke-width="1.8" stroke-linecap="round" />
+      <!-- White Fang -->
+      <polygon points="261,241 265,246 266,240" fill="#fbf1c7" />
+    </g>
+
+    <!-- ================= LARGE EXPRESSIVE SPARKLING ANIME EYES ================= -->
+    <!-- LEFT EYE -->
+    <g>
+      <path d="M 188,198 C 188,184 199,176 212,176 C 225,176 236,184 236,198 C 236,212 225,220 212,220 C 199,220 188,212 188,198 Z" fill="#fbf1c7" />
+      <path d="M 190,188 C 198,182 224,182 232,188 C 224,192 198,192 190,188 Z" fill="#ebdbb2" opacity="0.6" />
+
+      <g clip-path="url(#left-eye-clip)">
+        <ellipse cx="212" cy="198" rx="16" ry="19" fill="url(#gb-iris-grad)" />
+        <ellipse cx="212" cy="197" rx="6.5" ry="9" fill="#1d2021" />
+        <path d="M 201,204 C 203,213 221,213 223,204 C 218,209 206,209 201,204 Z" fill="#8ec07c" opacity="0.9" />
+        <!-- Highlights -->
+        <circle cx="207" cy="191" r="4.8" fill="#ffffff" />
+        <circle cx="219" cy="204" r="2.5" fill="#ebdbb2" />
+        <circle cx="210" cy="204" r="1.4" fill="#ffffff" />
+      </g>
+
+      <!-- Winged Eyelash Lines -->
+      <path d="M 184,196 C 189,183 203,174 227,175 C 235,175 239,178 237,182 C 233,184 228,183 224,182 C 205,180 194,186 188,197 Z" fill="#282828" />
+      <path d="M 233,179 L 240,175 L 236,183 Z" fill="#282828" />
+      <path d="M 198,220 Q 210,224 222,220" fill="none" stroke="#282828" stroke-width="1.8" stroke-linecap="round" />
+    </g>
+
+    <!-- RIGHT EYE -->
+    <g>
+      <path d="M 276,198 C 276,184 287,176 300,176 C 313,176 324,184 324,198 C 324,212 313,220 300,220 C 287,220 276,212 276,198 Z" fill="#fbf1c7" />
+      <path d="M 278,188 C 286,182 312,182 320,188 C 312,192 286,192 278,188 Z" fill="#ebdbb2" opacity="0.6" />
+
+      <g clip-path="url(#right-eye-clip)">
+        <ellipse cx="300" cy="198" rx="16" ry="19" fill="url(#gb-iris-grad)" />
+        <ellipse cx="300" cy="197" rx="6.5" ry="9" fill="#1d2021" />
+        <path d="M 289,204 C 291,213 309,213 311,204 C 306,209 294,209 289,204 Z" fill="#8ec07c" opacity="0.9" />
+        <!-- Highlights -->
+        <circle cx="295" cy="191" r="4.8" fill="#ffffff" />
+        <circle cx="307" cy="204" r="2.5" fill="#ebdbb2" />
+        <circle cx="298" cy="204" r="1.4" fill="#ffffff" />
+      </g>
+
+      <!-- Winged Eyelash Lines -->
+      <path d="M 328,196 C 323,183 309,174 285,175 C 277,175 273,178 275,182 C 279,184 284,183 288,182 C 307,180 318,186 324,197 Z" fill="#282828" />
+      <path d="M 279,179 L 272,175 L 276,183 Z" fill="#282828" />
+      <path d="M 314,220 Q 302,224 290,220" fill="none" stroke="#282828" stroke-width="1.8" stroke-linecap="round" />
+    </g>
+
+    <!-- Hair Sidelocks -->
+    <path d="M 171,166 C 168,208 162,250 172,295 C 176,304 184,290 182,265 C 180,235 182,198 186,178 Z" fill="#282828" />
+    <path d="M 173,198 C 169,226 167,256 173,288" fill="none" stroke="#1d2021" stroke-width="3" stroke-linecap="round" opacity="0.55" />
+    <path d="M 341,166 C 344,208 350,250 340,295 C 336,304 328,290 330,265 C 332,235 330,198 326,178 Z" fill="#282828" />
+    <path d="M 339,198 C 343,226 345,256 339,288" fill="none" stroke="#1d2021" stroke-width="3" stroke-linecap="round" opacity="0.55" />
+
+    <!-- Bangs Forehead Base -->
+    <path d="M 172,176 C 176,115 210,96 256,96 C 302,96 336,115 340,176 Z" fill="#1d2021" />
+
+    <!-- Angel Ring Hair Sheen Band -->
+    <path d="M 182,148 C 206,138 234,136 256,136 C 278,136 306,138 330,148 C 320,143 290,138 256,138 C 222,138 192,143 182,148 Z" fill="#504945" />
+    <path d="M 192,149 C 214,141 236,139 256,139 C 276,139 298,141 320,149 C 308,145 282,141 256,141 C 230,141 204,145 192,149 Z" fill="#7daea3" opacity="0.4" />
+
+    <!-- Layered Bang Strands -->
+    <path d="M 174,168 C 184,196 194,213 204,216 C 206,204 206,188 204,170 Z" fill="#32302f" />
+    <path d="M 201,160 C 210,190 218,208 228,211 C 230,196 228,180 226,160 Z" fill="#282828" />
+    <path d="M 225,158 C 234,186 242,202 248,204 C 249,194 249,182 247,158 Z" fill="#32302f" />
+    <path d="M 248,158 C 250,186 258,202 265,204 C 264,192 262,180 260,158 Z" fill="#32302f" />
+    <path d="M 260,160 C 266,182 276,202 286,210 C 285,196 283,180 280,160 Z" fill="#282828" />
+    <path d="M 280,168 C 292,194 304,210 316,214 C 314,200 312,186 310,168 Z" fill="#32302f" />
+
+    <!-- Bang side wisps (organic crown transition) -->
+    <path d="M 176,118 L 164,146 L 172,148 L 181,122 Z" fill="#282828" />
+    <path d="M 174,148 L 166,172 L 174,174 L 180,150 Z" fill="#282828" />
+    <path d="M 336,118 L 348,146 L 340,148 L 331,122 Z" fill="#282828" />
+    <path d="M 338,148 L 346,172 L 338,174 L 332,150 Z" fill="#282828" />
+
+    <!-- Golden Nix Lambda Hairpin -->
+    <g transform="translate(194, 146) rotate(-14) scale(1.2)">
+      <line x1="2" y1="0" x2="14" y2="20" stroke="#fabd2f" stroke-width="3.5" stroke-linecap="round" />
+      <line x1="9" y1="12" x2="2" y2="20" stroke="#fabd2f" stroke-width="3.5" stroke-linecap="round" />
+      <circle cx="9" cy="12" r="2" fill="#fbf1c7" />
+    </g>
+
+    <!-- ================= MECHA CAT EARS & AHOGE (POPS OUT AT TOP) ================= -->
+    <g filter="url(#ear-shadow)">
+      <!-- Left Mecha Ear (Apex at Y=6) -->
+      <polygon points="154,6 170,122 232,96" fill="#282828" stroke="#3c3836" stroke-width="3.5" stroke-linejoin="round" />
+      <polygon points="159,14 174,116 226,92" fill="#1d2021" />
+      <polygon points="165,27 177,107 217,88" fill="url(#gb-ear-neon)" />
+      <line x1="165" y1="27" x2="217" y2="88" stroke="#fbf1c7" stroke-width="1.8" opacity="0.6" />
+      <circle cx="157" cy="13" r="2.2" fill="#fabd2f" />
+
+      <!-- Right Mecha Ear (Apex at Y=6) -->
+      <polygon points="358,6 280,96 342,122" fill="#282828" stroke="#3c3836" stroke-width="3.5" stroke-linejoin="round" />
+      <polygon points="353,14 286,92 338,116" fill="#1d2021" />
+      <polygon points="347,27 295,88 335,107" fill="url(#gb-ear-neon)" />
+      <line x1="347" y1="27" x2="295" y2="88" stroke="#fbf1c7" stroke-width="1.8" opacity="0.6" />
+      <circle cx="355" cy="13" r="2.2" fill="#fabd2f" />
+
+      <!-- Ahoge (Playful Antenna Hair, Apex at Y=8) -->
+      <path d="M 256,105
+               C 254,55 238,20 252,8
+               C 264,0 276,14 268,36
+               C 260,52 258,78 257,105 Z"
+            fill="#32302f" />
+      <path d="M 256,105 C 254,55 238,20 252,8" fill="none" stroke="#504945" stroke-width="1.8" />
+    </g>
+  </g>
+</svg>

@@ -75,19 +75,16 @@ in
   environment.systemPackages = with pkgs; [
     bat
     brightnessctl
-    btop
     cliphist
     curl
     dconf
     dig
-    dunst
     easyeffects
     inkscape
-    kitty
     libnotify
-    mako
     obsidian
     pdf4qt
+    playerctl
     python3
     qimgv
     ripgrep
@@ -98,7 +95,6 @@ in
     whois
     wl-clipboard
     yt-dlp
-    zathura
     zip
   ];
 
