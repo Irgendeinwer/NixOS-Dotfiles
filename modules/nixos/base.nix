@@ -75,14 +75,12 @@ in
   environment.systemPackages = with pkgs; [
     bat
     brightnessctl
-    btop
     cliphist
     curl
     dconf
     dig
     easyeffects
     inkscape
-    kitty
     libnotify
     obsidian
     pdf4qt
@@ -97,7 +95,6 @@ in
     whois
     wl-clipboard
     yt-dlp
-    zathura
     zip
   ];
 
