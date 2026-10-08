@@ -24,6 +24,9 @@
     scrcpy
   ];
 
+  # Host-specific daemons
+  services.fstrim.enable = true;
+
   home-manager = {
     extraSpecialArgs = { inherit inputs; };
     users = {
@@ -74,7 +77,6 @@
 
     services = {
       syncthing.enable = true;
-      printing.enable = false;
       playerctl.enable = true;
     };
   };
