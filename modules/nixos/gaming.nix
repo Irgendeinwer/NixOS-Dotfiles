@@ -28,10 +28,10 @@ in
       protontricks
       mangohud
 
-      # Updated Prism Launcher configuration
+      # Prism Launcher with multiple JDK versions
       (prismlauncher.override {
         jdks = [
-          jdk25 # The version you confirmed works
+          jdk25
           jdk21 # Standard for modern Minecraft (1.20.5+)
           jdk17 # Standard for 1.18 - 1.20.4
           jdk8 # For very old legacy versions

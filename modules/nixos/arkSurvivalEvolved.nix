@@ -99,7 +99,6 @@ in
               "XPMultiplier=2.0"
               "BabyMatureSpeedMultiplier=10.0"
               "EggHatchSpeedMultiplier=10.0"
-              # "bRawSockets=True"
               "PlayerCharacterNameTagDistance=200000.0" # Massive distance for nameplates
               "bFloatingNames=True" # Ensure names are enabled
             ];
