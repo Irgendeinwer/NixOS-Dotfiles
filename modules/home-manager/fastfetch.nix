@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       logo = {
-        source = "nixos_small";
+        source = "${../../assets/icon.png}";
         padding = {
           right = 2;
         };
