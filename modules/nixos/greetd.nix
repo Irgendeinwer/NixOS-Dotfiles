@@ -18,7 +18,7 @@ let
     "--asterisks"
     "--asterisks-char '•'"
     "--greeting 'Welcome back!'"
-    "--theme 'border=cyan;text=white;prompt=green;time=magenta;action=blue;button=yellow'"
+    "--theme 'border=yellow;text=white;prompt=green;time=magenta;action=blue;button=yellow'"
     "--window-padding 2"
     "--container-padding 3"
     "--power-shutdown 'systemctl poweroff'"

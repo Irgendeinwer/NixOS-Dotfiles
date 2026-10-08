@@ -16,8 +16,7 @@ in
     environment.systemPackages = with pkgs; [
       cmatrix
       cbonsai
-      fastfetch
-      uwufetch
+        uwufetch
       cava
       figlet
       lolcat
