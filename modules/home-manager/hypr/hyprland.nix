@@ -15,6 +15,7 @@ let
   signal = "${pkgs.signal-desktop}/bin/signal-desktop";
   easyeffects = "${pkgs.easyeffects}/bin/easyeffects";
   hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
+  hyprpolkitagent = "${pkgs.hyprpolkitagent}/bin/hyprpolkitagent";
 
   # CLI Utilities
   brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
@@ -67,7 +68,6 @@ lib.mkIf hyprlandEnabled {
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
-    plugins = [ ];
     systemd.enable = true;
     systemd.variables = [ "--all" ];
     extraConfig = ''
@@ -87,7 +87,9 @@ lib.mkIf hyprlandEnabled {
       --------------------------------------------------
       hl.on("hyprland.start", function()
         hl.exec_cmd("${hyprlock}")
-        hl.exec_cmd("systemctl --user start hyprpolkitagent")
+        -- Run the polkit agent directly: its systemd user unit is not linked
+        -- into the user environment from environment.systemPackages.
+        hl.exec_cmd("${hyprpolkitagent}")
 
         hl.exec_cmd("${wlPaste} --type text --watch ${cliphist} store")
         hl.exec_cmd("${wlPaste} --type image --watch ${cliphist} store")

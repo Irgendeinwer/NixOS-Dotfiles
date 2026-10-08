@@ -5,7 +5,7 @@
 }:
 let
   cfg = config.custom.audio.virtualSurround;
-  hrirWav = ../../assets/oal_dflt.wav;
+  hrirWav = ../../assets/atmos.wav;
 in
 {
   options.custom.audio.virtualSurround = {

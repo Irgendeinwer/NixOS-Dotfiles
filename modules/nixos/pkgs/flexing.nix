@@ -15,9 +15,7 @@ in
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
       cmatrix
-      # hollywood
       cbonsai
-      fastfetch
       uwufetch
       cava
       figlet

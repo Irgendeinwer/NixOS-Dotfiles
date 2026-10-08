@@ -298,7 +298,7 @@ in
           text_align = "left";
           color = "rgb(235, 219, 178)";
           font_size = 12;
-          font_family = "Noto Nerd Font Bold";
+          font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
@@ -314,7 +314,7 @@ in
           text_align = "right";
           color = "rgb(235, 219, 178)";
           font_size = 12;
-          font_family = "Noto Nerd Font Bold";
+          font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
@@ -344,7 +344,7 @@ in
           text_align = "center";
           color = "rgb(250, 189, 47)"; # Vibrant Gold
           font_size = 23;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -360,7 +360,7 @@ in
           text_align = "center";
           color = "rgb(234, 105, 98)"; # Alert Red
           font_size = 13;
-          font_family = "Noto Nerd Font Bold";
+          font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
@@ -376,7 +376,7 @@ in
           text_align = "center";
           color = "rgb(255, 255, 255)";
           font_size = 24;
-          font_family = "Noto Nerd Font Bold";
+          font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
@@ -392,7 +392,7 @@ in
           text = "󰎈";
           color = "rgba(215, 153, 33, 0.4)";
           font_size = 46;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -407,7 +407,7 @@ in
           text_align = "left";
           color = "rgb(255, 255, 255)";
           font_size = 14;
-          font_family = "Noto Nerd Font Bold";
+          font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
@@ -422,7 +422,7 @@ in
           text_align = "left";
           color = "rgb(235, 219, 178)";
           font_size = 12;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -437,7 +437,7 @@ in
           text_align = "left";
           color = "rgb(250, 189, 47)"; # Vibrant Gold
           font_size = 11;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -452,7 +452,7 @@ in
           text_align = "left";
           color = "rgb(189, 174, 147)";
           font_size = 11;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -469,7 +469,7 @@ in
           text_align = "right";
           color = "rgb(255, 255, 255)";
           font_size = 12;
-          font_family = "Noto Nerd Font Bold";
+          font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
           zindex = 1;
 
@@ -484,7 +484,7 @@ in
           text_align = "right";
           color = "rgb(250, 189, 47)"; # Vibrant Gold
           font_size = 11;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -499,7 +499,7 @@ in
           text_align = "right";
           color = "rgb(235, 219, 178)";
           font_size = 11;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -514,7 +514,7 @@ in
           text_align = "right";
           color = "rgb(189, 174, 147)";
           font_size = 11;
-          font_family = "Noto Nerd Font";
+          font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
           zindex = 1;
 
@@ -548,7 +548,7 @@ in
           fail_color = "rgb(204, 36, 29)"; # Gruvbox Red
           fail_text = "<i>Incorrect ($ATTEMPTS)</i>";
 
-          placeholder_text = ''<i><span foreground="##bdae93">Password...</span></i>'';
+          placeholder_text = ''<i><span foreground="#bdae93">Password...</span></i>'';
           shadow_passes = 0;
           zindex = 2;
 
