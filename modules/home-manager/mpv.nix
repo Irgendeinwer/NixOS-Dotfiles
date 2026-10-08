@@ -1,6 +1,6 @@
 {
+  config,
   lib,
-  osConfig ? null,
   pkgs,
   ...
 }:
@@ -20,8 +20,7 @@ let
 
   # The multichannel profile routes audio to the HeSuVi virtual-surround sink,
   # which only exists on hosts with custom.audio.virtualSurround enabled.
-  surroundEnabled =
-    if osConfig != null then (osConfig.custom.audio.virtualSurround.enable or false) else false;
+  surroundEnabled = config.custom.audio.virtualSurround.enable or false;
 in
 {
   programs.mpv = {
