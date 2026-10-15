@@ -108,6 +108,7 @@
 
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
+          nixos-hardware.nixosModules.common-pc-laptop # TLP power management
 
           inputs.sops-nix.nixosModules.sops
           inputs.lanzaboote.nixosModules.lanzaboote
