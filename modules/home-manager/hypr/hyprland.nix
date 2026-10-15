@@ -18,6 +18,7 @@ let
   # CLI Utilities
   brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
   swayosdClient = "${config.services.swayosd.package}/bin/swayosd-client";
+  makoctl = "${pkgs.mako}/bin/makoctl";
   cliphist = "${pkgs.cliphist}/bin/cliphist";
   wlPaste = "${pkgs.wl-clipboard}/bin/wl-paste";
   wlCopy = "${pkgs.wl-clipboard}/bin/wl-copy";
@@ -230,6 +231,15 @@ lib.mkIf hyprlandEnabled {
         hl.exec_cmd("${swayosdClient}" .. osd_target() .. " " .. args)
       end
 
+      -- Do not disturb (mako mode), confirmed with an OSD hint since the
+      -- notifications themselves are hidden while it is on.
+      local function toggle_dnd()
+        hl.exec_cmd(string.format(
+          [[if %s mode -t do-not-disturb | grep -qx do-not-disturb; then m="Do not disturb: on"; else m="Do not disturb: off"; fi; %s%s --custom-message "$m"]],
+          "${makoctl}", "${swayosdClient}", osd_target()
+        ))
+      end
+
       --------------------------------------------------
       -- Keybindings
       --------------------------------------------------
@@ -275,6 +285,7 @@ lib.mkIf hyprlandEnabled {
       hl.bind("PRINT", hl.dsp.exec_cmd("${hyprshot} -m region --freeze -o ${config.programs.hyprshot.saveLocation}"))
       hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("${cliphist} list | ${rofi} -dmenu | ${cliphist} decode | ${wlCopy}"))
       hl.bind(mainMod .. " + T", hl.dsp.exec_cmd([[${notifySend} -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"]]))
+      hl.bind(mainMod .. " + N", toggle_dnd)
 
       -- Media, Volume & Brightness (swayosd: applies the change and shows an
       -- OSD on the focused monitor; with repeat and lockscreen support)
