@@ -195,9 +195,9 @@ lib.mkIf hyprlandEnabled {
         suppress_event = "maximize",
       })
 
-      -- Smart Gaps
-      hl.window_rule({ match = { workspace = "w[t1]" }, border_size = 0, rounding = 0 })
-      hl.window_rule({ match = { workspace = "f[1]" }, border_size = 0, rounding = 0 })
+      -- Smart Gaps: edge-to-edge tiled windows; floating ones keep their frame
+      hl.window_rule({ match = { float = false, workspace = "w[t1]" }, border_size = 0, rounding = 0 })
+      hl.window_rule({ match = { float = false, workspace = "f[1]" }, border_size = 0, rounding = 0 })
 
       --------------------------------------------------
       -- On-Screen Display (swayosd)
