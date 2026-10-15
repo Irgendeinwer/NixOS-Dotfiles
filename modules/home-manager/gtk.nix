@@ -108,6 +108,13 @@ in
       package = pkgs.adw-gtk3;
     };
 
+    # Gruvbox icons, with folders in the accent yellow; Qt and rofi use the
+    # same theme
+    iconTheme = {
+      name = "Gruvbox-Plus-Dark";
+      package = pkgs.gruvbox-plus-icons.override { folder-color = "yellow"; };
+    };
+
     gtk3 = {
       extraConfig = {
         gtk-decoration-layout = ":";
