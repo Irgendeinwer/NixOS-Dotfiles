@@ -11,6 +11,13 @@ let
   inherit (import ../../theme/lib.nix { inherit lib; }) hex;
   hyprlandEnabled =
     if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  # Qt theme from qt.nix for everything launched from Hyprland: Home Manager
+  # exports these only to shells and systemd services, and greetd starts
+  # Hyprland outside both.
+  qtEnv = lib.optionalString (config.home.sessionVariables ? QT_QPA_PLATFORMTHEME) ''
+    hl.env("QT_QPA_PLATFORMTHEME", "${config.home.sessionVariables.QT_QPA_PLATFORMTHEME}")
+    hl.env("QT_PLUGIN_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.QT_PLUGIN_PATH}")
+  '';
 
   # Apps & UI
   kitty = "${pkgs.kitty}/bin/kitty";
@@ -149,6 +156,7 @@ lib.mkIf hyprlandEnabled {
       --------------------------------------------------
       hl.env("QT_QPA_PLATFORM", "wayland;xcb")
       hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
+      ${qtEnv}
 
       --------------------------------------------------
       -- Monitors
