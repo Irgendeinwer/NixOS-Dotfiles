@@ -223,9 +223,15 @@ lib.mkIf hyprlandEnabled {
       hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("${rofi} -show drun -show-icons"))
       hl.bind(mainMod .. " + D", hl.dsp.window.close())
       hl.bind(mainMod .. " + M", hl.dsp.exit())
-      hl.bind(mainMod .. " + F", hl.dsp.window.float({ action = "toggle" }))
-      hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
       hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd("loginctl lock-session"))
+
+      -- Window state & focus
+      hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
+      hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.float({ action = "toggle" }))
+      hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
+      hl.bind(mainMod .. " + Tab", hl.dsp.window.cycle_next({ next = true }))
+      hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
+      hl.bind("ALT + Tab", hl.dsp.exec_cmd("${rofi} -show window -show-icons"))
 
       ${lib.optionalString hasDp1 ''
         -- Native Lua HDR Toggle for DP-1
