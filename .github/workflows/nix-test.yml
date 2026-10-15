@@ -21,6 +21,9 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v16
 
+      - name: Check formatting
+        run: nix fmt -- --ci
+
       - name: Evaluate junixos
         run: nix eval .#nixosConfigurations.junixos.config.system.build.toplevel.drvPath --show-trace
 
