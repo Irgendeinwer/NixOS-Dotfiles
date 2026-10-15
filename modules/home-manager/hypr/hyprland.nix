@@ -17,8 +17,7 @@ let
 
   # CLI Utilities
   brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
-  pamixer = "${pkgs.pamixer}/bin/pamixer";
-  playerctl = "${pkgs.playerctl}/bin/playerctl";
+  swayosdClient = "${config.services.swayosd.package}/bin/swayosd-client";
   cliphist = "${pkgs.cliphist}/bin/cliphist";
   wlPaste = "${pkgs.wl-clipboard}/bin/wl-paste";
   wlCopy = "${pkgs.wl-clipboard}/bin/wl-copy";
@@ -66,6 +65,10 @@ lib.mkIf hyprlandEnabled {
   # Polkit agent as a user service bound to the Hyprland session. (The package
   # ships its binary in libexec/, so the old bin/ exec path never started.)
   services.hyprpolkitagent.enable = true;
+
+  # On-screen display for volume, brightness and media keys: with no status
+  # bar, this is the only visual feedback for them.
+  services.swayosd.enable = true;
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -197,6 +200,20 @@ lib.mkIf hyprlandEnabled {
       hl.window_rule({ match = { workspace = "f[1]" }, border_size = 0, rounding = 0 })
 
       --------------------------------------------------
+      -- On-Screen Display (swayosd)
+      --------------------------------------------------
+      -- Show swayosd on the focused monitor only (it defaults to all of them).
+      local function osd_target()
+        local mon = hl.get_active_monitor()
+        local name = mon and mon.name and mon.name:gsub("[^%w%-_]", "") or ""
+        return name ~= "" and (" --monitor " .. name) or ""
+      end
+
+      local function osd(args)
+        hl.exec_cmd("${swayosdClient}" .. osd_target() .. " " .. args)
+      end
+
+      --------------------------------------------------
       -- Keybindings
       --------------------------------------------------
       local mainMod = "SUPER"
@@ -236,21 +253,25 @@ lib.mkIf hyprlandEnabled {
       hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("${cliphist} list | ${rofi} -dmenu | ${cliphist} decode | ${wlCopy}"))
       hl.bind(mainMod .. " + T", hl.dsp.exec_cmd([[${notifySend} -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"]]))
 
-      -- Media & Volume Controls (with repeat and lockscreen support)
-      hl.bind("F8", hl.dsp.exec_cmd("${playerctl} play-pause"), { locked = true })
-      hl.bind("F9", hl.dsp.exec_cmd("${pamixer} -d 2"), { repeating = true, locked = true})
-      hl.bind("F10", hl.dsp.exec_cmd("${pamixer} -i 2"), { repeating = true, locked = true })
+      -- Media, Volume & Brightness (swayosd: applies the change and shows an
+      -- OSD on the focused monitor; with repeat and lockscreen support)
+      local function osd_bind(keys, args, opts)
+        hl.bind(keys, function() osd(args) end, opts)
+      end
+      osd_bind("F8", "--playerctl play-pause", { locked = true })
+      osd_bind("F9", "--output-volume=-2", { repeating = true, locked = true })
+      osd_bind("F10", "--output-volume=+2", { repeating = true, locked = true })
 
-      hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("${pamixer} -i 2"), { repeating = true, locked = true })
-      hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("${pamixer} -d 2"), { repeating = true, locked = true })
-      hl.bind("XF86AudioMute", hl.dsp.exec_cmd("${pamixer} -t"), { locked = true })
-      hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("${playerctl} play-pause"), { locked = true })
-      hl.bind("XF86AudioNext", hl.dsp.exec_cmd("${playerctl} next"), { locked = true })
-      hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("${playerctl} previous"), { locked = true })
-      hl.bind("XF86AudioStop", hl.dsp.exec_cmd("${playerctl} stop"), { locked = true })
-      hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("${pamixer} --default-source -t"), { locked = true })
-      hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("${brightnessctl} set 10%+"), { repeating = true, locked = true })
-      hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("${brightnessctl} set 10%-"), { repeating = true, locked = true })
+      osd_bind("XF86AudioRaiseVolume", "--output-volume=+2", { repeating = true, locked = true })
+      osd_bind("XF86AudioLowerVolume", "--output-volume=-2", { repeating = true, locked = true })
+      osd_bind("XF86AudioMute", "--output-volume mute-toggle", { locked = true })
+      osd_bind("XF86AudioMicMute", "--input-volume mute-toggle", { locked = true })
+      osd_bind("XF86AudioPlay", "--playerctl play-pause", { locked = true })
+      osd_bind("XF86AudioNext", "--playerctl next", { locked = true })
+      osd_bind("XF86AudioPrev", "--playerctl prev", { locked = true })
+      osd_bind("XF86AudioStop", "--playerctl stop", { locked = true })
+      osd_bind("XF86MonBrightnessUp", "--brightness=+10", { repeating = true, locked = true })
+      osd_bind("XF86MonBrightnessDown", "--brightness=-10", { repeating = true, locked = true })
 
       -- Directional Navigation & Movement
       local directions = { left = "l", right = "r", up = "u", down = "d" }
