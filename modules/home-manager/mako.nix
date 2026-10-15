@@ -1,5 +1,9 @@
+{ config, ... }:
+let
+  p = config.custom.theme.palette;
+in
 {
-  # Declarative notification daemon (gruvbox). Started on demand via D-Bus
+  # Declarative notification daemon (custom.theme.palette). Started on demand via D-Bus
   # activation; replaces the previous mako/dunst provider ambiguity.
   services.mako = {
     enable = true;
@@ -9,10 +13,10 @@
       # Show above fullscreen windows (the default "top" layer hides under
       # them): without a bar, notifications are the main status surface.
       layer = "overlay";
-      background-color = "#282828";
-      text-color = "#ebdbb2";
+      background-color = p.bg1;
+      text-color = p.fg0;
       border-size = 2;
-      border-color = "#d79921";
+      border-color = p.accent;
       border-radius = 8;
       padding = 10;
       margin = 10;
@@ -26,12 +30,12 @@
       format = "<b>%s</b>\\n%b";
 
       "urgency=low" = {
-        border-color = "#928374";
+        border-color = p.grey1;
         default-timeout = 4000;
       };
 
       "urgency=high" = {
-        border-color = "#fb4934";
+        border-color = p.red;
         default-timeout = 0;
       };
 

@@ -1,35 +1,5 @@
-* {
-	gruv0: #282828;
-	gruv1: #32302f;
-	gruv2: #45403d;
-	gruv3: #5a524c;
-
-	gruv4: #fbf1c7;
-	gruv5: #f4e8be;
-	gruv6: #eee0b7;
-
-	gruv7: #a89984;
-	gruv8: #928374;
-	gruv9: #7c6f64;
-	gruv10: #504945;
-	red: #ea6962;
-
-	orange: #e78a4e;
-	yellow: #d8a657;
-	aqua: #89b482;
-	purple: #d3869b;
-
-  reddark: #c14a4a;
-  yellowdark: #b47109;
-
-  foreground:  @gruv9;
-  background-color:  transparent;
-    
-  highlight: underline bold #eee0b7;
-
-  transparent: rgba(0,0,0,0.8);
-
-}
+/* Layout only: the color variables (bg0, fg1, surface, ...) are generated
+   from custom.theme.palette in rofi.nix and prepended to this file. */
 
 window {
     location: center;
@@ -38,7 +8,7 @@ window {
     height: 560px;
     width: 600px;
 
-    background-color: @transparent;
+    background-color: @surface;
     spacing: 0;
     children:  [mainbox];
     orientation: horizontal;
@@ -52,15 +22,15 @@ mainbox {
 message {
     padding: 10px;
     border:  0px 2px 2px 2px;
-    border-color: @gruv0;
-    background-color: @transparent;
+    border-color: @bg0;
+    background-color: @surface;
 }
 
 inputbar {
-    color: @gruv6;
+    color: @fg1;
     padding: 14px;
-    background-color: @transparent;
-    border-color: @gruv6;
+    background-color: @surface;
+    border-color: @fg1;
 
     border: 4px;
     border-radius: 20px 20px 0px 0px;
@@ -79,8 +49,8 @@ listview {
     padding: 8px;
     border-radius: 0px 0px 20px 20px;
     border: 0px 4px 4px 4px;
-    border-color: @gruv6;
-    background-color: @transparent;
+    border-color: @fg1;
+    background-color: @surface;
     dynamic: false;
 }
 
@@ -89,40 +59,43 @@ element {
     vertical-align: 0.5;
     border-radius: 5px;
     color: @foreground;
-    text-color: @gruv6;
-    background-color: @transparent;
+    text-color: @fg1;
+    background-color: @surface;
 }
 
 element.normal.active {
-    background-color: @yellow;
+    background-color: @bg-visual-yellow;
 }
 
 element.normal.urgent {
-    background-color: @reddark;
+    background-color: @bg-visual-red;
 }
 
 element.selected.normal {
-    background-color: @gruv7;
-    text-color: @gruv0;
+    background-color: @grey2;
+    text-color: @bg0;
 }
 
 element.selected.active {
-    background-color: @yellowdark;
+    background-color: @yellow;
+    text-color: @bg0;
 }
 
 element.selected.urgent {
     background-color: @red;
+    text-color: @bg0;
 }
 
 element.alternate.normal {
-    background-color: @transparent;
+    background-color: @surface;
 }
 
 element-text, element-icon {
     size: 3ch;
     margin: 0 10 0 0;
     vertical-align: 0.5;
-    text-color: @gruv6;
+    /* Follow the row state, so the selected entry gets dark text */
+    text-color: inherit;
 }
 
 button {
