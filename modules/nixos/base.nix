@@ -69,6 +69,12 @@ in
       "nix-command"
       "flakes"
     ];
+    # Hard-link identical files in the store once a week (catches up after
+    # downtime); garbage collection stays with nh.
+    nix.optimise = {
+      automatic = true;
+      dates = [ "weekly" ];
+    };
 
     # Core system packages shared across all hosts
     environment.systemPackages = with pkgs; [
