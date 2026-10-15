@@ -1,3 +1,14 @@
+{ config, lib, ... }:
+let
+  p = config.custom.theme.palette;
+  # color0 .. color15 from the palette's terminal colors
+  ansi = lib.listToAttrs (
+    lib.imap0 (i: color: {
+      name = "color${toString i}";
+      value = color;
+    }) p.ansi
+  );
+in
 {
   programs.kitty = {
     enable = true;
@@ -9,50 +20,25 @@
       size = 11;
     };
 
-    settings = {
-      # Gruvbox dark
-      foreground = "#ebdbb2";
-      background = "#282828";
-      selection_foreground = "#282828";
-      selection_background = "#d79921";
-      cursor = "#fabd2f";
-      cursor_text_color = "#282828";
-      url_color = "#83a598";
-
-      # black
-      color0 = "#282828";
-      color8 = "#928374";
-      # red
-      color1 = "#cc241d";
-      color9 = "#fb4934";
-      # green
-      color2 = "#98971a";
-      color10 = "#b8bb26";
-      # yellow
-      color3 = "#d79921";
-      color11 = "#fabd2f";
-      # blue
-      color4 = "#458588";
-      color12 = "#83a598";
-      # magenta
-      color5 = "#b16286";
-      color13 = "#d3869b";
-      # cyan
-      color6 = "#689d6a";
-      color14 = "#8ec07c";
-      # white
-      color7 = "#a89984";
-      color15 = "#ebdbb2";
+    settings = ansi // {
+      # Gruvbox Material (custom.theme.palette)
+      foreground = p.fg0;
+      background = p.bg0;
+      selection_foreground = p.bg0;
+      selection_background = p.fg0;
+      cursor = p.grey2;
+      cursor_text_color = "background";
+      url_color = p.blue;
 
       # Borders and tabs
-      active_border_color = "#d79921";
-      inactive_border_color = "#3c3836";
-      bell_border_color = "#fb4934";
-      active_tab_foreground = "#282828";
-      active_tab_background = "#d79921";
-      inactive_tab_foreground = "#a89984";
-      inactive_tab_background = "#3c3836";
-      tab_bar_background = "#282828";
+      active_border_color = p.accent;
+      inactive_border_color = p.bg3;
+      bell_border_color = p.red;
+      active_tab_foreground = p.bg0;
+      active_tab_background = p.accent;
+      inactive_tab_foreground = p.grey2;
+      inactive_tab_background = p.bg1;
+      tab_bar_background = p.bg0;
 
       # Behavior
       window_padding_width = 8;
