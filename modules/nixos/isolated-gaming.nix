@@ -6,6 +6,10 @@
 }:
 let
   cfg = config.custom.desktop.gaming.isolated;
+  apps = [
+    "com.usebottles.bottles"
+    "com.valvesoftware.Steam"
+  ];
 in
 {
   options.custom.desktop.gaming.isolated = {
@@ -31,24 +35,51 @@ in
       ''}"
     ];
 
-    systemd.services.configure-flatpak-bottles = {
-      description = "Declarative Flatpak installation for Steam and Bottles";
+    # Install the apps only when they are missing: once present, boot no
+    # longer contacts Flathub (or fails without a network).
+    systemd.services.flatpak-install = {
+      description = "Install the sandboxed Flatpak apps (Bottles, Steam)";
       wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
-      requires = [ "network-online.target" ];
+      path = [ pkgs.flatpak ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = pkgs.writeShellScript "setup-bottles-steam" ''
-          # Ensure Flathub repository is registered
-          ${pkgs.flatpak}/bin/flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+      };
+      script = ''
+        missing=()
+        for app in ${lib.escapeShellArgs apps}; do
+          flatpak info --system "$app" > /dev/null 2>&1 || missing+=("$app")
+        done
+        if [ ''${#missing[@]} -eq 0 ]; then
+          exit 0
+        fi
+        flatpak remote-add --system --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+        flatpak install --system -y --noninteractive flathub "''${missing[@]}"
+      '';
+    };
 
-          # Install Bottles
-          ${pkgs.flatpak}/bin/flatpak install -y flathub com.usebottles.bottles
-
-          # Install Sandboxed Steam
-          ${pkgs.flatpak}/bin/flatpak install -y flathub com.valvesoftware.Steam
-        '';
+    # Keep the apps and their runtimes up to date and drop runtimes nothing
+    # uses anymore. Persistent: a week missed while the PC was off runs at
+    # the next boot.
+    systemd.services.flatpak-update = {
+      description = "Update Flatpak apps and runtimes";
+      wants = [ "network-online.target" ];
+      after = [ "network-online.target" ];
+      path = [ pkgs.flatpak ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        flatpak update --system -y --noninteractive
+        flatpak uninstall --system --unused -y --noninteractive
+      '';
+    };
+    systemd.timers.flatpak-update = {
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        OnCalendar = "weekly";
+        Persistent = true;
+        RandomizedDelaySec = "1h";
       };
     };
   };
