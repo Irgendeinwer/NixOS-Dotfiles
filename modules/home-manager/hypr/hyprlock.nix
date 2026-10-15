@@ -19,8 +19,10 @@ let
     ART=$(${pkgs.playerctl}/bin/playerctl metadata mpris:artUrl 2>/dev/null || true)
     if [ -n "$ART" ]; then
       if [[ "$ART" =~ ^https?:// ]]; then
-        CACHE="/tmp/hyprlock-art.png"
-        URL_CACHE="/tmp/hyprlock-art.url"
+        # Private per-user runtime dir rather than fixed names in shared /tmp
+        CACHE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
+        CACHE="$CACHE_DIR/hyprlock-art.png"
+        URL_CACHE="$CACHE_DIR/hyprlock-art.url"
         if [ ! -f "$CACHE" ] || [ "$(cat "$URL_CACHE" 2>/dev/null)" != "$ART" ]; then
           ${pkgs.curl}/bin/curl -s --max-time 1 "$ART" -o "$CACHE" 2>/dev/null
           echo "$ART" > "$URL_CACHE"
