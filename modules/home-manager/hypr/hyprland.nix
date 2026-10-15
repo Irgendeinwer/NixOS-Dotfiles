@@ -8,6 +8,7 @@
 
 let
   p = config.custom.theme.palette;
+  inherit (import ../../theme/lib.nix { inherit lib; }) hex;
   hyprlandEnabled = if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
 
   # Apps & UI
@@ -189,10 +190,10 @@ lib.mkIf hyprlandEnabled {
           border_size = 1,
           col = {
             active_border = {
-              colors = { "rgba(33ccffee)", "rgba(00ff99ee)" },
+              colors = { "rgba(${hex p.accent}ee)", "rgba(${hex p.orange}ee)" },
               angle = 45,
             },
-            inactive_border = "rgba(595959aa)",
+            inactive_border = "rgba(${hex p.bg3}aa)",
           },
           allow_tearing = false,
           layout = "dwindle",
@@ -201,6 +202,7 @@ lib.mkIf hyprlandEnabled {
           vrr = 3,
           key_press_enables_dpms = true,
           force_default_wallpaper = 0,
+          background_color = "rgb(${hex p.bg_dim})",
           disable_hyprland_logo = true,
           enable_swallow = true,
           swallow_regex = "^(kitty)$",
