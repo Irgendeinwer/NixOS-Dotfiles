@@ -142,6 +142,10 @@ lib.mkIf hyprlandEnabled {
           enable_swallow = true,
           swallow_regex = "^(kitty)$",
           allow_session_lock_restore = true,
+          -- Honour activation requests: a link opened from a chat app brings
+          -- the browser forward, even from another workspace (there is no bar
+          -- to show urgency hints).
+          focus_on_activate = true,
         },
         dwindle = {
           smart_split = true,
