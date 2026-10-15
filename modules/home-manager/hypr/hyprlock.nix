@@ -1,9 +1,14 @@
 {
+  config,
   inputs,
+  lib,
   pkgs,
   ...
 }:
 let
+  p = config.custom.theme.palette;
+  inherit (import ../../theme/lib.nix { inherit lib; }) hex rgb rgba;
+
   # 1x1 transparent PNG fallback
   blankPng = pkgs.runCommand "blank.png" { } ''
     echo -n 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' | base64 -d > $out
@@ -206,10 +211,10 @@ in
         {
           monitor = "";
           size = "245, 44";
-          color = "rgba(20, 20, 20, 0.82)";
+          color = rgba p.bg_dim "0.82";
           rounding = 12;
           border_size = 1;
-          border_color = "rgba(235, 219, 178, 0.28)";
+          border_color = rgba p.fg0 "0.28";
           shadow_passes = 0;
           zindex = 0;
 
@@ -222,10 +227,10 @@ in
         {
           monitor = "";
           size = "205, 44";
-          color = "rgba(20, 20, 20, 0.82)";
+          color = rgba p.bg_dim "0.82";
           rounding = 12;
           border_size = 1;
-          border_color = "rgba(235, 219, 178, 0.28)";
+          border_color = rgba p.fg0 "0.28";
           shadow_passes = 0;
           zindex = 0;
 
@@ -238,10 +243,10 @@ in
         {
           monitor = "";
           size = "420, 136";
-          color = "rgba(20, 20, 20, 0.82)";
+          color = rgba p.bg_dim "0.82";
           rounding = 18;
           border_size = 2;
-          border_color = "rgba(215, 153, 33, 0.75)"; # Gruvbox Gold
+          border_color = rgba p.accent "0.75";
           shadow_passes = 0;
           zindex = 0;
 
@@ -254,10 +259,10 @@ in
         {
           monitor = "";
           size = "300, 136";
-          color = "rgba(20, 20, 20, 0.82)";
+          color = rgba p.bg_dim "0.82";
           rounding = 18;
           border_size = 2;
-          border_color = "rgba(215, 153, 33, 0.75)"; # Gruvbox Gold
+          border_color = rgba p.accent "0.75";
           shadow_passes = 0;
           zindex = 0;
 
@@ -296,7 +301,7 @@ in
           monitor = "";
           text = "cmd[update:18000000] ${topLeftScript}";
           text_align = "left";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 12;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -312,7 +317,7 @@ in
           monitor = "";
           text = "cmd[update:10000] ${topRightScript}";
           text_align = "right";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 12;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -328,7 +333,7 @@ in
           monitor = "";
           text = "$TIME";
           text_align = "center";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 140;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -342,7 +347,7 @@ in
           monitor = "";
           text = ''cmd[update:60000] echo "<b>$(date +'%A, %d. %B %Y')</b>"'';
           text_align = "center";
-          color = "rgb(250, 189, 47)"; # Vibrant Gold
+          color = rgb p.yellow;
           font_size = 23;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -358,7 +363,7 @@ in
           monitor = "";
           text = "cmd[update:250] ${capsLockScript}";
           text_align = "center";
-          color = "rgb(234, 105, 98)"; # Alert Red
+          color = rgb p.red;
           font_size = 13;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -374,7 +379,7 @@ in
           monitor = "";
           text = "󰌾   $USER";
           text_align = "center";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 24;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -390,7 +395,7 @@ in
         {
           monitor = "";
           text = "󰎈";
-          color = "rgba(215, 153, 33, 0.4)";
+          color = rgba p.accent "0.4";
           font_size = 46;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -405,7 +410,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicTitle}";
           text_align = "left";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 14;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -420,7 +425,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicSub}";
           text_align = "left";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 12;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -435,7 +440,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicStatus}";
           text_align = "left";
-          color = "rgb(250, 189, 47)"; # Vibrant Gold
+          color = rgb p.yellow;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -450,7 +455,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicExtra}";
           text_align = "left";
-          color = "rgb(189, 174, 147)";
+          color = rgb p.grey2;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -467,7 +472,7 @@ in
           monitor = "";
           text = "cmd[update:2000] ${cpuScript}";
           text_align = "right";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 12;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -482,7 +487,7 @@ in
           monitor = "";
           text = "cmd[update:2000] ${memScript}";
           text_align = "right";
-          color = "rgb(250, 189, 47)"; # Vibrant Gold
+          color = rgb p.yellow;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -497,7 +502,7 @@ in
           monitor = "";
           text = "cmd[update:5000] ${diskScript}";
           text_align = "right";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -512,7 +517,7 @@ in
           monitor = "";
           text = "cmd[update:5000] ${nixUptimeScript}";
           text_align = "right";
-          color = "rgb(189, 174, 147)";
+          color = rgb p.grey2;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -539,16 +544,16 @@ in
           dots_center = true;
           dots_rounding = -1;
 
-          outer_color = "rgb(215, 153, 33)"; # Solid Accent Rim
-          inner_color = "rgba(20, 20, 20, 0.9)";
-          font_color = "rgb(255, 255, 255)";
+          outer_color = rgb p.accent; # solid accent rim
+          inner_color = rgba p.bg_dim "0.9";
+          font_color = rgb p.fg1;
           fade_on_empty = false;
 
-          check_color = "rgb(184, 187, 38)"; # Gruvbox Green
-          fail_color = "rgb(204, 36, 29)"; # Gruvbox Red
+          check_color = rgb p.green;
+          fail_color = rgb p.red;
           fail_text = "<i>Incorrect ($ATTEMPTS)</i>";
 
-          placeholder_text = ''<i><span foreground="##bdae93">Password...</span></i>'';
+          placeholder_text = ''<i><span foreground="##${hex p.grey2}">Password...</span></i>'';
           shadow_passes = 0;
           zindex = 2;
 
