@@ -73,6 +73,9 @@
       myOverlays = loadOverlays ./modules/overlays;
     in
     {
+      # `nix fmt` formats every .nix file in the repo with nixfmt
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
