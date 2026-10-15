@@ -7,6 +7,7 @@
 }:
 
 let
+  p = config.custom.theme.palette;
   hyprlandEnabled = if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
 
   # Apps & UI
@@ -81,8 +82,56 @@ lib.mkIf hyprlandEnabled {
   services.hyprpolkitagent.enable = true;
 
   # On-screen display for volume, brightness and media keys: with no status
-  # bar, this is the only visual feedback for them.
-  services.swayosd.enable = true;
+  # bar, this is the only visual feedback for them. Flat GTK CSS with the
+  # selectors of swayosd's own stylesheet, recolored from the palette.
+  services.swayosd = {
+    enable = true;
+    stylePath = pkgs.writeText "swayosd.css" ''
+      window#osd {
+        border-radius: 999px;
+        border: 1px solid ${p.bg3};
+        background: alpha(${p.bg0}, 0.92);
+      }
+      window#osd #container {
+        margin: 16px;
+      }
+      window#osd image,
+      window#osd label {
+        color: ${p.fg0};
+      }
+      window#osd progressbar:disabled,
+      window#osd image:disabled {
+        opacity: 0.5;
+      }
+      window#osd progressbar,
+      window#osd segmentedprogress {
+        min-height: 6px;
+        border-radius: 999px;
+        background: transparent;
+        border: none;
+      }
+      window#osd trough,
+      window#osd segment {
+        min-height: inherit;
+        border-radius: inherit;
+        border: none;
+        background: ${p.bg3};
+      }
+      window#osd progress,
+      window#osd segment.active {
+        min-height: inherit;
+        border-radius: inherit;
+        border: none;
+        background: ${p.accent};
+      }
+      window#osd segment {
+        margin-left: 8px;
+      }
+      window#osd segment:first-child {
+        margin-left: 0;
+      }
+    '';
+  };
 
   wayland.windowManager.hyprland = {
     enable = true;
