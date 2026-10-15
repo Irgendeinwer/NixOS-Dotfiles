@@ -24,6 +24,19 @@ let
   notifySend = "${pkgs.libnotify}/bin/notify-send";
   hyprshot = "${pkgs.hyprshot}/bin/hyprshot";
 
+  # Power menu (shellchecked at build time by writeShellApplication)
+  powerMenu = lib.getExe (
+    pkgs.writeShellApplication {
+      name = "hypr-power-menu";
+      runtimeInputs = with pkgs; [
+        rofi
+        systemd
+        hyprshutdown
+      ];
+      text = builtins.readFile ./scripts/power-menu.sh;
+    }
+  );
+
   formatMonitor =
     m:
     let
@@ -226,7 +239,7 @@ lib.mkIf hyprlandEnabled {
       hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("${kitty}"))
       hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("${rofi} -show drun -show-icons"))
       hl.bind(mainMod .. " + D", hl.dsp.window.close())
-      hl.bind(mainMod .. " + M", hl.dsp.exit())
+      hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("${powerMenu}"))
       hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd("loginctl lock-session"))
 
       -- Window state & focus
