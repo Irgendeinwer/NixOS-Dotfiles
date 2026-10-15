@@ -23,6 +23,10 @@ in
       hypridle
     ];
 
+    # Run Electron/Chromium apps (Signal, VS Code, ...) as native Wayland
+    # clients through the nixpkgs wrappers instead of XWayland.
+    environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
     programs = {
       hyprland.enable = true;
       hyprlock.enable = true;
