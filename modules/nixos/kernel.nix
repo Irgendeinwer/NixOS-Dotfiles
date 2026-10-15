@@ -30,13 +30,12 @@ in
     })
 
     (lib.mkIf (cfg == "cachyos") {
+      # Built locally, without the maintainer's binary cache: its server was
+      # compromised in October 2026 (xddxdd/nix-cachyos-kernel#110), so its
+      # signing key is no longer trusted. Only add a cache back once it
+      # returns with a new key.
       boot.kernelPackages =
         inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-bore-lto-x86_64-v3;
-
-      nix.settings = {
-        substituters = [ "https://attic.xuyh0120.win/lantian" ];
-        trusted-public-keys = [ "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=" ];
-      };
     })
   ];
 }
