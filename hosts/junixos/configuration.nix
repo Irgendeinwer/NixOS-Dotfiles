@@ -74,6 +74,8 @@
 
   # Host-specific daemons
   services.fstrim.enable = true;
+  # Monthly checksum scrub of the btrfs root, to catch silent corruption early
+  services.btrfs.autoScrub.enable = true;
   services.openssh = {
     enable = true;
     openFirewall = true;
