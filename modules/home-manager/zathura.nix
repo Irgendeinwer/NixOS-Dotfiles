@@ -1,31 +1,35 @@
+{ config, ... }:
+let
+  p = config.custom.theme.palette;
+in
 {
   programs.zathura = {
     enable = true;
     options = {
       font = "monospace 11";
-      default-bg = "#282828";
-      default-fg = "#ebdbb2";
-      statusbar-fg = "#ebdbb2";
-      statusbar-bg = "#3c3836";
-      inputbar-bg = "#282828";
-      inputbar-fg = "#ebdbb2";
-      notification-bg = "#282828";
-      notification-fg = "#ebdbb2";
-      notification-error-bg = "#cc241d";
-      notification-error-fg = "#282828";
-      notification-warning-bg = "#d79921";
-      notification-warning-fg = "#282828";
-      completion-bg = "#3c3836";
-      completion-fg = "#ebdbb2";
-      completion-highlight-bg = "#d79921";
-      completion-highlight-fg = "#282828";
-      indexbg = "#282828";
-      indexfg = "#ebdbb2";
-      index-active-bg = "#d79921";
-      index-active-fg = "#282828";
+      default-bg = p.bg0;
+      default-fg = p.fg0;
+      statusbar-fg = p.fg0;
+      statusbar-bg = p.bg1;
+      inputbar-bg = p.bg0;
+      inputbar-fg = p.fg0;
+      notification-bg = p.bg0;
+      notification-fg = p.fg0;
+      notification-error-bg = p.red;
+      notification-error-fg = p.bg0;
+      notification-warning-bg = p.yellow;
+      notification-warning-fg = p.bg0;
+      completion-bg = p.bg1;
+      completion-fg = p.fg0;
+      completion-highlight-bg = p.accent;
+      completion-highlight-fg = p.bg0;
+      indexbg = p.bg0;
+      indexfg = p.fg0;
+      index-active-bg = p.accent;
+      index-active-fg = p.bg0;
       recolor-darkmode = "true";
-      recolor-lightcolor = "#282828";
-      recolor-darkcolor = "#ebdbb2";
+      recolor-lightcolor = p.bg0;
+      recolor-darkcolor = p.fg0;
       window-title-basename = "true";
       adjust-open = "best-fit";
     };
