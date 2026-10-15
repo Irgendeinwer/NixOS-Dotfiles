@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   p = config.custom.theme.palette;
 
@@ -26,5 +31,9 @@ in
     enable = true;
     # A string path, so Home Manager emits @theme "<file>" for it.
     theme = "${pkgs.writeText "gruvbox-material.rasi" (colors + builtins.readFile ./layout.rasi)}";
+    # App icons in the launcher and window list from the desktop icon theme
+    settings = lib.mkIf (config.gtk.iconTheme != null) {
+      icon-theme = config.gtk.iconTheme.name;
+    };
   };
 }
