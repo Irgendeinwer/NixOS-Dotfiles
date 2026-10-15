@@ -14,7 +14,6 @@ let
   rofi = "${pkgs.rofi}/bin/rofi";
   signal = "${pkgs.signal-desktop}/bin/signal-desktop";
   easyeffects = "${pkgs.easyeffects}/bin/easyeffects";
-  hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
   hyprpolkitagent = "${pkgs.hyprpolkitagent}/bin/hyprpolkitagent";
 
   # CLI Utilities
@@ -85,8 +84,9 @@ lib.mkIf hyprlandEnabled {
       --------------------------------------------------
       -- Autostart (exec-once)
       --------------------------------------------------
+      -- The boot session is already locked: greetd starts Hyprland with
+      -- --locked-cmd (modules/nixos/hypr.nix).
       hl.on("hyprland.start", function()
-        hl.exec_cmd("${hyprlock}")
         -- Run the polkit agent directly: its systemd user unit is not linked
         -- into the user environment from environment.systemPackages.
         hl.exec_cmd("${hyprpolkitagent}")
