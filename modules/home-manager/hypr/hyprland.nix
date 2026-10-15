@@ -14,7 +14,6 @@ let
   rofi = "${pkgs.rofi}/bin/rofi";
   signal = "${pkgs.signal-desktop}/bin/signal-desktop";
   easyeffects = "${pkgs.easyeffects}/bin/easyeffects";
-  hyprpolkitagent = "${pkgs.hyprpolkitagent}/bin/hyprpolkitagent";
 
   # CLI Utilities
   brightnessctl = "${pkgs.brightnessctl}/bin/brightnessctl";
@@ -64,6 +63,10 @@ let
   dp1Bitdepth = if hasDp1 then toString (dp1Config.bitdepth or 10) else "10";
 in
 lib.mkIf hyprlandEnabled {
+  # Polkit agent as a user service bound to the Hyprland session. (The package
+  # ships its binary in libexec/, so the old bin/ exec path never started.)
+  services.hyprpolkitagent.enable = true;
+
   wayland.windowManager.hyprland = {
     enable = true;
     configType = "lua";
@@ -87,10 +90,6 @@ lib.mkIf hyprlandEnabled {
       -- The boot session is already locked: greetd starts Hyprland with
       -- --locked-cmd (modules/nixos/hypr.nix).
       hl.on("hyprland.start", function()
-        -- Run the polkit agent directly: its systemd user unit is not linked
-        -- into the user environment from environment.systemPackages.
-        hl.exec_cmd("${hyprpolkitagent}")
-
         hl.exec_cmd("${wlPaste} --type text --watch ${cliphist} store")
         hl.exec_cmd("${wlPaste} --type image --watch ${cliphist} store")
 
