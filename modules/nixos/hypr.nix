@@ -35,8 +35,8 @@ in
     # greetd's boot-time auto-login skips the password prompt, so start that
     # session behind hyprlock: Hyprland locks before the first frame, with no
     # flash of the desktop. Logging in through tuigreet stays a single prompt.
-    custom.desktop.greetd.initialSessionCommand = lib.mkIf (config.custom.desktop.greetd.command == "start-hyprland") (
-      lib.mkDefault "start-hyprland -- --locked-cmd ${lib.getExe config.programs.hyprlock.package}"
-    );
+    custom.desktop.greetd.initialSessionCommand = lib.mkIf (
+      config.custom.desktop.greetd.command == "start-hyprland"
+    ) (lib.mkDefault "start-hyprland -- --locked-cmd ${lib.getExe config.programs.hyprlock.package}");
   };
 }

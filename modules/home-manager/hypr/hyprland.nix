@@ -9,7 +9,8 @@
 let
   p = config.custom.theme.palette;
   inherit (import ../../theme/lib.nix { inherit lib; }) hex;
-  hyprlandEnabled = if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
 
   # Apps & UI
   kitty = "${pkgs.kitty}/bin/kitty";
@@ -45,7 +46,8 @@ let
     let
       bitdepthStr = if m ? bitdepth then "\n      bitdepth = ${toString m.bitdepth}," else "";
       cmStr = if m ? cm then "\n      cm = \"${m.cm}\"," else "";
-      sdrbrightnessStr = if m ? sdrbrightness then "\n      sdrbrightness = ${toString m.sdrbrightness}," else "";
+      sdrbrightnessStr =
+        if m ? sdrbrightness then "\n      sdrbrightness = ${toString m.sdrbrightness}," else "";
     in
     ''
       hl.monitor({
@@ -56,19 +58,21 @@ let
       })
     '';
 
-  configuredMonitors = if osConfig != null then (osConfig.custom.desktop.hyprland.monitors or [ ]) else [ ];
+  configuredMonitors =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.monitors or [ ]) else [ ];
 
   monitorsLua =
     if configuredMonitors != [ ] then
       lib.concatMapStringsSep "\n\n" formatMonitor configuredMonitors
-    else ''
-      hl.monitor({
-        output = "",
-        mode = "preferred",
-        position = "auto",
-        scale = 1,
-      })
-    '';
+    else
+      ''
+        hl.monitor({
+          output = "",
+          mode = "preferred",
+          position = "auto",
+          scale = 1,
+        })
+      '';
 
   dp1Config = lib.findFirst (m: (m.output or "") == "DP-1") null configuredMonitors;
   hasDp1 = dp1Config != null;
