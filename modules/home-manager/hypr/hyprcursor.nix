@@ -10,7 +10,9 @@
         pkgs.fetchFromGitHub {
           owner = "ndom91";
           repo = "rose-pine-hyprcursor";
-          rev = "main";
+          # A commit, not a branch: the hash only matches this exact tree, so
+          # a branch would break the next fresh fetch once upstream moves on.
+          rev = "4b02963d0baf0bee18725cf7c5762b3b3c1392f1";
           hash = "sha256-ouuA8LVBXzrbYwPW2vNjh7fC9H2UBud/1tUiIM5vPvM=";
         }
       }"
