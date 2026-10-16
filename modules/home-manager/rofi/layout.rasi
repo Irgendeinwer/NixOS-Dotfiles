@@ -1,12 +1,13 @@
 /* Layout only: the color variables (bg0, fg1, surface, ...) are generated
-   from custom.theme.palette in rofi.nix and prepended to this file. */
+   from custom.theme.palette in rofi.nix and prepended to this file.
+   The list is a grid of app icons; text sits below each icon. */
 
 window {
     location: center;
     anchor:   center;
     border-radius: 20px;
-    height: 560px;
-    width: 600px;
+    height: 440px;
+    width: 720px;
 
     background-color: @surface;
     spacing: 0;
@@ -52,12 +53,19 @@ listview {
     border-color: @fg1;
     background-color: @surface;
     dynamic: false;
+    columns: 5;
+    lines: 3;
+    cycle: false;
+    fixed-columns: true;
+    fixed-height: true;
+    spacing: 4px;
 }
 
 element {
-    padding: 5px;
-    vertical-align: 0.5;
-    border-radius: 5px;
+    padding: 12px 6px;
+    orientation: vertical;
+    children: [ element-icon, element-text ];
+    border-radius: 10px;
     color: @foreground;
     text-color: @fg1;
     background-color: @surface;
@@ -90,11 +98,18 @@ element.alternate.normal {
     background-color: @surface;
 }
 
-element-text, element-icon {
-    size: 3ch;
-    margin: 0 10 0 0;
+element-icon {
+    size: 56px;
+    horizontal-align: 0.5;
     vertical-align: 0.5;
-    /* Follow the row state, so the selected entry gets dark text */
+    /* Follow the cell state, so the selected entry gets dark text */
+    text-color: inherit;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    margin: 6px 0px 0px 0px;
     text-color: inherit;
 }
 
