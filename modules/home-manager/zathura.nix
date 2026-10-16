@@ -27,7 +27,7 @@ in
       indexfg = p.fg0;
       index-active-bg = p.accent;
       index-active-fg = p.bg0;
-      recolor-darkmode = "true";
+      recolor = "true";
       recolor-lightcolor = p.bg0;
       recolor-darkcolor = p.fg0;
       window-title-basename = "true";
