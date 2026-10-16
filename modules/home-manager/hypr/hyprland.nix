@@ -56,6 +56,19 @@ let
     }
   );
 
+  # Window switcher (shellchecked at build time by writeShellApplication)
+  windowSwitcher = lib.getExe (
+    pkgs.writeShellApplication {
+      name = "hypr-window-switcher";
+      runtimeInputs = with pkgs; [
+        rofi
+        jq
+        hyprland
+      ];
+      text = builtins.readFile ./scripts/window-switcher.sh;
+    }
+  );
+
   formatMonitor =
     m:
     let
@@ -346,7 +359,7 @@ lib.mkIf hyprlandEnabled {
       hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
       hl.bind(mainMod .. " + Tab", hl.dsp.window.cycle_next({ next = true }))
       hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
-      hl.bind("ALT + Tab", hl.dsp.exec_cmd("${rofi} -show window -show-icons"))
+      hl.bind("ALT + Tab", hl.dsp.exec_cmd("${windowSwitcher}"))
 
       ${lib.optionalString hasHdr ''
         -- HDR toggle for the monitor marked `hdr = true`
