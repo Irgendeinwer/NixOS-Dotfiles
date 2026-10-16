@@ -11,6 +11,11 @@ let
   inherit (import ../../theme/lib.nix { inherit lib; }) hex;
   hyprlandEnabled =
     if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  # The autostarted apps below belong to optional feature modules: launch
+  # them only when the host enables those features (they install the apps).
+  messagingEnabled =
+    if osConfig != null then (osConfig.custom.desktop.messaging.enable or false) else true;
+  soundEnabled = if osConfig != null then (osConfig.custom.desktop.sound.enable or false) else true;
   # Qt theme from qt.nix for everything launched from Hyprland: Home Manager
   # exports these only to shells and systemd services, and greetd starts
   # Hyprland outside both.
@@ -173,9 +178,11 @@ lib.mkIf hyprlandEnabled {
         hl.exec_cmd("${wlPaste} --type image --watch ${cliphist} store")
 
         hl.exec_cmd("${brightnessctl} set 100%")
-
+      ${lib.optionalString messagingEnabled ''
         hl.exec_cmd("${signal}", { workspace = "10 silent" })
+      ''}${lib.optionalString soundEnabled ''
         hl.exec_cmd("${easyeffects}", { workspace = "10 silent" })
+      ''}
       end)
 
       --------------------------------------------------
