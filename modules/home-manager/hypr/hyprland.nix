@@ -277,7 +277,7 @@ lib.mkIf hyprlandEnabled {
         match = { title = "^(Picture-in-Picture)$" },
         float = true,
         pin = true,
-        move = "100%-w-10 10",
+        move = "monitor_w-window_w-10 10",
         size = { 512, 288 },
         no_initial_focus = true,
         opacity = "1.0 override 1.0 override",
