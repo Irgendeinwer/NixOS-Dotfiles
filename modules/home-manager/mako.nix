@@ -13,7 +13,9 @@ in
       # Show above fullscreen windows (the default "top" layer hides under
       # them): without a bar, notifications are the main status surface.
       layer = "overlay";
-      background-color = p.bg1;
+      # Slightly translucent, so the desktop's layer blur turns the
+      # notifications frosted glass (on the laptop it is just a hint)
+      background-color = "${p.bg1}f2";
       text-color = p.fg0;
       border-size = 2;
       border-color = p.accent;

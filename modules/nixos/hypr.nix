@@ -20,6 +20,8 @@ in
         and `hdr = true` to mark the monitor the HDR toggle switches.
       '';
     };
+
+    layerBlur = lib.mkEnableOption "background blur behind desktop layers (launcher, notifications, OSD)";
   };
 
   config = lib.mkIf cfg.enable {

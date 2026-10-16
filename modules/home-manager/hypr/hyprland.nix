@@ -16,6 +16,9 @@ let
   messagingEnabled =
     if osConfig != null then (osConfig.custom.desktop.messaging.enable or false) else true;
   soundEnabled = if osConfig != null then (osConfig.custom.desktop.sound.enable or false) else true;
+  # Frosted desktop layers, opt-in per host (the laptop skips the cost)
+  layerBlur =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.layerBlur or false) else false;
   # Qt theme from qt.nix for everything launched from Hyprland: Home Manager
   # exports these only to shells and systemd services, and greetd starts
   # Hyprland outside both.
@@ -312,6 +315,18 @@ lib.mkIf hyprlandEnabled {
           "${makoctl}", "${swayosdClient}", osd_target()
         ))
       end
+
+      --------------------------------------------------
+      -- Desktop Layers
+      --------------------------------------------------
+      ${lib.optionalString layerBlur ''
+        -- Background blur behind the launcher, notifications and the
+        -- OSD. Only rendered while such a layer is on screen, so the
+        -- cost is a few milliseconds when one of them pops up.
+        hl.layer_rule({ name = "blur-launcher", match = { namespace = "^rofi$" }, blur = true, ignore_alpha = 0.2 })
+        hl.layer_rule({ name = "blur-notifications", match = { namespace = "^notifications$" }, blur = true, ignore_alpha = 0.2 })
+        hl.layer_rule({ name = "blur-osd", match = { namespace = "^swayosd$" }, blur = true, ignore_alpha = 0.2 })
+      ''}
 
       --------------------------------------------------
       -- Keybindings
