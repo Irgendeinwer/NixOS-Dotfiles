@@ -371,7 +371,7 @@ lib.mkIf hyprlandEnabled {
 
       -- Utilities
       hl.bind("PRINT", hl.dsp.exec_cmd("${hyprshot} -m region --freeze -o ${config.programs.hyprshot.saveLocation}"))
-      hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("${cliphist} list | ${rofi} -dmenu | ${cliphist} decode | ${wlCopy}"))
+      hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("${cliphist} list | ${rofi} -dmenu -theme-str 'window { width: 760px; height: 470px; } listview { columns: 1; lines: 10; fixed-height: false; } element { orientation: horizontal; children: [ element-text ]; padding: 10px 14px; } element-text { horizontal-align: 0.0; margin: 0px; }' | ${cliphist} decode | ${wlCopy}"))
       hl.bind(mainMod .. " + T", hl.dsp.exec_cmd([[${notifySend} -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"]]))
       hl.bind(mainMod .. " + N", toggle_dnd)
 

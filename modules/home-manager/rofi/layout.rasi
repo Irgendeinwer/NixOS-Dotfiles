@@ -1,6 +1,8 @@
 /* Layout only: the color variables (bg0, fg1, surface, ...) are generated
    from custom.theme.palette in rofi.nix and prepended to this file.
-   The list is a grid of app icons; text sits below each icon. */
+   The list is a grid of app icons; text sits below each icon. Only the
+   window paints the translucent @surface: stacking it on the inner
+   widgets too would compound the alpha and hide the blur behind them. */
 
 window {
     location: center;
@@ -24,13 +26,13 @@ message {
     padding: 10px;
     border:  0px 2px 2px 2px;
     border-color: @bg0;
-    background-color: @surface;
+    background-color: transparent;
 }
 
 inputbar {
     color: @fg1;
     padding: 14px;
-    background-color: @surface;
+    background-color: transparent;
     border-color: @fg1;
 
     border: 4px;
@@ -51,7 +53,7 @@ listview {
     border-radius: 0px 0px 20px 20px;
     border: 0px 4px 4px 4px;
     border-color: @fg1;
-    background-color: @surface;
+    background-color: transparent;
     dynamic: false;
     columns: 5;
     lines: 3;
@@ -68,7 +70,7 @@ element {
     border-radius: 10px;
     color: @foreground;
     text-color: @fg1;
-    background-color: @surface;
+    background-color: transparent;
 }
 
 element.normal.active {
@@ -95,7 +97,7 @@ element.selected.urgent {
 }
 
 element.alternate.normal {
-    background-color: @surface;
+    background-color: transparent;
 }
 
 element-icon {
