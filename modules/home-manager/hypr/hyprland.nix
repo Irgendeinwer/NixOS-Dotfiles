@@ -113,7 +113,7 @@ lib.mkIf hyprlandEnabled {
       window#osd {
         border-radius: 999px;
         border: 1px solid ${p.bg3};
-        background: alpha(${p.bg0}, 0.92);
+        background: alpha(${p.bg0}, 0.97);
       }
       window#osd #container {
         margin: 16px;
