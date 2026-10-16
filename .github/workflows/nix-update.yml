@@ -28,7 +28,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             nix flake update nixpkgs
-            
+
             if git diff --quiet flake.lock; then
               echo "No updates available for nixpkgs. Skipping further updates."
               echo "run_update=false" >> "$GITHUB_OUTPUT"

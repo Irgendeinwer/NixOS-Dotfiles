@@ -110,7 +110,7 @@ in
               if [ ! -S "$MPV_SOCK" ]; then return; fi
 
               WINDOWS=$(${hyprctl} activeworkspace -j | ${jq} '.windows')
-              
+
               if [ "$WINDOWS" -gt 0 ] && [ "$LAST_STATE" != "paused" ]; then
                 echo '{"command": ["set_property", "pause", true]}' | ${socat} - UNIX-CONNECT:"$MPV_SOCK" >/dev/null 2>&1 || true
                 LAST_STATE="paused"
@@ -139,7 +139,7 @@ in
                     ;;
                 esac
               done
-              
+
               sleep 1
             done
           '';

@@ -3,8 +3,8 @@ let
   p = config.custom.theme.palette;
 in
 {
-  # Declarative notification daemon (custom.theme.palette). Started on demand via D-Bus
-  # activation; replaces the previous mako/dunst provider ambiguity.
+  # Declarative notification daemon, themed from custom.theme.palette.
+  # Started on demand via D-Bus activation.
   services.mako = {
     enable = true;
 

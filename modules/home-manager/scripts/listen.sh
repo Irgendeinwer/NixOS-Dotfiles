@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Disable pipefail to prevent SIGPIPE (exit code 141) from fzf's early exits 
+# Disable pipefail to prevent SIGPIPE (exit code 141) from fzf's early exits
 # from triggering errexit and crashing the script.
 set +o pipefail
 
@@ -25,7 +25,7 @@ MUSIC_DIR="${LISTEN_MUSIC_DIR:-}"
 # 1. Try XDG user dir if not overridden
 if [ -z "$MUSIC_DIR" ] && command -v xdg-user-dir &>/dev/null; then
   XDG_MUSIC_DIR=$(xdg-user-dir MUSIC)
-  
+
   # Reject $HOME as a valid music directory fallback (prevents searching entire home)
   if [ -n "$XDG_MUSIC_DIR" ] && [ "$XDG_MUSIC_DIR" != "$HOME" ] && [ -d "$XDG_MUSIC_DIR" ]; then
     MUSIC_DIR="$XDG_MUSIC_DIR"
@@ -160,7 +160,7 @@ if [ "$dir_mode" = "true" ]; then
 
   # Resolve absolute paths from target directory
   selected_tracks=$(fd -L -e opus -e flac -e mp3 -e wav -e m4a -a . -- "$target_dir" || true)
-  
+
   if [ -z "$selected_tracks" ]; then
     echo "Error: No music files found in '$target_dir'." >&2
     exit 1
@@ -252,7 +252,7 @@ else
 fi
 
 # Shuffle configuration
-# If the queue was auto-appended and shuffle is enabled, we keep the first track 
+# If the queue was auto-appended and shuffle is enabled, we keep the first track
 # in place (so playback starts instantly on your selection) and shuffle the rest.
 if [ "$shuffle" = "true" ] && [ "${#playlist[@]}" -gt 1 ]; then
   if [ "$auto_appended" = "true" ]; then
@@ -266,7 +266,7 @@ else
   mpv_args+=("--no-shuffle")
 fi
 
-# Generate the custom terminal player details safely using nested conditional 
+# Generate the custom terminal player details safely using nested conditional
 # statements, completely preventing "(error)" outputs for missing metadata.
 # shellcheck disable=SC2154
 term_msg="
