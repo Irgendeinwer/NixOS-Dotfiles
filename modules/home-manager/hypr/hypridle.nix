@@ -1,5 +1,13 @@
-{ pkgs, ... }:
+{
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
 let
+  # Same gate as hyprland.nix: skip when another compositor is in use
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
   hyprctl = "${pkgs.hyprland}/bin/hyprctl";
   hyprlock = "${pkgs.hyprlock}/bin/hyprlock";
   loginctl = "${pkgs.systemd}/bin/loginctl";
