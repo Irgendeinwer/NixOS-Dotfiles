@@ -12,6 +12,8 @@
   config = lib.mkIf config.custom.desktop.sound.enable {
     environment.systemPackages = with pkgs; [
       alsa-utils
+      android-mic # phone as a microphone source (stream port opened below)
+      easyeffects
       qpwgraph
       pulseaudioFull
       pulsemixer
