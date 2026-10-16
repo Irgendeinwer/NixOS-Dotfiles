@@ -39,6 +39,8 @@ in
     # longer contacts Flathub (or fails without a network).
     systemd.services.flatpak-install = {
       description = "Install the sandboxed Flatpak apps (Bottles, Steam)";
+      # Desktop notification on failure (modules/nixos/notify-failure.nix)
+      unitConfig.OnFailure = [ "notify-failure@%N.service" ];
       wantedBy = [ "multi-user.target" ];
       wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
@@ -65,6 +67,8 @@ in
     # the next boot.
     systemd.services.flatpak-update = {
       description = "Update Flatpak apps and runtimes";
+      # Desktop notification on failure (modules/nixos/notify-failure.nix)
+      unitConfig.OnFailure = [ "notify-failure@%N.service" ];
       wants = [ "network-online.target" ];
       after = [ "network-online.target" ];
       path = [ pkgs.flatpak ];
