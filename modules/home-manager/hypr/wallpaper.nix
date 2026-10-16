@@ -77,6 +77,8 @@ in
       systemd.user.services.mpvpaper = {
         Unit = {
           Description = "mpvpaper video wallpaper daemon";
+          # Desktop notification on failure (see notify-failure.nix)
+          OnFailure = [ "notify-failure@%N.service" ];
           After = [ "graphical-session.target" ];
           PartOf = [ "graphical-session.target" ];
           ConditionPathExists = "${cfg.path}";
