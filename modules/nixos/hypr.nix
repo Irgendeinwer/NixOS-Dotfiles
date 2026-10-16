@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -14,7 +13,12 @@ in
     monitors = lib.mkOption {
       type = lib.types.listOf lib.types.attrs;
       default = [ ];
-      description = "Declarative monitor configurations for Hyprland.";
+      description = ''
+        Declarative monitor configurations for Hyprland. Each entry sets
+        `output`; `mode`, `position` and `scale` default to "preferred",
+        "auto" and 1. Optional keys: `bitdepth`, `cm`, `sdrbrightness`,
+        and `hdr = true` to mark the monitor the HDR toggle switches.
+      '';
     };
   };
 

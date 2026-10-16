@@ -86,12 +86,15 @@ let
         })
       '';
 
-  dp1Config = lib.findFirst (m: (m.output or "") == "DP-1") null configuredMonitors;
-  hasDp1 = dp1Config != null;
-  dp1Mode = if hasDp1 then (dp1Config.mode or "preferred") else "preferred";
-  dp1Pos = if hasDp1 then (dp1Config.position or "auto") else "auto";
-  dp1Scale = if hasDp1 then toString (dp1Config.scale or 1) else "1";
-  dp1Bitdepth = if hasDp1 then toString (dp1Config.bitdepth or 10) else "10";
+  # The monitor (if any) the HDR toggle keybind switches: marked with
+  # `hdr = true` in the host's monitor list.
+  hdrMonitor = lib.findFirst (m: m.hdr or false) null configuredMonitors;
+  hasHdr = hdrMonitor != null;
+  hdrMode = if hasHdr then (hdrMonitor.mode or "preferred") else "preferred";
+  hdrPos = if hasHdr then (hdrMonitor.position or "auto") else "auto";
+  hdrScale = if hasHdr then toString (hdrMonitor.scale or 1) else "1";
+  hdrBitdepth = if hasHdr then toString (hdrMonitor.bitdepth or 10) else "10";
+  hdrBaseCm = if hasHdr then (hdrMonitor.cm or "srgb") else "srgb";
 in
 lib.mkIf hyprlandEnabled {
   # Polkit agent as a user service bound to the Hyprland session. (The package
@@ -330,22 +333,22 @@ lib.mkIf hyprlandEnabled {
       hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
       hl.bind("ALT + Tab", hl.dsp.exec_cmd("${rofi} -show window -show-icons"))
 
-      ${lib.optionalString hasDp1 ''
-        -- Native Lua HDR Toggle for DP-1
+      ${lib.optionalString hasHdr ''
+        -- HDR toggle for the monitor marked `hdr = true`
         local hdr_on = false
         local function toggle_hdr()
           hdr_on = not hdr_on
           hl.monitor({
-            output = "${dp1Config.output}",
-            mode = "${dp1Mode}",
-            position = "${dp1Pos}",
-            scale = ${dp1Scale},
-            bitdepth = ${dp1Bitdepth},
-            cm = hdr_on and "hdr" or "srgb",
+            output = "${hdrMonitor.output}",
+            mode = "${hdrMode}",
+            position = "${hdrPos}",
+            scale = ${hdrScale},
+            bitdepth = ${hdrBitdepth},
+            cm = hdr_on and "hdr" or "${hdrBaseCm}",
             sdrbrightness = hdr_on and 1.2 or 1.0,
           })
 
-          local status = hdr_on and "HDR Enabled (10-bit)" or "SDR Mode (10-bit)"
+          local status = hdr_on and "HDR Enabled (${hdrBitdepth}-bit)" or "SDR Mode (${hdrBitdepth}-bit)"
           hl.exec_cmd(string.format([[${notifySend} "Display" "%s" -t 5000]], status))
         end
         hl.bind(mainMod .. " + SHIFT + H", toggle_hdr)
