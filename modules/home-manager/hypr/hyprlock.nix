@@ -2,10 +2,14 @@
   config,
   inputs,
   lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
 let
+  # Same gate as hyprland.nix: skip when another compositor is in use
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
   p = config.custom.theme.palette;
   inherit (import ../../theme/lib.nix { inherit lib; }) hex rgb rgba;
 
@@ -181,7 +185,7 @@ let
     fi
   '';
 in
-{
+lib.mkIf hyprlandEnabled {
   programs.hyprlock = {
     enable = true;
     settings = {

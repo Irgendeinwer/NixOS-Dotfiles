@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
@@ -9,6 +10,10 @@ with lib;
 
 let
   cfg = config.custom.theme.wallpaper;
+
+  # Same gate as hyprland.nix: skip when another compositor is in use
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
 
   # Binary references using Nix Best Practices
   hyprctl = getExe' pkgs.hyprland "hyprctl";
@@ -47,7 +52,7 @@ in
     };
   };
 
-  config = mkIf (cfg.path != null) (mkMerge [
+  config = mkIf (hyprlandEnabled && cfg.path != null) (mkMerge [
 
     # 1. Hyprpaper (Static / Laptop)
     (mkIf (cfg.backend == "hyprpaper") {
