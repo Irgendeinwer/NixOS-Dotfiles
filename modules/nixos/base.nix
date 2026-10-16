@@ -84,7 +84,6 @@ in
       curl
       dconf
       dig
-      easyeffects
       inkscape
       libnotify
       obsidian
