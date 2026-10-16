@@ -59,4 +59,5 @@ Evaluating the flake needs SSH access to a private input that holds the
 wallpapers.
 
 Conventions, the commit schema and the pre-commit checks live in
-[CONTRIBUTING.md](CONTRIBUTING.md).
+[CONTRIBUTING.md](CONTRIBUTING.md). Reinstall and recovery steps live in
+[docs/recovery.md](docs/recovery.md).
