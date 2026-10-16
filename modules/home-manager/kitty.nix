@@ -14,8 +14,8 @@ in
     enable = true;
 
     font = {
-      # Generic family until the nerd-font verdict lands; do not pin a
-      # fragile family name here.
+      # Generic on purpose: fontconfig's monospace alias resolves to
+      # Fira Code Nerd Font Mono (modules/nixos/fonts.nix).
       name = "monospace";
       size = 11;
     };
