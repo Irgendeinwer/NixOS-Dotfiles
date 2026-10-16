@@ -116,6 +116,8 @@
     desktop = {
       hyprland = {
         enable = true;
+        # Frosted layers on the desktop; the laptop keeps the flat look
+        layerBlur = true;
         monitors = [
           {
             output = "DP-2";
