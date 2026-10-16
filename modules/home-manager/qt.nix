@@ -93,6 +93,8 @@ let
 in
 {
   qt = {
+    # mkDefault, so a host can still turn Qt theming off entirely
+    enable = lib.mkDefault true;
     # QT_QPA_PLATFORMTHEME=qt5ct, which qt6ct answers to as well
     platformTheme.name = "qtct";
     qt5ctSettings = qtctSettings;
