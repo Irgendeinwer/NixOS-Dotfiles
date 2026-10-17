@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
@@ -9,6 +10,10 @@ with lib;
 
 let
   cfg = config.custom.theme.wallpaper;
+
+  # Same gate as hyprland.nix: skip when another compositor is in use
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
 
   # Binary references using Nix Best Practices
   hyprctl = getExe' pkgs.hyprland "hyprctl";
@@ -47,7 +52,7 @@ in
     };
   };
 
-  config = mkIf (cfg.path != null) (mkMerge [
+  config = mkIf (hyprlandEnabled && cfg.path != null) (mkMerge [
 
     # 1. Hyprpaper (Static / Laptop)
     (mkIf (cfg.backend == "hyprpaper") {
@@ -72,6 +77,8 @@ in
       systemd.user.services.mpvpaper = {
         Unit = {
           Description = "mpvpaper video wallpaper daemon";
+          # Desktop notification on failure (see notify-failure.nix)
+          OnFailure = [ "notify-failure@%N.service" ];
           After = [ "graphical-session.target" ];
           PartOf = [ "graphical-session.target" ];
           ConditionPathExists = "${cfg.path}";
@@ -105,7 +112,7 @@ in
               if [ ! -S "$MPV_SOCK" ]; then return; fi
 
               WINDOWS=$(${hyprctl} activeworkspace -j | ${jq} '.windows')
-              
+
               if [ "$WINDOWS" -gt 0 ] && [ "$LAST_STATE" != "paused" ]; then
                 echo '{"command": ["set_property", "pause", true]}' | ${socat} - UNIX-CONNECT:"$MPV_SOCK" >/dev/null 2>&1 || true
                 LAST_STATE="paused"
@@ -134,7 +141,7 @@ in
                     ;;
                 esac
               done
-              
+
               sleep 1
             done
           '';

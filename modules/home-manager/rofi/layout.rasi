@@ -1,0 +1,131 @@
+/* Layout only: the color variables (bg0, fg1, surface, ...) are generated
+   from custom.theme.palette in rofi.nix and prepended to this file.
+   The list is a grid of app icons; text sits below each icon. Only the
+   window paints the translucent @surface: stacking it on the inner
+   widgets too would compound the alpha and hide the blur behind them. */
+
+window {
+    location: center;
+    anchor:   center;
+    border-radius: 20px;
+    height: 440px;
+    width: 720px;
+
+    background-color: @surface;
+    spacing: 0;
+    children:  [mainbox];
+    orientation: horizontal;
+}
+
+mainbox {
+    spacing: 0;
+    children: [ inputbar, message, listview ];
+}
+
+message {
+    padding: 10px;
+    border:  0px 2px 2px 2px;
+    border-color: @bg0;
+    background-color: transparent;
+}
+
+inputbar {
+    color: @fg1;
+    padding: 14px;
+    background-color: transparent;
+    border-color: @fg1;
+
+    border: 4px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+entry, prompt, case-indicator {
+    text-font: inherit;
+    text-color: inherit;
+}
+
+prompt {
+    margin: 0px 1em 0em 0em ;
+}
+
+listview {
+    padding: 8px;
+    border-radius: 0px 0px 20px 20px;
+    border: 0px 4px 4px 4px;
+    border-color: @fg1;
+    background-color: transparent;
+    dynamic: false;
+    columns: 5;
+    lines: 3;
+    cycle: false;
+    fixed-columns: true;
+    fixed-height: true;
+    spacing: 4px;
+}
+
+element {
+    padding: 12px 6px;
+    orientation: vertical;
+    children: [ element-icon, element-text ];
+    border-radius: 10px;
+    color: @foreground;
+    text-color: @fg1;
+    background-color: transparent;
+}
+
+element.normal.active {
+    background-color: @bg-visual-yellow;
+}
+
+element.normal.urgent {
+    background-color: @bg-visual-red;
+}
+
+element.selected.normal {
+    background-color: @grey2;
+    text-color: @bg0;
+}
+
+element.selected.active {
+    background-color: @yellow;
+    text-color: @bg0;
+}
+
+element.selected.urgent {
+    background-color: @red;
+    text-color: @bg0;
+}
+
+element.alternate.normal {
+    background-color: transparent;
+}
+
+element-icon {
+    size: 56px;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    /* Follow the cell state, so the selected entry gets dark text */
+    text-color: inherit;
+}
+
+element-text {
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    margin: 6px 0px 0px 0px;
+    text-color: inherit;
+}
+
+button {
+    padding: 6px;
+    color: @foreground;
+    horizontal-align: 0.5;
+
+    border: 2px 0px 2px 2px;
+    border-radius: 5px;
+    border-color: @foreground;
+}
+
+button.selected.normal {
+    border: 2px 0px 2px 2px;
+    border-color: @foreground;
+}

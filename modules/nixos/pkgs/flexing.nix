@@ -9,7 +9,7 @@ let
 in
 {
   options.custom.desktop.flexing = {
-    enable = lib.mkEnableOption "terminal toys, visualizers, and fetch tools (cmatrix, fastfetch, cava, etc.)";
+    enable = lib.mkEnableOption "terminal toys, visualizers, and fetch tools (cmatrix, cava, uwufetch, etc.)";
   };
 
   config = lib.mkIf cfg.enable {

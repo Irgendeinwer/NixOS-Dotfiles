@@ -25,7 +25,8 @@ in
       "iommu=force"
       "iommu.strict=1"
       "iommu.passthrough=0"
-    ] ++ lib.optionals cfg.lockdownEmergencyShell [
+    ]
+    ++ lib.optionals cfg.lockdownEmergencyShell [
       "boot.panic_on_fail"
       "panic=10"
     ];

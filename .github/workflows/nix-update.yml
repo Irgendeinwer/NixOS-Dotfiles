@@ -13,22 +13,22 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup SSH Agent
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
         with:
           ssh-private-key: ${{ secrets.WALLPAPER_DEPLOY_KEY }}
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v16
+        uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
 
       - name: Check for nixpkgs updates
         id: check-update
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             nix flake update nixpkgs
-            
+
             if git diff --quiet flake.lock; then
               echo "No updates available for nixpkgs. Skipping further updates."
               echo "run_update=false" >> "$GITHUB_OUTPUT"
@@ -55,7 +55,7 @@ jobs:
 
       - name: Commit and push changes
         if: steps.check-update.outputs.run_update == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
         with:
           commit_message: "chore(flake): update inputs"
           file_pattern: "flake.lock"

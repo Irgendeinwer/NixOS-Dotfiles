@@ -1,36 +1,67 @@
 {
+  config,
   inputs,
+  lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
 let
+  # Same gate as hyprland.nix: skip when another compositor is in use
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  p = config.custom.theme.palette;
+  inherit (import ../../theme/lib.nix { inherit lib; }) hex rgb rgba;
+
   # 1x1 transparent PNG fallback
   blankPng = pkgs.runCommand "blank.png" { } ''
     echo -n 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' | base64 -d > $out
   '';
 
-  # Instant Album Art fetcher (112x112)
+  # Cover art, normalized to a square. The image widget scales art to
+  # fill its square box, so wide art (video thumbnails) overflows the
+  # media hub; center-crop to a square once per track instead.
   fetchCover = pkgs.writeShellScript "hyprlock-cover" ''
     ART=$(${pkgs.playerctl}/bin/playerctl metadata mpris:artUrl 2>/dev/null || true)
-    if [ -n "$ART" ]; then
-      if [[ "$ART" =~ ^https?:// ]]; then
-        CACHE="/tmp/hyprlock-art.png"
-        URL_CACHE="/tmp/hyprlock-art.url"
-        if [ ! -f "$CACHE" ] || [ "$(cat "$URL_CACHE" 2>/dev/null)" != "$ART" ]; then
-          ${pkgs.curl}/bin/curl -s --max-time 1 "$ART" -o "$CACHE" 2>/dev/null
-          echo "$ART" > "$URL_CACHE"
-        fi
-        echo "$CACHE"
-      elif [[ "$ART" =~ ^file:// ]]; then
-        FILE_PATH="''${ART#file://}"
-        if [ -f "$FILE_PATH" ]; then
-          echo "$FILE_PATH"
-        else
-          echo "${blankPng}"
-        fi
+    if [ -z "$ART" ]; then
+      echo "${blankPng}"
+      exit 0
+    fi
+
+    # Private per-user runtime dir rather than fixed names in shared /tmp
+    CACHE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
+    OUT="$CACHE_DIR/hyprlock-art.png"
+    URL_CACHE="$CACHE_DIR/hyprlock-art.url"
+
+    if [ ! -f "$OUT" ] || [ "$(cat "$URL_CACHE" 2>/dev/null)" != "$ART" ]; then
+      SRC=""
+      case "$ART" in
+        http://*|https://*)
+          DL="$CACHE_DIR/hyprlock-art-download"
+          rm -f "$DL"
+          if ${pkgs.curl}/bin/curl -fs --max-time 2 "$ART" -o "$DL" 2>/dev/null; then
+            SRC="$DL"
+          fi
+          ;;
+        file://*)
+          SRC="''${ART#file://}"
+          ;;
+        *)
+          SRC="$ART"
+          ;;
+      esac
+      # 224px for the 112px widget, so it stays sharp scaled down
+      if [ -n "$SRC" ] && [ -f "$SRC" ] && ${pkgs.imagemagick}/bin/magick "$SRC" -resize "224x224^" -gravity center -extent 224x224 "$OUT" 2>/dev/null; then
+        echo "$ART" > "$URL_CACHE"
       else
-        echo "$ART"
+        # No usable art for this track: blank rather than stale art
+        rm -f "$OUT"
+        echo "$ART" > "$URL_CACHE"
       fi
+    fi
+
+    if [ -f "$OUT" ]; then
+      echo "$OUT"
     else
       echo "${blankPng}"
     fi
@@ -174,7 +205,7 @@ let
     fi
   '';
 in
-{
+lib.mkIf hyprlandEnabled {
   programs.hyprlock = {
     enable = true;
     settings = {
@@ -202,14 +233,14 @@ in
       # GLASS CONTAINERS (zindex = 0)
       # ==========================================
       shape = [
-        # Top-Left: System Spec Pill (245px width - snug for Linux kernel text)
+        # Top-Left: System Spec Pill (272px wide, headroom past the kernel text)
         {
           monitor = "";
-          size = "245, 44";
-          color = "rgba(20, 20, 20, 0.82)";
+          size = "272, 44";
+          color = rgba p.bg_dim "0.82";
           rounding = 12;
           border_size = 1;
-          border_color = "rgba(235, 219, 178, 0.28)";
+          border_color = rgba p.fg0 "0.28";
           shadow_passes = 0;
           zindex = 0;
 
@@ -218,14 +249,14 @@ in
           valign = "top";
         }
 
-        # Top-Right: Power / Host Pill (205px width - snug for hostname)
+        # Top-Right: Power / Host Pill (240px wide, headroom past the hostname)
         {
           monitor = "";
-          size = "205, 44";
-          color = "rgba(20, 20, 20, 0.82)";
+          size = "240, 44";
+          color = rgba p.bg_dim "0.82";
           rounding = 12;
           border_size = 1;
-          border_color = "rgba(235, 219, 178, 0.28)";
+          border_color = rgba p.fg0 "0.28";
           shadow_passes = 0;
           zindex = 0;
 
@@ -238,10 +269,10 @@ in
         {
           monitor = "";
           size = "420, 136";
-          color = "rgba(20, 20, 20, 0.82)";
+          color = rgba p.bg_dim "0.82";
           rounding = 18;
           border_size = 2;
-          border_color = "rgba(215, 153, 33, 0.75)"; # Gruvbox Gold
+          border_color = rgba p.accent "0.75";
           shadow_passes = 0;
           zindex = 0;
 
@@ -254,10 +285,10 @@ in
         {
           monitor = "";
           size = "300, 136";
-          color = "rgba(20, 20, 20, 0.82)";
+          color = rgba p.bg_dim "0.82";
           rounding = 18;
           border_size = 2;
-          border_color = "rgba(215, 153, 33, 0.75)"; # Gruvbox Gold
+          border_color = rgba p.accent "0.75";
           shadow_passes = 0;
           zindex = 0;
 
@@ -296,7 +327,7 @@ in
           monitor = "";
           text = "cmd[update:18000000] ${topLeftScript}";
           text_align = "left";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 12;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -312,7 +343,7 @@ in
           monitor = "";
           text = "cmd[update:10000] ${topRightScript}";
           text_align = "right";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 12;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -328,7 +359,7 @@ in
           monitor = "";
           text = "$TIME";
           text_align = "center";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 140;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -342,7 +373,7 @@ in
           monitor = "";
           text = ''cmd[update:60000] echo "<b>$(date +'%A, %d. %B %Y')</b>"'';
           text_align = "center";
-          color = "rgb(250, 189, 47)"; # Vibrant Gold
+          color = rgb p.yellow;
           font_size = 23;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -358,7 +389,7 @@ in
           monitor = "";
           text = "cmd[update:250] ${capsLockScript}";
           text_align = "center";
-          color = "rgb(234, 105, 98)"; # Alert Red
+          color = rgb p.red;
           font_size = 13;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -374,7 +405,7 @@ in
           monitor = "";
           text = "󰌾   $USER";
           text_align = "center";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 24;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -390,7 +421,7 @@ in
         {
           monitor = "";
           text = "󰎈";
-          color = "rgba(215, 153, 33, 0.4)";
+          color = rgba p.accent "0.4";
           font_size = 46;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -405,7 +436,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicTitle}";
           text_align = "left";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 14;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -420,7 +451,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicSub}";
           text_align = "left";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 12;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -435,7 +466,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicStatus}";
           text_align = "left";
-          color = "rgb(250, 189, 47)"; # Vibrant Gold
+          color = rgb p.yellow;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -450,7 +481,7 @@ in
           monitor = "";
           text = "cmd[update:1000] ${musicExtra}";
           text_align = "left";
-          color = "rgb(189, 174, 147)";
+          color = rgb p.grey2;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -467,7 +498,7 @@ in
           monitor = "";
           text = "cmd[update:2000] ${cpuScript}";
           text_align = "right";
-          color = "rgb(255, 255, 255)";
+          color = rgb p.fg1;
           font_size = 12;
           font_family = "Fira Code Nerd Font Bold";
           shadow_passes = 0;
@@ -482,7 +513,7 @@ in
           monitor = "";
           text = "cmd[update:2000] ${memScript}";
           text_align = "right";
-          color = "rgb(250, 189, 47)"; # Vibrant Gold
+          color = rgb p.yellow;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -497,7 +528,7 @@ in
           monitor = "";
           text = "cmd[update:5000] ${diskScript}";
           text_align = "right";
-          color = "rgb(235, 219, 178)";
+          color = rgb p.fg0;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -512,7 +543,7 @@ in
           monitor = "";
           text = "cmd[update:5000] ${nixUptimeScript}";
           text_align = "right";
-          color = "rgb(189, 174, 147)";
+          color = rgb p.grey2;
           font_size = 11;
           font_family = "Fira Code Nerd Font";
           shadow_passes = 0;
@@ -539,16 +570,16 @@ in
           dots_center = true;
           dots_rounding = -1;
 
-          outer_color = "rgb(215, 153, 33)"; # Solid Accent Rim
-          inner_color = "rgba(20, 20, 20, 0.9)";
-          font_color = "rgb(255, 255, 255)";
+          outer_color = rgb p.accent; # solid accent rim
+          inner_color = rgba p.bg_dim "0.9";
+          font_color = rgb p.fg1;
           fade_on_empty = false;
 
-          check_color = "rgb(184, 187, 38)"; # Gruvbox Green
-          fail_color = "rgb(204, 36, 29)"; # Gruvbox Red
+          check_color = rgb p.green;
+          fail_color = rgb p.red;
           fail_text = "<i>Incorrect ($ATTEMPTS)</i>";
 
-          placeholder_text = ''<i><span foreground="##bdae93">Password...</span></i>'';
+          placeholder_text = ''<i><span foreground="##${hex p.grey2}">Password...</span></i>'';
           shadow_passes = 0;
           zindex = 2;
 
@@ -558,5 +589,30 @@ in
         }
       ];
     };
+  };
+
+  # Keep the cropped cover art prepared while unlocked: playerctl
+  # --follow reports the art URL on every track change, and fetchCover
+  # then does the download and crop in the background, so the lock
+  # screen never waits on the network for it.
+  systemd.user.services.hyprlock-cover-warm = {
+    Unit = {
+      Description = "Prepare the hyprlock cover art on track changes";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = pkgs.writeShellScript "hyprlock-cover-warm" ''
+        while true; do
+          ${pkgs.playerctl}/bin/playerctl --follow metadata mpris:artUrl 2>/dev/null | while IFS= read -r _; do
+            ${fetchCover} >/dev/null 2>&1 || true
+          done
+          ${pkgs.coreutils}/bin/sleep 2
+        done
+      '';
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 }

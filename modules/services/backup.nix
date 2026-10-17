@@ -69,6 +69,12 @@ in
       ];
     };
 
+    # A failed backup run shows a desktop notification (template in
+    # modules/nixos/notify-failure.nix)
+    systemd.services.borgbackup-job-systemBackup.unitConfig.OnFailure = [
+      "notify-failure@%N.service"
+    ];
+
     # Automatically trigger backup service upon USB drive insertion
     services.udev.extraRules = lib.mkIf cfg.autoTriggerOnPlug ''
       ACTION=="add", SUBSYSTEM=="block", ENV{ID_FS_UUID}=="${cfg.deviceUuid}", TAG+="systemd", ENV{SYSTEMD_WANTS}+="borgbackup-job-systemBackup.service"
