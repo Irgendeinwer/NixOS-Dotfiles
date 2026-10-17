@@ -285,7 +285,9 @@ lib.mkIf hyprlandEnabled {
       --------------------------------------------------
       -- Window Rules
       --------------------------------------------------
-      -- Picture-in-Picture
+      -- Picture-in-Picture. Browsers fire an activation request right
+      -- after spawn; with focus_on_activate that focuses the window and
+      -- warps the cursor into it, so suppress the focus half of it.
       hl.window_rule({
         match = { title = "^(Picture-in-Picture)$" },
         float = true,
@@ -293,6 +295,7 @@ lib.mkIf hyprlandEnabled {
         move = "monitor_w-window_w-10 10",
         size = { 512, 288 },
         no_initial_focus = true,
+        suppress_event = "activatefocus",
         opacity = "1.0 override 1.0 override",
       })
 
