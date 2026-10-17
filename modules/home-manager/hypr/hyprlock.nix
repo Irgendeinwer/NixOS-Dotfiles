@@ -18,30 +18,50 @@ let
     echo -n 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=' | base64 -d > $out
   '';
 
-  # Instant Album Art fetcher (112x112)
+  # Cover art, normalized to a square. The image widget scales art to
+  # fill its square box, so wide art (video thumbnails) overflows the
+  # media hub; center-crop to a square once per track instead.
   fetchCover = pkgs.writeShellScript "hyprlock-cover" ''
     ART=$(${pkgs.playerctl}/bin/playerctl metadata mpris:artUrl 2>/dev/null || true)
-    if [ -n "$ART" ]; then
-      if [[ "$ART" =~ ^https?:// ]]; then
-        # Private per-user runtime dir rather than fixed names in shared /tmp
-        CACHE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
-        CACHE="$CACHE_DIR/hyprlock-art.png"
-        URL_CACHE="$CACHE_DIR/hyprlock-art.url"
-        if [ ! -f "$CACHE" ] || [ "$(cat "$URL_CACHE" 2>/dev/null)" != "$ART" ]; then
-          ${pkgs.curl}/bin/curl -s --max-time 1 "$ART" -o "$CACHE" 2>/dev/null
-          echo "$ART" > "$URL_CACHE"
-        fi
-        echo "$CACHE"
-      elif [[ "$ART" =~ ^file:// ]]; then
-        FILE_PATH="''${ART#file://}"
-        if [ -f "$FILE_PATH" ]; then
-          echo "$FILE_PATH"
-        else
-          echo "${blankPng}"
-        fi
+    if [ -z "$ART" ]; then
+      echo "${blankPng}"
+      exit 0
+    fi
+
+    # Private per-user runtime dir rather than fixed names in shared /tmp
+    CACHE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
+    OUT="$CACHE_DIR/hyprlock-art.png"
+    URL_CACHE="$CACHE_DIR/hyprlock-art.url"
+
+    if [ ! -f "$OUT" ] || [ "$(cat "$URL_CACHE" 2>/dev/null)" != "$ART" ]; then
+      SRC=""
+      case "$ART" in
+        http://*|https://*)
+          DL="$CACHE_DIR/hyprlock-art-download"
+          rm -f "$DL"
+          if ${pkgs.curl}/bin/curl -fs --max-time 1 "$ART" -o "$DL" 2>/dev/null; then
+            SRC="$DL"
+          fi
+          ;;
+        file://*)
+          SRC="''${ART#file://}"
+          ;;
+        *)
+          SRC="$ART"
+          ;;
+      esac
+      # 224px for the 112px widget, so it stays sharp scaled down
+      if [ -n "$SRC" ] && [ -f "$SRC" ] && ${pkgs.imagemagick}/bin/magick "$SRC" -resize "224x224^" -gravity center -extent 224x224 "$OUT" 2>/dev/null; then
+        echo "$ART" > "$URL_CACHE"
       else
-        echo "$ART"
+        # No usable art for this track: blank rather than stale art
+        rm -f "$OUT"
+        echo "$ART" > "$URL_CACHE"
       fi
+    fi
+
+    if [ -f "$OUT" ]; then
+      echo "$OUT"
     else
       echo "${blankPng}"
     fi
