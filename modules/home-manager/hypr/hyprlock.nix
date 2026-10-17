@@ -213,10 +213,10 @@ lib.mkIf hyprlandEnabled {
       # GLASS CONTAINERS (zindex = 0)
       # ==========================================
       shape = [
-        # Top-Left: System Spec Pill (245px width - snug for Linux kernel text)
+        # Top-Left: System Spec Pill (272px wide, headroom past the kernel text)
         {
           monitor = "";
-          size = "245, 44";
+          size = "272, 44";
           color = rgba p.bg_dim "0.82";
           rounding = 12;
           border_size = 1;
@@ -229,10 +229,10 @@ lib.mkIf hyprlandEnabled {
           valign = "top";
         }
 
-        # Top-Right: Power / Host Pill (205px width - snug for hostname)
+        # Top-Right: Power / Host Pill (240px wide, headroom past the hostname)
         {
           monitor = "";
-          size = "205, 44";
+          size = "240, 44";
           color = rgba p.bg_dim "0.82";
           rounding = 12;
           border_size = 1;
