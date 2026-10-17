@@ -46,17 +46,10 @@ let
     export TAVILY_API_KEY="$(${pkgs.coreutils}/bin/cat ${config.sops.secrets.tavily_key_1.path})"
     exec ${pkgs.nodejs}/bin/npx -y tavily-mcp@latest "$@"
   '';
-
-  # Wrapper script for Puppeteer MCP using NixOS Chromium
-  puppeteerMcp = pkgs.writeShellScriptBin "puppeteer-mcp" ''
-    export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-    export PUPPETEER_EXECUTABLE_PATH="${pkgs.chromium}/bin/chromium"
-    exec ${pkgs.nodejs}/bin/npx -y @modelcontextprotocol/server-puppeteer "$@"
-  '';
 in
 {
   options.custom.services.ai = {
-    enable = lib.mkEnableOption "AI developer stack (Gemini rotation, LiteLLM, Tavily, and Puppeteer MCP)";
+    enable = lib.mkEnableOption "AI developer stack (Gemini rotation, LiteLLM, Tavily, and Playwright MCP)";
 
     user = lib.mkOption {
       type = lib.types.str;
@@ -127,7 +120,10 @@ in
     environment.systemPackages = [
       pkgs.nodejs
       tavilyMcp
-      puppeteerMcp
+      # Browser automation MCP server (`playwright-mcp`), maintained by
+      # Microsoft and packaged in nixpkgs with Playwright's NixOS-patched
+      # browsers, so it updates with the flake instead of npx at runtime.
+      pkgs.playwright-mcp
     ];
   };
 }

@@ -35,6 +35,16 @@ in
         default = "start-hyprland";
         description = "Command or wrapper to launch the desktop session.";
       };
+      initialSessionCommand = lib.mkOption {
+        type = lib.types.str;
+        default = cfg.command;
+        defaultText = lib.literalExpression "config.custom.desktop.greetd.command";
+        description = ''
+          Command for the boot-time auto-login session, which starts without a
+          password prompt (the desktop module can make it start locked). The
+          tuigreet fallback always runs the plain `command`.
+        '';
+      };
       user = lib.mkOption {
         type = lib.types.str;
         default = config.custom.user;
@@ -70,7 +80,7 @@ in
         settings = {
           # Boot: Auto-login into configured command (e.g. Hyprland)
           initial_session = {
-            command = "${cfg.command}";
+            command = cfg.initialSessionCommand;
             user = cfg.user;
           };
 

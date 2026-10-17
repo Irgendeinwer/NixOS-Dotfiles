@@ -74,6 +74,8 @@
 
   # Host-specific daemons
   services.fstrim.enable = true;
+  # Monthly checksum scrub of the btrfs root, to catch silent corruption early
+  services.btrfs.autoScrub.enable = true;
   services.openssh = {
     enable = true;
     openFirewall = true;
@@ -94,7 +96,8 @@
 
   custom = {
     system = {
-      kernel = "cachyos";
+      # Mainline while the CachyOS binary cache is down (modules/nixos/kernel.nix)
+      kernel = "latest";
       boot = {
         silent.enable = true;
         secureboot.enable = true;
@@ -113,6 +116,8 @@
     desktop = {
       hyprland = {
         enable = true;
+        # Frosted layers on the desktop; the laptop keeps the flat look
+        layerBlur = true;
         monitors = [
           {
             output = "DP-2";
@@ -127,6 +132,7 @@
             scale = 1;
             bitdepth = 10;
             cm = "srgb";
+            hdr = true;
           }
         ];
       };

@@ -19,7 +19,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Preserve kernel binary cache compatibility by keeping this isolated
     nix-cachyos-kernel.url = "github:xddxdd/nix-cachyos-kernel/release";
 
     nixvim = {
@@ -73,6 +72,9 @@
       myOverlays = loadOverlays ./modules/overlays;
     in
     {
+      # `nix fmt` formats every .nix file in the repo with nixfmt
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
@@ -108,6 +110,7 @@
 
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
+          nixos-hardware.nixosModules.common-pc-laptop # TLP power management
 
           inputs.sops-nix.nixosModules.sops
           inputs.lanzaboote.nixosModules.lanzaboote

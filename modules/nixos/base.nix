@@ -55,7 +55,6 @@ in
       extraGroups = [
         "networkmanager"
         "wheel"
-        "input"
       ];
     };
 
@@ -70,52 +69,57 @@ in
       "nix-command"
       "flakes"
     ];
+    # Hard-link identical files in the store once a week (catches up after
+    # downtime); garbage collection stays with nh.
+    nix.optimise = {
+      automatic = true;
+      dates = [ "weekly" ];
+    };
 
-  # Core system packages shared across all hosts
-  environment.systemPackages = with pkgs; [
-    bat
-    brightnessctl
-    cliphist
-    curl
-    dconf
-    dig
-    easyeffects
-    inkscape
-    libnotify
-    obsidian
-    pdf4qt
-    playerctl
-    python3
-    qimgv
-    ripgrep
-    traceroute
-    unzip
-    wev
-    wget
-    whois
-    wl-clipboard
-    yt-dlp
-    zip
-  ];
+    # Core system packages shared across all hosts
+    environment.systemPackages = with pkgs; [
+      bat
+      brightnessctl
+      cliphist
+      curl
+      dconf
+      dig
+      inkscape
+      libnotify
+      obsidian
+      pdf4qt
+      playerctl
+      python3
+      qimgv
+      ripgrep
+      traceroute
+      unzip
+      wev
+      wget
+      whois
+      wl-clipboard
+      yt-dlp
+      zip
+    ];
 
-  # XDG Portals & Polkit
-  xdg.portal = {
-    enable = true;
-    xdgOpenUsePortal = true;
-  };
-  security.polkit.enable = true;
+    # XDG Portals & Polkit
+    xdg.portal = {
+      enable = true;
+      xdgOpenUsePortal = true;
+    };
+    security.polkit.enable = true;
 
-  # System security & diagnostics
-  programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
+    # System security & diagnostics
+    programs.mtr.enable = true;
+    programs.gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+    };
 
-  # Graphics baseline
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
+    # Graphics baseline
+    hardware.graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
   };
 }
