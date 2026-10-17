@@ -39,7 +39,7 @@ let
         http://*|https://*)
           DL="$CACHE_DIR/hyprlock-art-download"
           rm -f "$DL"
-          if ${pkgs.curl}/bin/curl -fs --max-time 1 "$ART" -o "$DL" 2>/dev/null; then
+          if ${pkgs.curl}/bin/curl -fs --max-time 2 "$ART" -o "$DL" 2>/dev/null; then
             SRC="$DL"
           fi
           ;;
@@ -589,5 +589,30 @@ lib.mkIf hyprlandEnabled {
         }
       ];
     };
+  };
+
+  # Keep the cropped cover art prepared while unlocked: playerctl
+  # --follow reports the art URL on every track change, and fetchCover
+  # then does the download and crop in the background, so the lock
+  # screen never waits on the network for it.
+  systemd.user.services.hyprlock-cover-warm = {
+    Unit = {
+      Description = "Prepare the hyprlock cover art on track changes";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = pkgs.writeShellScript "hyprlock-cover-warm" ''
+        while true; do
+          ${pkgs.playerctl}/bin/playerctl --follow metadata mpris:artUrl 2>/dev/null | while IFS= read -r _; do
+            ${fetchCover} >/dev/null 2>&1 || true
+          done
+          ${pkgs.coreutils}/bin/sleep 2
+        done
+      '';
+      Restart = "on-failure";
+      RestartSec = 5;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
   };
 }
