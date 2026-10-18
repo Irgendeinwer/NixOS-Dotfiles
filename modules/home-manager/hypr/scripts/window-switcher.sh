@@ -104,4 +104,4 @@ selected=$(
 ) || exit 0
 
 [ -n "$selected" ] || exit 0
-hyprctl dispatch focuswindow "address:${addrs[$selected]}"
+hyprctl dispatch "hl.dsp.focus({ window = 'address:${addrs[$selected]}' })"
