@@ -1,0 +1,61 @@
+--- a/src/renderer/features/visualizer/components/butternchurn/visualizer.tsx
++++ b/src/renderer/features/visualizer/components/butternchurn/visualizer.tsx
+@@ -51,2 +51,2 @@
+-    const [base, extra, md1] = await Promise.all([
++    const [base, extra, md1, royalMashupRemix] = await Promise.all([
+         import('butterchurn-presets/dist/base.js'),
+@@ -54,2 +54,3 @@
+         import('butterchurn-presets/dist/md1.js'),
++        import('./royal-mashup-remix'),
+     ]);
+@@ -60,2 +61,3 @@
+         ...md1.default,
++        'Royal Mashup Remix (197)': royalMashupRemix.default,
+     };
+@@ -229,6 +231,46 @@ const VisualizerInner = () => {
+                     width,
+                 }) as ButterchurnVisualizer;
+ 
++                // Butterchurn normalizes its band levels over time. Supply the
++                // previous frame's raw stereo RMS to this preset through b3n;
++                // the preset immediately restores that blur control to zero.
++                const originalRender = butterchurnInstance.render.bind(butterchurnInstance);
++                butterchurnInstance.render = () => {
++                    const internal = butterchurnInstance as any;
++                    const renderer = internal.renderer;
++                    const left = renderer?.audio?.timeByteArraySignedL;
++                    const right = renderer?.audio?.timeByteArraySignedR;
++                    let rms: number | undefined;
++
++                    if (left && right && left.length === right.length) {
++                        let power = 0;
++                        for (let i = 0; i < left.length; i++) {
++                            power += left[i] * left[i] + right[i] * right[i];
++                        }
++                        rms = Math.sqrt(power / (left.length * 2)) / 128;
++                    }
++
++                    const runners = [
++                        renderer?.presetEquationRunner,
++                        renderer?.prevPresetEquationRunner,
++                    ];
++                    for (const runner of runners) {
++                        if (!runner?.mdVS) continue;
++                        const isRoyal = runner.preset?.frame_eqs_eel?.includes(
++                            'absoluteInput = b3n',
++                        );
++                        if (isRoyal && rms !== undefined) {
++                            runner.mdVS.b3n = rms + 0.000001;
++                            runner.royalAbsoluteInput = true;
++                        } else if (runner.royalAbsoluteInput) {
++                            runner.mdVS.b3n = 0;
++                            runner.royalAbsoluteInput = false;
++                        }
++                    }
++
++                    originalRender();
++                };
++
+                 for (const node of nodes) {
+                     butterchurnInstance.connectAudio(node);
+                 }
