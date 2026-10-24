@@ -30,12 +30,18 @@ in
     })
 
     (lib.mkIf (cfg == "cachyos") {
-      # Built locally, without the maintainer's binary cache: its server was
-      # compromised in October 2026 (xddxdd/nix-cachyos-kernel#110), so its
-      # signing key is no longer trusted. Only add a cache back once it
-      # returns with a new key.
       boot.kernelPackages =
         inputs.nix-cachyos-kernel.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages-cachyos-bore-lto-x86_64-v3;
+
+      # The maintainer's cache returned under a new URL and signing key after
+      # the October 2026 server compromise (xddxdd/nix-cachyos-kernel#110),
+      # where the old private key was stolen. Only the new key is trusted, so
+      # anything signed with the old one is rejected. cache.nixos.org stays
+      # available, since nixpkgs appends it to these lists itself.
+      nix.settings = {
+        substituters = [ "https://cache.lantian.pub/lantian" ];
+        trusted-public-keys = [ "lantian:WVGO7vsRMSEN+h7Lp7kv6SAmrkEXgUGbbXm7jMDjBuQ=" ];
+      };
     })
   ];
 }
