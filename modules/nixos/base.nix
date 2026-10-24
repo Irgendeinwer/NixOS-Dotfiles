@@ -18,7 +18,6 @@ in
     # Boot loader
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
-    boot.initrd.systemd.enable = true;
 
     # Networking & Firewall baseline
     networking = {
