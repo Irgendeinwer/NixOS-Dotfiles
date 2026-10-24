@@ -237,7 +237,7 @@ lib.mkIf hyprlandEnabled {
           layout = "dwindle",
         },
         misc = {
-          vrr = 3,
+          vrr = 2,
           key_press_enables_dpms = true,
           force_default_wallpaper = 0,
           background_color = "rgb(${hex p.bg_dim})",
