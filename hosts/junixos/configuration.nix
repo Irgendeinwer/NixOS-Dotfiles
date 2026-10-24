@@ -96,8 +96,7 @@
 
   custom = {
     system = {
-      # Mainline while the CachyOS binary cache is down (modules/nixos/kernel.nix)
-      kernel = "latest";
+      kernel = "cachyos";
       boot = {
         silent.enable = true;
         secureboot.enable = true;
