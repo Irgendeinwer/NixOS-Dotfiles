@@ -1,0 +1,597 @@
+// Remix of "$$$ Royal - Mashup (197)" by projectM-visualizer/presets-cream-of-the-crop.
+// Source: https://github.com/projectM-visualizer/presets-cream-of-the-crop
+// Remix changes: calibrated dynamics, runtime-generated coordinated palettes, white-hot
+// impact cores, bounded micro-particles, and the original coherent arc geometry.
+// q1 shape clock; q2 source-valid gate; q3 energy; q4 hard spike; q5 impact;
+// q6 level; q7 zoom; q8 activity; q9-q17 accent RGB; q18 white-core energy;
+// q19 ambient-particle alpha; q20 action-spark envelope; q21-q23 primary RGB;
+// q24 latched loud-section level. b3n is a temporary RMS input, restored to zero.
+// Original preset author attribution is retained through the source filename.
+MILKDROP_PRESET_VERSION=201
+PSVERSION=2
+PSVERSION_WARP=2
+PSVERSION_COMP=2
+[preset00]
+fRating=3.000000
+fGammaAdj=2.000
+fDecay=0.500
+fVideoEchoZoom=1.000
+fVideoEchoAlpha=0.500
+nVideoEchoOrientation=3
+nWaveMode=0
+bAdditiveWaves=0
+bWaveDots=0
+bWaveThick=0
+bModWaveAlphaByVolume=0
+bMaximizeWaveColor=1
+bTexWrap=0
+bDarkenCenter=1
+bRedBlueStereo=0
+bBrighten=0
+bDarken=0
+bSolarize=1
+bInvert=0
+fWaveAlpha=0.001
+fWaveScale=1.000
+fWaveSmoothing=0.750
+fWaveParam=0.000
+fModWaveAlphaStart=0.750
+fModWaveAlphaEnd=0.950
+fWarpAnimSpeed=1.000
+fWarpScale=1.000
+fZoomExponent=1.00000
+fShader=0.000
+zoom=0.97000
+rot=-6.27999
+cx=0.500
+cy=0.500
+dx=0.00000
+dy=0.00000
+warp=0.00052
+sx=1.00000
+sy=1.00000
+wave_r=0.000
+wave_g=0.000
+wave_b=0.000
+wave_x=0.500
+wave_y=0.500
+ob_size=0.010
+ob_r=1.000
+ob_g=1.000
+ob_b=1.000
+ob_a=0.000
+ib_size=0.010
+ib_r=0.250
+ib_g=0.250
+ib_b=0.250
+ib_a=0.000
+nMotionVectorsX=12.000
+nMotionVectorsY=9.000
+mv_dx=0.000
+mv_dy=0.000
+mv_l=0.900
+mv_r=0.800
+mv_g=1.000
+mv_b=1.000
+mv_a=0.000
+b1n=0.000
+b2n=0.000
+b3n=0.000
+b1x=1.000
+b2x=1.000
+b3x=1.000
+b1ed=0.250
+wavecode_0_enabled=1
+wavecode_0_samples=512
+wavecode_0_sep=0
+wavecode_0_bSpectrum=0
+wavecode_0_bUseDots=0
+wavecode_0_bDrawThick=1
+wavecode_0_bAdditive=0
+wavecode_0_scaling=1.00000
+wavecode_0_smoothing=0.00000
+wavecode_0_r=1.000
+wavecode_0_g=1.000
+wavecode_0_b=1.000
+wavecode_0_a=1.000
+wave_0_per_point1=speed = bass_att*0.8;
+wave_0_per_point2=phase = sample*1000000 + value2*bass*0.1;
+wave_0_per_point3=stateX = stateX + sin(phase)*speed*atan(phase*1.51);
+wave_0_per_point4=stateY = stateY + sin(phase)*speed*atan(phase*10);
+wave_0_per_point5=x = 0.5 + 0.5*sin(stateX*0.1)*cos(time*0.2 + stateX);
+wave_0_per_point6=y = 0.5 + 0.5*sin(stateY*0.12)*cos(time*0.1 + stateX);
+wave_0_per_point7=x = x*0.8 + 0.1;
+wave_0_per_point8=y = y*0.8 + 0.1;
+wave_0_per_point9=// The primary role changes with the full palette, not a separate clock.
+wave_0_per_point10=shade = 0.90 + 0.10*sin(sample*6.28318530718);
+wave_0_per_point11=r = q21*shade;
+wave_0_per_point12=g = q22*shade;
+wave_0_per_point13=b = q23*shade;
+wave_0_per_point14=stateX = if(above(stateX,1000),0,stateX);
+wave_0_per_point15=stateY = if(above(stateY,1000),0,stateY);
+wave_0_per_point16=a = q6*sin(sample*3.14159265359);
+wavecode_1_enabled=1
+wavecode_1_samples=512
+wavecode_1_sep=0
+wavecode_1_bSpectrum=0
+wavecode_1_bUseDots=0
+wavecode_1_bDrawThick=1
+wavecode_1_bAdditive=0
+wavecode_1_scaling=1.00000
+wavecode_1_smoothing=0.00000
+wavecode_1_r=1.000
+wavecode_1_g=1.000
+wavecode_1_b=1.000
+wavecode_1_a=1.000
+wave_1_per_point1=speed = bass_att*0.8;
+wave_1_per_point2=phase = sample*1000000 + value2*bass*0.1;
+wave_1_per_point3=stateX = stateX + sin(phase)*speed*atan(phase*1.51);
+wave_1_per_point4=stateY = stateY + sin(phase)*speed*atan(phase*10);
+wave_1_per_point5=x = 0.5 + 0.5*sin(stateX*0.1)*cos(time*0.2 + stateX);
+wave_1_per_point6=y = 0.5 + 0.5*sin(stateY*0.14)*cos(time*0.1 + stateX);
+wave_1_per_point7=x = x*0.8 + 0.1;
+wave_1_per_point8=y = y*0.8 + 0.1;
+wave_1_per_point9=x = x*0.6 + 0.2;
+wave_1_per_point10=y = y*0.6 + 0.2;
+wave_1_per_point11=// Accent A remains distinct from the primary and the other arcs.
+wave_1_per_point12=shade = 0.90 + 0.10*sin(sample*6.28318530718 + 2.1);
+wave_1_per_point13=r = q9*shade;
+wave_1_per_point14=g = q10*shade;
+wave_1_per_point15=b = q11*shade;
+wave_1_per_point16=stateX = if(above(stateX,1000),0,stateX);
+wave_1_per_point17=stateY = if(above(stateY,1000),0,stateY);
+wave_1_per_point18=a = min(q8*1.1,0.90)*sin(sample*3.14159265359);
+wavecode_2_enabled=1
+wavecode_2_samples=512
+wavecode_2_sep=0
+wavecode_2_bSpectrum=0
+wavecode_2_bUseDots=0
+wavecode_2_bDrawThick=1
+wavecode_2_bAdditive=0
+wavecode_2_scaling=1.00000
+wavecode_2_smoothing=0.00000
+wavecode_2_r=1.000
+wavecode_2_g=1.000
+wavecode_2_b=1.000
+wavecode_2_a=1.000
+wave_2_per_point1=speed = bass_att*0.8;
+wave_2_per_point2=phase = sample*1000000 + value2*bass*0.1;
+wave_2_per_point3=stateX = stateX + sin(phase)*speed*atan(phase*1.51);
+wave_2_per_point4=stateY = stateY + sin(phase)*speed*atan(phase*10);
+wave_2_per_point5=x = 0.5 + 0.5*sin(stateX*0.1)*cos(time*0.2 + stateX);
+wave_2_per_point6=y = 0.5 + 0.5*sin(stateY*0.14)*cos(time*0.1 + stateX);
+wave_2_per_point7=x = x*0.8 + 0.1;
+wave_2_per_point8=y = y*0.8 + 0.1;
+wave_2_per_point9=x = x*0.25 + 0.375;
+wave_2_per_point10=y = y*0.25 + 0.375;
+wave_2_per_point11=calm = q2*min((1-min(q8*5,1))*1.5,1);
+wave_2_per_point12=arcPhase = (sample-0.5)*4.2 + time*0.12;
+wave_2_per_point13=x = (1-calm)*x + calm*(0.5+0.28*cos(arcPhase));
+wave_2_per_point14=y = (1-calm)*y + calm*(0.5+0.28*0.72*sin(arcPhase));
+wave_2_per_point15=// Accent B gives the calm arc its own color within the shared palette.
+wave_2_per_point16=shade = 0.90 + 0.10*sin(sample*6.28318530718 + 4.2);
+wave_2_per_point17=r = q12*shade;
+wave_2_per_point18=g = q13*shade;
+wave_2_per_point19=b = q14*shade;
+wave_2_per_point20=stateX = if(above(stateX,1000),0,stateX);
+wave_2_per_point21=stateY = if(above(stateY,1000),0,stateY);
+wave_2_per_point22=a = max(min(q8,0.80),q6*calm*1.2)*sin(sample*3.14159265359);
+wavecode_3_enabled=1
+wavecode_3_samples=384
+wavecode_3_sep=0
+wavecode_3_bSpectrum=0
+wavecode_3_bUseDots=0
+wavecode_3_bDrawThick=0
+wavecode_3_bAdditive=1
+wavecode_3_scaling=0.70000
+wavecode_3_smoothing=0.35000
+wavecode_3_r=1.000
+wavecode_3_g=1.000
+wavecode_3_b=1.000
+wavecode_3_a=1.000
+wave_3_per_point1=// An open arc appears on impacts and disappears with the release envelope.
+wave_3_per_point2=radius = 0.12 + q5*0.06;
+wave_3_per_point3=a = min(q5*1.4,0.65);
+wave_3_per_point4=// L/R differences gently deform the arc; identical channels stay symmetric.
+wave_3_per_point5=stereo = value1 - value2;
+wave_3_per_point6=phase = (sample-0.5)*4.2 + time*0.25 + stereo*0.18;
+wave_3_per_point7=x = 0.5 + radius*cos(phase) + stereo*0.020*cos(phase);
+wave_3_per_point8=y = 0.5 + radius*0.72*sin(phase) + stereo*0.020*sin(phase);
+wave_3_per_point9=x = x*0.8 + 0.1;
+wave_3_per_point10=y = y*0.8 + 0.1;
+wave_3_per_point11=// Accent C complements the other blades instead of cloning their color.
+wave_3_per_point12=shade = 0.90 + 0.10*sin(phase*2);
+wave_3_per_point13=r = q15*shade;
+wave_3_per_point14=g = q16*shade;
+wave_3_per_point15=b = q17*shade;
+shapecode_0_enabled=1
+shapecode_0_sides=4
+shapecode_0_additive=0
+shapecode_0_thickOutline=0
+shapecode_0_textured=1
+shapecode_0_num_inst=1
+shapecode_0_x=0.250
+shapecode_0_y=0.750
+shapecode_0_rad=4.44708
+shapecode_0_ang=0.00000
+shapecode_0_tex_ang=0.00000
+shapecode_0_tex_zoom=0.22746
+shapecode_0_r=0.000
+shapecode_0_g=0.000
+shapecode_0_b=0.000
+shapecode_0_a=0.100
+shapecode_0_r2=0.000
+shapecode_0_g2=0.000
+shapecode_0_b2=0.000
+shapecode_0_a2=0.200
+shapecode_0_border_r=0.000
+shapecode_0_border_g=0.000
+shapecode_0_border_b=1.000
+shapecode_0_border_a=0.000
+shape_0_init1=tex_saw = 0.4;
+shape_0_per_frame1=ang = q1*0.2;
+shape_0_per_frame2=tex_capture = above(q3,1);
+shape_0_per_frame3=tex_zoom = 0.6;
+shape_0_per_frame4=a = 0.10*q6;
+shape_0_per_frame5=a2 = 0.20*q6;
+shapecode_1_enabled=1
+shapecode_1_sides=4
+shapecode_1_additive=1
+shapecode_1_thickOutline=0
+shapecode_1_textured=0
+shapecode_1_num_inst=8
+shapecode_1_x=0.500
+shapecode_1_y=0.500
+shapecode_1_rad=0.005
+shapecode_1_ang=0.000
+shapecode_1_tex_ang=0.000
+shapecode_1_tex_zoom=1.000
+shapecode_1_r=1.000
+shapecode_1_g=1.000
+shapecode_1_b=1.000
+shapecode_1_a=0.000
+shapecode_1_r2=1.000
+shapecode_1_g2=1.000
+shapecode_1_b2=1.000
+shapecode_1_a2=0.000
+shapecode_1_border_r=0.000
+shapecode_1_border_g=0.000
+shapecode_1_border_b=0.000
+shapecode_1_border_a=0.000
+shape_1_per_frame1=// Eight tiny, slow motes remain subtle even at low valid energy.
+shape_1_per_frame2=orbit = 0.24 + 0.06*sin(instance*3.17 + 1.2);
+shape_1_per_frame3=angle = instance*2.39996322973 + time*0.025;
+shape_1_per_frame4=x = 0.5 + orbit*cos(angle) + 0.018*sin(time*0.11 + instance);
+shape_1_per_frame5=y = 0.5 + orbit*0.72*sin(angle) + 0.014*cos(time*0.09 + instance*1.7);
+shape_1_per_frame6=rad = 0.0045 + 0.0015*(0.5 + 0.5*sin(instance*5.13));
+shape_1_per_frame7=ang = time*0.12 + instance;
+shape_1_per_frame8=pick = instance%2;
+shape_1_per_frame9=r = q9*(1-pick) + q12*pick;
+shape_1_per_frame10=g = q10*(1-pick) + q13*pick;
+shape_1_per_frame11=b = q11*(1-pick) + q14*pick;
+shape_1_per_frame12=variation = 0.5 + 0.5*sin(instance*4.77 + 1.4);
+shape_1_per_frame13=a = q19*(0.55 + 0.45*variation);
+shape_1_per_frame14=a2 = a*0.45;
+shape_1_per_frame15=r2 = r;
+shape_1_per_frame16=g2 = g;
+shape_1_per_frame17=b2 = b;
+shapecode_2_enabled=1
+shapecode_2_sides=4
+shapecode_2_additive=1
+shapecode_2_thickOutline=0
+shapecode_2_textured=0
+shapecode_2_num_inst=12
+shapecode_2_x=0.500
+shapecode_2_y=0.500
+shapecode_2_rad=0.005
+shapecode_2_ang=0.000
+shapecode_2_tex_ang=0.000
+shapecode_2_tex_zoom=1.000
+shapecode_2_r=1.000
+shapecode_2_g=1.000
+shapecode_2_b=1.000
+shapecode_2_a=0.000
+shapecode_2_r2=1.000
+shapecode_2_g2=1.000
+shapecode_2_b2=1.000
+shapecode_2_a2=0.000
+shapecode_2_border_r=0.000
+shapecode_2_border_g=0.000
+shapecode_2_border_b=0.000
+shapecode_2_border_a=0.000
+shape_2_per_frame1=// Twelve short-lived sparks expand only with body/hard-action energy.
+shape_2_per_frame2=angle = instance*2.39996322973 + time*0.18;
+shape_2_per_frame3=variation = 0.5 + 0.5*sin(instance*5.37 + 0.8);
+shape_2_per_frame4=travel = (1-min(q20,1))*(0.12 + 0.08*variation);
+shape_2_per_frame5=distance = 0.18 + travel;
+shape_2_per_frame6=x = 0.5 + distance*cos(angle);
+shape_2_per_frame7=y = 0.5 + distance*0.72*sin(angle);
+shape_2_per_frame8=rad = 0.0045 + 0.0045*min(q20,1);
+shape_2_per_frame9=ang = -time*0.30 + instance;
+shape_2_per_frame10=pick = instance%2;
+shape_2_per_frame11=r = q15*(1-pick) + q9*pick;
+shape_2_per_frame12=g = q16*(1-pick) + q10*pick;
+shape_2_per_frame13=b = q17*(1-pick) + q11*pick;
+shape_2_per_frame14=a = min(q20*0.65,0.65)*(0.70 + 0.30*variation);
+shape_2_per_frame15=a2 = a*0.35;
+shape_2_per_frame16=r2 = r;
+shape_2_per_frame17=g2 = g;
+shape_2_per_frame18=b2 = b;
+per_frame_1=// Keep the original per-frame shape, blade, and warp motion.
+per_frame_2=// Time-normalizing their geometry fragments continuous arcs at high refresh rates.
+per_frame_3=// Impact and groove envelopes below remain time-based.
+per_frame_4=// Original textured-shape clock.
+per_frame_5=// Optional Feishin input: previous-frame stereo RMS plus a validity epsilon.
+per_frame_6=absoluteInput = b3n;
+per_frame_7=absoluteAvailable = above(absoluteInput,0);
+per_frame_8=b3n = 0;
+per_frame_9=shapeClock = shapeClock + bass*0.03;
+per_frame_10=shapeClock = if(below(shapeClock,1000),1000,shapeClock);
+per_frame_11=shapeClock = shapeClock + bass_att*0.03;
+per_frame_12=q1 = shapeClock*4;
+per_frame_13=// Alternating one-second energy windows preserve the original beat response.
+per_frame_14=energy = pow(bass+mid+treb,2);
+per_frame_15=bucket = time%2;
+per_frame_16=energy1 = energy1 + energy*equal(bucket,1);
+per_frame_17=samples1 = samples1 + equal(bucket,1);
+per_frame_18=energy2 = energy2 + energy*equal(bucket,0);
+per_frame_19=samples2 = samples2 + equal(bucket,0);
+per_frame_20=bucketChanged = bnot(equal(lastBucket,bucket));
+per_frame_21=energy1 = energy1 - energy1*bucketChanged*bucket;
+per_frame_22=energy2 = energy2 - energy2*bucketChanged*equal(bucket,0);
+per_frame_23=samples1 = samples1 - samples1*bucketChanged*bucket;
+per_frame_24=samples2 = samples2 - samples2*bucketChanged*equal(bucket,0);
+per_frame_25=lastBucket = bucket;
+per_frame_26=// Require a reference window; normalized bands surge on the first sound after silence.
+per_frame_27=avgOther = if(equal(bucket,1),energy2/max(samples2,1),energy1/max(samples1,1));
+per_frame_28=noiseFloor = 10.0;
+per_frame_29=detectorReady = above(avgOther,noiseFloor);
+per_frame_30=energyRatio = energy/max(avgOther,noiseFloor);
+per_frame_31=q3 = min(energyRatio,3)*detectorReady;
+per_frame_32=// Long-term references learn only from source frames with a valid local history.
+per_frame_33=adaptiveFloor = 4.0;
+per_frame_34=frameDt = 1/max(fps,1);
+per_frame_35=absoluteRMS = max(absoluteInput-0.000001,0);
+per_frame_36=absoluteLevel = min(absoluteRMS*3.0,1);
+per_frame_37=absoluteFastPrevious = absoluteFast;
+per_frame_38=absoluteFast = if(absoluteAvailable,absoluteFast+(absoluteLevel-absoluteFast)*(1-pow(0.002,frameDt)),absoluteFast);
+per_frame_39=absoluteSlowRetention = if(below(absoluteLevel,absoluteSlow),0.12,0.35);
+per_frame_40=absoluteSlow = if(absoluteAvailable,absoluteSlow+(absoluteLevel-absoluteSlow)*(1-pow(absoluteSlowRetention,frameDt)),absoluteSlow);
+per_frame_41=absoluteSteady = 0.56*max(min((absoluteSlow-0.12)/0.60,1),0)*absoluteAvailable;
+per_frame_42=adaptiveEnergy = energy*detectorReady;
+per_frame_43=fastEnergy = fastEnergy + (adaptiveEnergy-fastEnergy)*(1-pow(0.00001,frameDt));
+per_frame_44=sustainedEnergy = sustainedEnergy + (adaptiveEnergy-sustainedEnergy)*(1-pow(0.25,frameDt));
+per_frame_45=silenceClock = if(below(max(adaptiveEnergy,avgOther),adaptiveFloor),silenceClock+frameDt,0);
+per_frame_46=learningTime = if(above(silenceClock,6),0,learningTime);
+per_frame_47=learningTime = min(learningTime+frameDt*detectorReady,2.1);
+per_frame_48=adaptiveReady = above(learningTime,2);
+per_frame_49=slowEnergy = if(adaptiveReady,slowEnergy,fastEnergy);
+per_frame_50=peakEnergy = if(adaptiveReady,peakEnergy,fastEnergy);
+per_frame_51=slowRetention = if(below(fastEnergy,slowEnergy),0.82,0.88);
+per_frame_52=slowEnergy = slowEnergy + (fastEnergy-slowEnergy)*(1-pow(slowRetention,frameDt));
+per_frame_53=relativeEnergy = fastEnergy/max(slowEnergy,adaptiveFloor);
+per_frame_54=sustainedRatio = sustainedEnergy/max(slowEnergy,adaptiveFloor);
+per_frame_55=peakReference = min(peakEnergy,4*slowEnergy);
+per_frame_56=peakRatio = fastEnergy/max(peakReference,adaptiveFloor);
+per_frame_57=peakEnergy = max(fastEnergy,peakEnergy*pow(0.80,frameDt));
+per_frame_58=// Sustained activity drives groove; fast contrast and recent peaks own transients.
+per_frame_59=activityT = max(min((sustainedRatio-0.15)/1.15,1),0)*detectorReady;
+per_frame_60=bodyContrast = max(min((relativeEnergy-1.6)/3.4,1),0);
+per_frame_61=bodyPeak = max(min((peakRatio-1.08)/0.32,1),0);
+per_frame_62=adaptiveBodyT = bodyContrast*bodyPeak*detectorReady;
+per_frame_63=adaptiveBodyTarget = adaptiveBodyT*adaptiveBodyT*(3-2*adaptiveBodyT);
+per_frame_64=hardContrast = max(min((relativeEnergy-2.5)/2.5,1),0);
+per_frame_65=hardPeak = max(min((peakRatio-1.15)/0.50,1),0);
+per_frame_66=adaptiveHardT = hardContrast*hardPeak*detectorReady;
+per_frame_67=adaptiveHard = adaptiveHardT*adaptiveHardT*(3-2*adaptiveHardT);
+per_frame_68=// Retain the original guarded response while the adaptive reference learns.
+per_frame_69=legacyBodyT = max(min((energyRatio-3)/11,1),0)*detectorReady;
+per_frame_70=legacyBodyTarget = legacyBodyT*legacyBodyT*(3-2*legacyBodyT);
+per_frame_71=legacyHard = if(above(energyRatio,10),min((energyRatio-10)*0.06,1),0)*detectorReady;
+per_frame_72=legacySteady = 0.40*min(energyRatio,1)*detectorReady;
+per_frame_73=bodyTarget = legacyBodyTarget*(1-adaptiveReady)+adaptiveBodyTarget*adaptiveReady;
+per_frame_74=hardTransient = legacyHard*(1-adaptiveReady)+adaptiveHard*adaptiveReady;
+per_frame_75=// Latch loud sections through averaging; release only on a real downward transition.
+per_frame_76=sectionQuiet = if(absoluteAvailable,below(absoluteFast,0.16),below(energyRatio,0.30));
+per_frame_77=sectionQuietTime = if(sectionQuiet,sectionQuietTime+frameDt,0);
+per_frame_78=sectionActive = if(above(sectionQuietTime,0.65),0,sectionActive);
+per_frame_79=sectionLevel = if(above(sectionQuietTime,0.65),0,sectionLevel);
+per_frame_80=sectionRise = above(sustainedRatio,1.20)*above(relativeEnergy,1.05);
+per_frame_81=sectionHit = above(max(bodyTarget,hardTransient),0.20);
+per_frame_82=absoluteSectionRise = absoluteAvailable*above(absoluteFast,0.20)*below(absoluteFastPrevious,0.20);
+per_frame_83=sectionEnter = max(max(sectionRise,sectionHit),absoluteSectionRise)*max(detectorReady,absoluteAvailable);
+per_frame_84=sectionCandidate = min(0.28 + 0.22*max(bodyTarget,hardTransient) + 0.42*max(min(sustainedRatio-1,1),0) + 0.12*max(min(relativeEnergy-1,1),0),0.58);
+per_frame_85=sectionActive = max(sectionActive,sectionEnter);
+per_frame_86=sectionLevel = if(sectionEnter,max(sectionLevel,sectionCandidate),sectionLevel);
+per_frame_87=sectionFallback = sectionActive*sectionLevel*(1-absoluteAvailable*min(absoluteSlow*1.5,1));
+per_frame_88=adaptiveSteady = max(max(0.40*activityT,sectionFallback),absoluteSteady);
+per_frame_89=steadyActivity = legacySteady*(1-adaptiveReady)+adaptiveSteady*adaptiveReady;
+per_frame_90=steadyActivity = max(steadyActivity,absoluteSteady);
+per_frame_91=// Medium-impact body fills the groove-to-drop middle without owning the orbit.
+per_frame_92=body = max(bodyTarget,body*pow(0.002,frameDt));
+per_frame_93=body = if(below(body,0.001),0,body);
+per_frame_94=// Hard spikes and their releasing envelope remain reserved for genuine impacts.
+per_frame_95=q4 = hardTransient*hardTransient;
+per_frame_96=impact = max(hardTransient,impact*pow(0.002,frameDt));
+per_frame_97=impact = if(below(impact,0.002),0,impact);
+per_frame_98=q5 = impact;
+per_frame_99=mv_a = q5;
+per_frame_100=// Groove owns sustained activity only, so body hits cannot hold it high.
+per_frame_101=grooveTarget = steadyActivity;
+per_frame_102=groove = max(grooveTarget,groove*pow(0.1,frameDt));
+per_frame_103=groove = if(below(groove,0.01),0,groove);
+per_frame_104=// Zoom is continuous by default; section detection must not gate it.
+per_frame_105=zoomDrive = min(energyRatio,3);
+per_frame_106=q7 = max(max(zoomDrive,2.5*groove),0.35)+q5;
+per_frame_107=restLevel = 0.12;
+per_frame_108=level = min(restLevel + max(0.36*groove,max(0.45*body,0.65*q5)),1);
+per_frame_109=q6 = level;
+per_frame_110=q8 = max((level-restLevel)/(1-restLevel),0);
+per_frame_111=q2 = detectorReady;
+per_frame_112=q24 = sectionActive*sectionLevel;
+per_frame_113=paletteValid = max(q2,absoluteAvailable*above(absoluteFast,0.04));
+per_frame_114=ambientValid = max(q2,absoluteAvailable*above(absoluteFast,0.005));
+per_frame_115=// Seeded at runtime from the event counter, time, and musical energy.
+per_frame_116=paletteIdle = paletteIdle + frameDt*paletteValid;
+per_frame_117=paletteCooldown = max(paletteCooldown-frameDt,0);
+per_frame_118=paletteHit = above(max(bodyTarget,hardTransient),0.55)*below(lastPaletteHit,0.55);
+per_frame_119=lastPaletteHit = max(bodyTarget,hardTransient);
+per_frame_120=paletteSection = bnot(equal(sectionActive,lastPaletteSection));
+per_frame_121=lastPaletteSection = sectionActive;
+per_frame_122=paletteEvent = min(paletteHit+paletteSection+above(paletteIdle,6),1)*below(paletteCooldown,0.001)*above(paletteMorph,0.995)*paletteValid;
+per_frame_123=paletteBootstrap = below(paletteInitialized,0.5);
+per_frame_124=paletteGenerate = max(paletteBootstrap,paletteEvent);
+per_frame_125=paletteInitialized = 1;
+per_frame_126=paletteGeneration = paletteGeneration + paletteGenerate;
+per_frame_127=paletteEpoch = if(paletteGenerate,time + min(energy,1000)*0.173,paletteEpoch);
+per_frame_128=paletteHashSeed = paletteGeneration*12.9898 + paletteEpoch*78.233;
+per_frame_129=paletteCooldown = if(paletteEvent,3,paletteCooldown);
+per_frame_130=paletteIdle = if(paletteEvent,0,paletteIdle);
+per_frame_131=paletteMorph = if(paletteBootstrap,1,if(paletteEvent,0,paletteMorph));
+per_frame_132=paletteMorph = min(paletteMorph+frameDt/1.10,1);
+per_frame_133=// Persistent custom state, not q outputs, supplies the previous palette.
+per_frame_134=paletteFromPH = if(paletteEvent,paletteCurrentPH,paletteFromPH);
+per_frame_135=paletteFromPS = if(paletteEvent,paletteCurrentPS,paletteFromPS);
+per_frame_136=paletteFromPV = if(paletteEvent,paletteCurrentPV,paletteFromPV);
+per_frame_137=// A random walk with a 58-degree minimum avoids repeated hue neighborhoods.
+per_frame_138=paletteRandom = sin(paletteHashSeed + 0.17)*43758.5453;
+per_frame_139=paletteHueStep = 0.16 + 0.34*(paletteRandom-floor(paletteRandom));
+per_frame_140=paletteRandom = sin(paletteHashSeed + 1.31)*43758.5453;
+per_frame_141=paletteHueSign = if(above(paletteRandom-floor(paletteRandom),0.5),1,-1);
+per_frame_142=paletteBaseHue = paletteFromPH + paletteHueSign*paletteHueStep;
+per_frame_143=paletteRandom = sin(paletteHashSeed + 2.11)*43758.5453;
+per_frame_144=paletteDirection = if(above(paletteRandom-floor(paletteRandom),0.5),1,-1);
+per_frame_145=paletteTargetPH = paletteBaseHue;
+per_frame_146=paletteRandom = sin(paletteHashSeed + 3.41)*43758.5453;
+per_frame_147=paletteTargetPS = 0.55 + 0.25*(paletteRandom-floor(paletteRandom));
+per_frame_148=paletteRandom = sin(paletteHashSeed + 4.19)*43758.5453;
+per_frame_149=paletteTargetPV = 0.82 + 0.16*(paletteRandom-floor(paletteRandom));
+per_frame_150=paletteFromAH = if(paletteEvent,paletteCurrentAH,paletteFromAH);
+per_frame_151=paletteFromAS = if(paletteEvent,paletteCurrentAS,paletteFromAS);
+per_frame_152=paletteFromAV = if(paletteEvent,paletteCurrentAV,paletteFromAV);
+per_frame_153=paletteRandom = sin(paletteHashSeed + 5.23)*43758.5453;
+per_frame_154=paletteTargetAH = paletteBaseHue + paletteDirection*(0.20 + 0.16*(paletteRandom-floor(paletteRandom)));
+per_frame_155=paletteTargetDelta = paletteTargetAH-paletteFromAH;
+per_frame_156=paletteTargetDelta = paletteTargetDelta-floor(paletteTargetDelta+0.5);
+per_frame_157=paletteTargetAH = if(below(abs(paletteTargetDelta),0.14),paletteFromAH+if(above(paletteTargetDelta,0),1,-1)*0.14,paletteTargetAH);
+per_frame_158=paletteRandom = sin(paletteHashSeed + 6.11)*43758.5453;
+per_frame_159=paletteTargetAS = 0.55 + 0.25*(paletteRandom-floor(paletteRandom));
+per_frame_160=paletteRandom = sin(paletteHashSeed + 6.83)*43758.5453;
+per_frame_161=paletteTargetAV = 0.82 + 0.16*(paletteRandom-floor(paletteRandom));
+per_frame_162=paletteFromBH = if(paletteEvent,paletteCurrentBH,paletteFromBH);
+per_frame_163=paletteFromBS = if(paletteEvent,paletteCurrentBS,paletteFromBS);
+per_frame_164=paletteFromBV = if(paletteEvent,paletteCurrentBV,paletteFromBV);
+per_frame_165=paletteRandom = sin(paletteHashSeed + 7.39)*43758.5453;
+per_frame_166=paletteTargetBH = paletteBaseHue + paletteDirection*(0.44 + 0.16*(paletteRandom-floor(paletteRandom)));
+per_frame_167=paletteTargetDelta = paletteTargetBH-paletteFromBH;
+per_frame_168=paletteTargetDelta = paletteTargetDelta-floor(paletteTargetDelta+0.5);
+per_frame_169=paletteTargetBH = if(below(abs(paletteTargetDelta),0.14),paletteFromBH+if(above(paletteTargetDelta,0),1,-1)*0.14,paletteTargetBH);
+per_frame_170=paletteRandom = sin(paletteHashSeed + 8.17)*43758.5453;
+per_frame_171=paletteTargetBS = 0.55 + 0.25*(paletteRandom-floor(paletteRandom));
+per_frame_172=paletteRandom = sin(paletteHashSeed + 8.89)*43758.5453;
+per_frame_173=paletteTargetBV = 0.82 + 0.16*(paletteRandom-floor(paletteRandom));
+per_frame_174=paletteFromCH = if(paletteEvent,paletteCurrentCH,paletteFromCH);
+per_frame_175=paletteFromCS = if(paletteEvent,paletteCurrentCS,paletteFromCS);
+per_frame_176=paletteFromCV = if(paletteEvent,paletteCurrentCV,paletteFromCV);
+per_frame_177=paletteRandom = sin(paletteHashSeed + 9.37)*43758.5453;
+per_frame_178=paletteTargetCH = paletteBaseHue + paletteDirection*(0.68 + 0.16*(paletteRandom-floor(paletteRandom)));
+per_frame_179=paletteTargetDelta = paletteTargetCH-paletteFromCH;
+per_frame_180=paletteTargetDelta = paletteTargetDelta-floor(paletteTargetDelta+0.5);
+per_frame_181=paletteTargetCH = if(below(abs(paletteTargetDelta),0.14),paletteFromCH+if(above(paletteTargetDelta,0),1,-1)*0.14,paletteTargetCH);
+per_frame_182=paletteRandom = sin(paletteHashSeed + 10.13)*43758.5453;
+per_frame_183=paletteTargetCS = 0.55 + 0.25*(paletteRandom-floor(paletteRandom));
+per_frame_184=paletteRandom = sin(paletteHashSeed + 10.79)*43758.5453;
+per_frame_185=paletteTargetCV = 0.82 + 0.16*(paletteRandom-floor(paletteRandom));
+per_frame_186=paletteDeltaH = paletteTargetPH-paletteFromPH;
+per_frame_187=paletteDeltaH = paletteDeltaH-floor(paletteDeltaH+0.5);
+per_frame_188=paletteCurrentPH = paletteFromPH + paletteDeltaH*paletteMorph;
+per_frame_189=paletteCurrentPS = paletteFromPS + (paletteTargetPS-paletteFromPS)*paletteMorph;
+per_frame_190=paletteCurrentPV = paletteFromPV + (paletteTargetPV-paletteFromPV)*paletteMorph;
+per_frame_191=q21 = paletteCurrentPV*(1-paletteCurrentPS+paletteCurrentPS*(0.5+0.5*cos(6.28318530718*paletteCurrentPH)));
+per_frame_192=q22 = paletteCurrentPV*(1-paletteCurrentPS+paletteCurrentPS*(0.5+0.5*cos(6.28318530718*(paletteCurrentPH-0.33333333333))));
+per_frame_193=q23 = paletteCurrentPV*(1-paletteCurrentPS+paletteCurrentPS*(0.5+0.5*cos(6.28318530718*(paletteCurrentPH-0.66666666667))));
+per_frame_194=paletteDeltaH = paletteTargetAH-paletteFromAH;
+per_frame_195=paletteDeltaH = paletteDeltaH-floor(paletteDeltaH+0.5);
+per_frame_196=paletteCurrentAH = paletteFromAH + paletteDeltaH*paletteMorph;
+per_frame_197=paletteCurrentAS = paletteFromAS + (paletteTargetAS-paletteFromAS)*paletteMorph;
+per_frame_198=paletteCurrentAV = paletteFromAV + (paletteTargetAV-paletteFromAV)*paletteMorph;
+per_frame_199=q9 = paletteCurrentAV*(1-paletteCurrentAS+paletteCurrentAS*(0.5+0.5*cos(6.28318530718*paletteCurrentAH)));
+per_frame_200=q10 = paletteCurrentAV*(1-paletteCurrentAS+paletteCurrentAS*(0.5+0.5*cos(6.28318530718*(paletteCurrentAH-0.33333333333))));
+per_frame_201=q11 = paletteCurrentAV*(1-paletteCurrentAS+paletteCurrentAS*(0.5+0.5*cos(6.28318530718*(paletteCurrentAH-0.66666666667))));
+per_frame_202=paletteDeltaH = paletteTargetBH-paletteFromBH;
+per_frame_203=paletteDeltaH = paletteDeltaH-floor(paletteDeltaH+0.5);
+per_frame_204=paletteCurrentBH = paletteFromBH + paletteDeltaH*paletteMorph;
+per_frame_205=paletteCurrentBS = paletteFromBS + (paletteTargetBS-paletteFromBS)*paletteMorph;
+per_frame_206=paletteCurrentBV = paletteFromBV + (paletteTargetBV-paletteFromBV)*paletteMorph;
+per_frame_207=q12 = paletteCurrentBV*(1-paletteCurrentBS+paletteCurrentBS*(0.5+0.5*cos(6.28318530718*paletteCurrentBH)));
+per_frame_208=q13 = paletteCurrentBV*(1-paletteCurrentBS+paletteCurrentBS*(0.5+0.5*cos(6.28318530718*(paletteCurrentBH-0.33333333333))));
+per_frame_209=q14 = paletteCurrentBV*(1-paletteCurrentBS+paletteCurrentBS*(0.5+0.5*cos(6.28318530718*(paletteCurrentBH-0.66666666667))));
+per_frame_210=paletteDeltaH = paletteTargetCH-paletteFromCH;
+per_frame_211=paletteDeltaH = paletteDeltaH-floor(paletteDeltaH+0.5);
+per_frame_212=paletteCurrentCH = paletteFromCH + paletteDeltaH*paletteMorph;
+per_frame_213=paletteCurrentCS = paletteFromCS + (paletteTargetCS-paletteFromCS)*paletteMorph;
+per_frame_214=paletteCurrentCV = paletteFromCV + (paletteTargetCV-paletteFromCV)*paletteMorph;
+per_frame_215=q15 = paletteCurrentCV*(1-paletteCurrentCS+paletteCurrentCS*(0.5+0.5*cos(6.28318530718*paletteCurrentCH)));
+per_frame_216=q16 = paletteCurrentCV*(1-paletteCurrentCS+paletteCurrentCS*(0.5+0.5*cos(6.28318530718*(paletteCurrentCH-0.33333333333))));
+per_frame_217=q17 = paletteCurrentCV*(1-paletteCurrentCS+paletteCurrentCS*(0.5+0.5*cos(6.28318530718*(paletteCurrentCH-0.66666666667))));
+per_frame_218=// A short release makes white visible without extending the hard-impact orbit.
+per_frame_219=whiteTarget = max(hardTransient,0.45*bodyTarget);
+per_frame_220=whiteEnvelope = max(whiteTarget,whiteEnvelope*pow(0.0005,frameDt));
+per_frame_221=whiteEnvelope = if(below(whiteEnvelope,0.002),0,whiteEnvelope);
+per_frame_222=q18 = q2*whiteEnvelope*min(q6*1.3,1);
+per_frame_223=// Body makes a small burst; hard impacts use the full short envelope.
+per_frame_224=sparkTarget = max(hardTransient,0.35*bodyTarget);
+per_frame_225=spark = max(sparkTarget,spark*pow(0.0001,frameDt));
+per_frame_226=spark = if(below(spark,0.002),0,spark);
+per_frame_227=q19 = min(ambientValid*(0.030 + 0.035*q8 + 0.025*body),0.10);
+per_frame_228=q20 = q2*spark;
+per_pixel_1=zoom = 1 + 0.05*q7*rad;
+per_pixel_2=rot = 0;
+warp_1=`shader_body
+warp_2=`{
+warp_3=`    float2 texel = texsize.zw;
+warp_4=`    // Preserve the original one-sided taps; symmetric averaging blurs the history.
+warp_5=`    float3 shifted_x = GetPixel(uv + float2(texel.x,0.0));
+warp_6=`    float3 shifted_y = GetPixel(uv + float2(0.0,texel.y));
+warp_7=`    ret = shifted_x + shifted_y - tex2D(sampler_main,(uv-0.5)*0.9 + 0.5);
+warp_8=`    // Original per-frame feedback: dark dissolve at rest, longer trails on impacts.
+warp_9=`    ret -= (0.55 - 0.27*q5);
+warp_10=`}
+comp_1=`float3 SmoothBloom(float2 p)
+comp_2=`{
+comp_3=`    // Four-tap reconstruction at half a 1/16-resolution bloom texel.
+comp_4=`    float2 d = texsize.zw*8.0;
+comp_5=`    return (GetBlur3(p + float2(-d.x,-d.y))
+comp_6=`          + GetBlur3(p + float2( d.x,-d.y))
+comp_7=`          + GetBlur3(p + float2(-d.x, d.y))
+comp_8=`          + GetBlur3(p + float2( d.x, d.y)))*0.25;
+comp_9=`}
+comp_10=`shader_body
+comp_11=`{
+comp_12=`    float2 uv_echo = 1.0 - uv;
+comp_13=`    float2 ca_offset = (uv - 0.5)*(0.03*q4);
+comp_14=`    // Low ambient floor; the macro level supplies groove and impact headroom.
+comp_15=`    float echo_gain = 0.10 + 0.75*q6;
+comp_16=`    float bloom_gain = 0.15 + 2.15*q6;
+comp_17=`    // Keep the fresh core unshifted; chromatic separation belongs to the echo.
+comp_18=`    float3 core = tex2D(sampler_main,uv).xyz;
+comp_19=`    float3 echo = float3(tex2D(sampler_main,uv_echo - ca_offset).r,
+comp_20=`                         tex2D(sampler_main,uv_echo).g,
+comp_21=`                         tex2D(sampler_main,uv_echo + ca_offset).b);
+comp_22=`    ret = core + echo*echo_gain;
+comp_23=`    ret += (SmoothBloom(uv) + SmoothBloom(uv_echo))*bloom_gain;
+comp_24=`    // Normalize only over-range highlights, preserving hue and in-range levels.
+comp_25=`    float peak = max(ret.r,max(ret.g,ret.b));
+comp_26=`    ret /= max(peak,1.0);
+comp_27=`    // Whiten only bright high-frequency core detail, never broad fills or bloom.
+comp_28=`    float core_peak = max(core.r,max(core.g,core.b));
+comp_29=`    float3 local_blur = GetBlur1(uv);
+comp_30=`    float blur_peak = max(local_blur.r,max(local_blur.g,local_blur.b));
+comp_31=`    float core_detail = max(core_peak-blur_peak,0);
+comp_32=`    float core_mask = smoothstep(0.55,0.90,core_peak)*smoothstep(0.10,0.35,core_detail);
+comp_33=`    core_mask = core_mask*core_mask*q18;
+comp_34=`    ret = lerp(ret,float3(1.0,1.0,1.0),core_mask);
+comp_35=`    // Static sub-LSB dither reduces 8-bit banding without temporal shimmer.
+comp_36=`    float dither = frac(sin(dot(uv*texsize.xy,float2(12.9898,78.233)))*43758.5453);
+comp_37=`    ret += (dither - 0.5)/255.0;
+comp_38=`}
