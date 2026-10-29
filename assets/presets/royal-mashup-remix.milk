@@ -102,14 +102,16 @@ wave_0_per_point5=x = 0.5 + 0.5*sin(stateX*0.1)*cos(time*0.2 + stateX);
 wave_0_per_point6=y = 0.5 + 0.5*sin(stateY*0.12)*cos(time*0.1 + stateX);
 wave_0_per_point7=x = x*0.8 + 0.1;
 wave_0_per_point8=y = y*0.8 + 0.1;
-wave_0_per_point9=// The primary role changes with the full palette, not a separate clock.
-wave_0_per_point10=shade = 0.90 + 0.10*sin(sample*6.28318530718);
-wave_0_per_point11=r = q21*shade;
-wave_0_per_point12=g = q22*shade;
-wave_0_per_point13=b = q23*shade;
-wave_0_per_point14=stateX = if(above(stateX,1000),0,stateX);
-wave_0_per_point15=stateY = if(above(stateY,1000),0,stateY);
-wave_0_per_point16=a = q6*sin(sample*3.14159265359);
+wave_0_per_point9=x = 0.5 + (x-0.5)*q25;
+wave_0_per_point10=y = 0.5 + (y-0.5)*q26;
+wave_0_per_point11=// The primary role changes with the full palette, not a separate clock.
+wave_0_per_point12=shade = 0.90 + 0.10*sin(sample*6.28318530718);
+wave_0_per_point13=r = q21*shade;
+wave_0_per_point14=g = q22*shade;
+wave_0_per_point15=b = q23*shade;
+wave_0_per_point16=stateX = if(above(abs(stateX),1000),0,stateX);
+wave_0_per_point17=stateY = if(above(abs(stateY),1000),0,stateY);
+wave_0_per_point18=a = q6*sin(sample*3.14159265359);
 wavecode_1_enabled=1
 wavecode_1_samples=512
 wavecode_1_sep=0
@@ -133,14 +135,16 @@ wave_1_per_point7=x = x*0.8 + 0.1;
 wave_1_per_point8=y = y*0.8 + 0.1;
 wave_1_per_point9=x = x*0.6 + 0.2;
 wave_1_per_point10=y = y*0.6 + 0.2;
-wave_1_per_point11=// Accent A remains distinct from the primary and the other arcs.
-wave_1_per_point12=shade = 0.90 + 0.10*sin(sample*6.28318530718 + 2.1);
-wave_1_per_point13=r = q9*shade;
-wave_1_per_point14=g = q10*shade;
-wave_1_per_point15=b = q11*shade;
-wave_1_per_point16=stateX = if(above(stateX,1000),0,stateX);
-wave_1_per_point17=stateY = if(above(stateY,1000),0,stateY);
-wave_1_per_point18=a = min(q8*1.1,0.90)*sin(sample*3.14159265359);
+wave_1_per_point11=x = 0.5 + (x-0.5)*q25;
+wave_1_per_point12=y = 0.5 + (y-0.5)*q26;
+wave_1_per_point13=// Accent A remains distinct from the primary and the other arcs.
+wave_1_per_point14=shade = 0.90 + 0.10*sin(sample*6.28318530718 + 2.1);
+wave_1_per_point15=r = q9*shade;
+wave_1_per_point16=g = q10*shade;
+wave_1_per_point17=b = q11*shade;
+wave_1_per_point18=stateX = if(above(abs(stateX),1000),0,stateX);
+wave_1_per_point19=stateY = if(above(abs(stateY),1000),0,stateY);
+wave_1_per_point20=a = min(q8*1.1,0.90)*sin(sample*3.14159265359);
 wavecode_2_enabled=1
 wavecode_2_samples=512
 wavecode_2_sep=0
@@ -168,14 +172,16 @@ wave_2_per_point11=calm = q2*min((1-min(q8*5,1))*1.5,1);
 wave_2_per_point12=arcPhase = (sample-0.5)*4.2 + time*0.12;
 wave_2_per_point13=x = (1-calm)*x + calm*(0.5+0.28*cos(arcPhase));
 wave_2_per_point14=y = (1-calm)*y + calm*(0.5+0.28*0.72*sin(arcPhase));
-wave_2_per_point15=// Accent B gives the calm arc its own color within the shared palette.
-wave_2_per_point16=shade = 0.90 + 0.10*sin(sample*6.28318530718 + 4.2);
-wave_2_per_point17=r = q12*shade;
-wave_2_per_point18=g = q13*shade;
-wave_2_per_point19=b = q14*shade;
-wave_2_per_point20=stateX = if(above(stateX,1000),0,stateX);
-wave_2_per_point21=stateY = if(above(stateY,1000),0,stateY);
-wave_2_per_point22=a = max(min(q8,0.80),q6*calm*1.2)*sin(sample*3.14159265359);
+wave_2_per_point15=x = 0.5 + (x-0.5)*q25;
+wave_2_per_point16=y = 0.5 + (y-0.5)*q26;
+wave_2_per_point17=// Accent B gives the calm arc its own color within the shared palette.
+wave_2_per_point18=shade = 0.90 + 0.10*sin(sample*6.28318530718 + 4.2);
+wave_2_per_point19=r = q12*shade;
+wave_2_per_point20=g = q13*shade;
+wave_2_per_point21=b = q14*shade;
+wave_2_per_point22=stateX = if(above(abs(stateX),1000),0,stateX);
+wave_2_per_point23=stateY = if(above(abs(stateY),1000),0,stateY);
+wave_2_per_point24=a = max(min(q8,0.80),q6*calm*1.2)*sin(sample*3.14159265359);
 wavecode_3_enabled=1
 wavecode_3_samples=384
 wavecode_3_sep=0
@@ -189,21 +195,28 @@ wavecode_3_r=1.000
 wavecode_3_g=1.000
 wavecode_3_b=1.000
 wavecode_3_a=1.000
-wave_3_per_point1=// An open arc appears on impacts and disappears with the release envelope.
-wave_3_per_point2=radius = 0.12 + q5*0.06;
-wave_3_per_point3=a = min(q5*1.4,0.65);
-wave_3_per_point4=// L/R differences gently deform the arc; identical channels stay symmetric.
-wave_3_per_point5=stereo = value1 - value2;
-wave_3_per_point6=phase = (sample-0.5)*4.2 + time*0.25 + stereo*0.18;
-wave_3_per_point7=x = 0.5 + radius*cos(phase) + stereo*0.020*cos(phase);
-wave_3_per_point8=y = 0.5 + radius*0.72*sin(phase) + stereo*0.020*sin(phase);
-wave_3_per_point9=x = x*0.8 + 0.1;
-wave_3_per_point10=y = y*0.8 + 0.1;
-wave_3_per_point11=// Accent C complements the other blades instead of cloning their color.
-wave_3_per_point12=shade = 0.90 + 0.10*sin(phase*2);
-wave_3_per_point13=r = q15*shade;
-wave_3_per_point14=g = q16*shade;
-wave_3_per_point15=b = q17*shade;
+wave_3_per_point1=// The impact arc keeps priority; otherwise this existing slot carries a short comet tail.
+wave_3_per_point2=stereo = value1 - value2;
+wave_3_per_point3=impactRadius = 0.12 + q5*0.06;
+wave_3_per_point4=impactPhase = (sample-0.5)*4.2 + time*0.25 + stereo*0.18;
+wave_3_per_point5=impactX = 0.5 + impactRadius*cos(impactPhase) + stereo*0.020*cos(impactPhase);
+wave_3_per_point6=impactY = 0.5 + impactRadius*0.72*sin(impactPhase) + stereo*0.020*sin(impactPhase);
+wave_3_per_point7=cometProgress = min(q27/0.90,1);
+wave_3_per_point8=cometPhase = (sample-0.5)*4.2 + time*0.03;
+wave_3_per_point9=cometDistance = cometProgress-sample;
+wave_3_per_point10=cometInTail = above(cometDistance,0)*below(cometDistance,0.23);
+wave_3_per_point11=cometTailT = max(min(cometDistance/0.23,1),0);
+wave_3_per_point12=cometTailAlpha = q29*q28*(1-q5)*cometInTail*(0.28-0.20*cometTailT);
+wave_3_per_point13=x = if(above(q5,0.001),impactX,0.5 + 0.12*cos(cometPhase));
+wave_3_per_point14=y = if(above(q5,0.001),impactY,0.5 + 0.12*0.72*sin(cometPhase));
+wave_3_per_point15=x = x*0.8 + 0.1;
+wave_3_per_point16=y = y*0.8 + 0.1;
+wave_3_per_point17=a = max(min(q5*1.4,0.65),cometTailAlpha);
+wave_3_per_point18=// Accent C complements the other blades instead of cloning their color.
+wave_3_per_point19=shade = 0.90 + 0.10*sin(cometPhase*2);
+wave_3_per_point20=r = q15*shade;
+wave_3_per_point21=g = q16*shade;
+wave_3_per_point22=b = q17*shade;
 shapecode_0_enabled=1
 shapecode_0_sides=4
 shapecode_0_additive=0
@@ -317,6 +330,45 @@ shape_2_per_frame15=a2 = a*0.35;
 shape_2_per_frame16=r2 = r;
 shape_2_per_frame17=g2 = g;
 shape_2_per_frame18=b2 = b;
+shapecode_3_enabled=1
+shapecode_3_sides=6
+shapecode_3_additive=1
+shapecode_3_thickOutline=0
+shapecode_3_textured=0
+shapecode_3_num_inst=1
+shapecode_3_x=0.500
+shapecode_3_y=0.500
+shapecode_3_rad=0.008
+shapecode_3_ang=0.000
+shapecode_3_tex_ang=0.000
+shapecode_3_tex_zoom=1.000
+shapecode_3_r=1.000
+shapecode_3_g=1.000
+shapecode_3_b=1.000
+shapecode_3_a=0.000
+shapecode_3_r2=1.000
+shapecode_3_g2=1.000
+shapecode_3_b2=1.000
+shapecode_3_a2=0.000
+shapecode_3_border_r=0.000
+shapecode_3_border_g=0.000
+shapecode_3_border_b=0.000
+shapecode_3_border_a=0.000
+shape_3_per_frame1=// One bounded comet head follows the existing impact arc.
+shape_3_per_frame2=progress = min(q27/0.90,1);
+shape_3_per_frame3=angle = (progress-0.5)*4.2 + time*0.03;
+shape_3_per_frame4=x = 0.5 + 0.12*0.8*cos(angle);
+shape_3_per_frame5=y = 0.5 + 0.12*0.72*0.8*sin(angle);
+shape_3_per_frame6=rad = 0.007 + 0.002*q28;
+shape_3_per_frame7=ang = angle + 1.57079632679;
+shape_3_per_frame8=r = q15;
+shape_3_per_frame9=g = q16;
+shape_3_per_frame10=b = q17;
+shape_3_per_frame11=a = q29*q28*(1-min(q5,1))*0.88;
+shape_3_per_frame12=a2 = a*0.45;
+shape_3_per_frame13=r2 = r;
+shape_3_per_frame14=g2 = g;
+shape_3_per_frame15=b2 = b;
 per_frame_1=// Keep the original per-frame shape, blade, and warp motion.
 per_frame_2=// Time-normalizing their geometry fragments continuous arcs at high refresh rates.
 per_frame_3=// Impact and groove envelopes below remain time-based.
@@ -331,16 +383,16 @@ per_frame_11=shapeClock = shapeClock + bass_att*0.03;
 per_frame_12=q1 = shapeClock*4;
 per_frame_13=// Alternating one-second energy windows preserve the original beat response.
 per_frame_14=energy = pow(bass+mid+treb,2);
-per_frame_15=bucket = time%2;
-per_frame_16=energy1 = energy1 + energy*equal(bucket,1);
-per_frame_17=samples1 = samples1 + equal(bucket,1);
-per_frame_18=energy2 = energy2 + energy*equal(bucket,0);
-per_frame_19=samples2 = samples2 + equal(bucket,0);
-per_frame_20=bucketChanged = bnot(equal(lastBucket,bucket));
-per_frame_21=energy1 = energy1 - energy1*bucketChanged*bucket;
-per_frame_22=energy2 = energy2 - energy2*bucketChanged*equal(bucket,0);
-per_frame_23=samples1 = samples1 - samples1*bucketChanged*bucket;
-per_frame_24=samples2 = samples2 - samples2*bucketChanged*equal(bucket,0);
+per_frame_15=bucket = floor(time)%2;
+per_frame_16=bucketChanged = bnot(equal(lastBucket,bucket));
+per_frame_17=energy1 = energy1 - energy1*bucketChanged*bucket;
+per_frame_18=energy2 = energy2 - energy2*bucketChanged*equal(bucket,0);
+per_frame_19=samples1 = samples1 - samples1*bucketChanged*bucket;
+per_frame_20=samples2 = samples2 - samples2*bucketChanged*equal(bucket,0);
+per_frame_21=energy1 = energy1 + energy*equal(bucket,1);
+per_frame_22=samples1 = samples1 + equal(bucket,1);
+per_frame_23=energy2 = energy2 + energy*equal(bucket,0);
+per_frame_24=samples2 = samples2 + equal(bucket,0);
 per_frame_25=lastBucket = bucket;
 per_frame_26=// Require a reference window; normalized bands surge on the first sound after silence.
 per_frame_27=avgOther = if(equal(bucket,1),energy2/max(samples2,1),energy1/max(samples1,1));
@@ -397,9 +449,9 @@ per_frame_77=sectionQuietTime = if(sectionQuiet,sectionQuietTime+frameDt,0);
 per_frame_78=sectionActive = if(above(sectionQuietTime,0.65),0,sectionActive);
 per_frame_79=sectionLevel = if(above(sectionQuietTime,0.65),0,sectionLevel);
 per_frame_80=sectionRise = above(sustainedRatio,1.20)*above(relativeEnergy,1.05);
-per_frame_81=sectionHit = above(max(bodyTarget,hardTransient),0.20);
-per_frame_82=absoluteSectionRise = absoluteAvailable*above(absoluteFast,0.20)*below(absoluteFastPrevious,0.20);
-per_frame_83=sectionEnter = max(max(sectionRise,sectionHit),absoluteSectionRise)*max(detectorReady,absoluteAvailable);
+per_frame_81=sectionSignal = max(sectionRise,absoluteAvailable*above(absoluteFast,0.20));
+per_frame_82=sectionRiseTime = if(sectionSignal,sectionRiseTime+frameDt,0);
+per_frame_83=sectionEnter = above(sectionRiseTime,0.40)*max(detectorReady,absoluteAvailable);
 per_frame_84=sectionCandidate = min(0.28 + 0.22*max(bodyTarget,hardTransient) + 0.42*max(min(sustainedRatio-1,1),0) + 0.12*max(min(relativeEnergy-1,1),0),0.58);
 per_frame_85=sectionActive = max(sectionActive,sectionEnter);
 per_frame_86=sectionLevel = if(sectionEnter,max(sectionLevel,sectionCandidate),sectionLevel);
@@ -457,8 +509,8 @@ per_frame_137=// A random walk with a 58-degree minimum avoids repeated hue neig
 per_frame_138=paletteRandom = sin(paletteHashSeed + 0.17)*43758.5453;
 per_frame_139=paletteHueStep = 0.16 + 0.34*(paletteRandom-floor(paletteRandom));
 per_frame_140=paletteRandom = sin(paletteHashSeed + 1.31)*43758.5453;
-per_frame_141=paletteHueSign = if(above(paletteRandom-floor(paletteRandom),0.5),1,-1);
-per_frame_142=paletteBaseHue = paletteFromPH + paletteHueSign*paletteHueStep;
+per_frame_141=paletteHueSign = if(above(paletteRandom-floor(paletteRandom),0.5),1,-1); evolutionPaletteShift = if(paletteEvent,0.045*sin(evolutionAge*0.14),evolutionPaletteShift);
+per_frame_142=paletteBaseHue = paletteFromPH + paletteHueSign*paletteHueStep + evolutionPaletteShift;
 per_frame_143=paletteRandom = sin(paletteHashSeed + 2.11)*43758.5453;
 per_frame_144=paletteDirection = if(above(paletteRandom-floor(paletteRandom),0.5),1,-1);
 per_frame_145=paletteTargetPH = paletteBaseHue;
@@ -543,8 +595,26 @@ per_frame_223=// Body makes a small burst; hard impacts use the full short envel
 per_frame_224=sparkTarget = max(hardTransient,0.35*bodyTarget);
 per_frame_225=spark = max(sparkTarget,spark*pow(0.0001,frameDt));
 per_frame_226=spark = if(below(spark,0.002),0,spark);
-per_frame_227=q19 = min(ambientValid*(0.030 + 0.035*q8 + 0.025*body),0.10);
+per_frame_227=q19 = min(ambientValid*(0.030 + 0.035*q8 + 0.025*body + 0.080*q24),0.10);
 per_frame_228=q20 = q2*spark;
+per_frame_229=cometCooldown = max(cometCooldown-frameDt,0);
+per_frame_230=cometSectionEdge = above(sectionActive,0.5)*below(cometLastSection,0.5);
+per_frame_231=cometLastSection = sectionActive;
+per_frame_232=cometTrigger = cometSectionEdge*below(cometCooldown,0.001)*below(cometActive,0.5);
+per_frame_233=cometAge = if(cometTrigger,0,if(below(cometAge,0.90),cometAge+frameDt,cometAge));
+per_frame_234=cometEnvelope = min(cometAge/0.06,1)*min(max((0.90-cometAge)/0.12,0),1);
+per_frame_235=cometActive = if(cometTrigger,1,if(above(sectionQuietTime,0.10),0,if(below(sectionActive,0.5),0,if(above(cometAge,0.90),0,cometActive))));
+per_frame_236=cometCooldown = if(cometTrigger,12,cometCooldown);
+per_frame_237=evolutionSignal = sectionActive*max(above(sustainedRatio,1.05),absoluteAvailable*above(absoluteSlow,0.45));
+per_frame_238=evolutionAge = if(evolutionSignal,min(evolutionAge+frameDt,90),if(below(sectionActive,0.5),max(evolutionAge-frameDt*1.5,0),max(evolutionAge-frameDt*0.35,0)));
+per_frame_239=evolutionRadius = 1 + 0.10*sin(evolutionAge*0.24);
+per_frame_240=evolutionEllipticity = 1 + 0.08*sin(evolutionAge*0.19);
+per_frame_241=q25 = evolutionRadius;
+per_frame_242=q26 = evolutionEllipticity;
+per_frame_243=q27 = cometAge;
+per_frame_244=q28 = cometEnvelope;
+per_frame_245=q29 = cometActive;
+per_frame_246=q30 = cometTrigger;
 per_pixel_1=zoom = 1 + 0.05*q7*rad;
 per_pixel_2=rot = 0;
 warp_1=`shader_body
