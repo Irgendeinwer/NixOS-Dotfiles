@@ -16,6 +16,8 @@ let
   messagingEnabled =
     if osConfig != null then (osConfig.custom.desktop.messaging.enable or false) else true;
   soundEnabled = if osConfig != null then (osConfig.custom.desktop.sound.enable or false) else true;
+  productionEnabled =
+    if osConfig != null then (osConfig.custom.audio.production.enable or false) else true;
   # Frosted desktop layers, opt-in per host (the laptop skips the cost)
   layerBlur =
     if osConfig != null then (osConfig.custom.desktop.hyprland.layerBlur or false) else false;
@@ -308,6 +310,19 @@ lib.mkIf hyprlandEnabled {
       -- Smart Gaps: edge-to-edge tiled windows; floating ones keep their frame
       hl.window_rule({ match = { float = false, workspace = "w[t1]" }, border_size = 0, rounding = 0 })
       hl.window_rule({ match = { float = false, workspace = "f[1]" }, border_size = 0, rounding = 0 })
+      ${lib.optionalString productionEnabled ''
+        -- REAPER & yabridge: keep untitled XWayland popup menus and bridged VST
+        -- editors floating without stealing focus from the parent window.
+        hl.window_rule({
+          match = { class = "^(REAPER)$", title = "^$" },
+          float = true,
+          no_initial_focus = true,
+        })
+        hl.window_rule({
+          match = { class = "^(yabridge-host\\.exe\\.so)$" },
+          float = true,
+        })
+      ''}
 
       --------------------------------------------------
       -- On-Screen Display (swayosd)

@@ -151,6 +151,8 @@
       office.enable = true;
     };
 
+    audio.production.enable = true;
+
     services = {
       ai.enable = true;
       hotspot = {
