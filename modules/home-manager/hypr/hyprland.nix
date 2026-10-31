@@ -16,6 +16,8 @@ let
   messagingEnabled =
     if osConfig != null then (osConfig.custom.desktop.messaging.enable or false) else true;
   soundEnabled = if osConfig != null then (osConfig.custom.desktop.sound.enable or false) else true;
+  productionEnabled = config.custom.audio.production.enable;
+  yabridgeEnabled = productionEnabled && config.custom.audio.production.yabridge.enable;
   # Frosted desktop layers, opt-in per host (the laptop skips the cost)
   layerBlur =
     if osConfig != null then (osConfig.custom.desktop.hyprland.layerBlur or false) else false;
@@ -26,6 +28,19 @@ let
     hl.env("QT_QPA_PLATFORMTHEME", "${config.home.sessionVariables.QT_QPA_PLATFORMTHEME}")
     hl.env("QT_PLUGIN_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.QT_PLUGIN_PATH}")
   '';
+  audioEnv =
+    lib.optionalString yabridgeEnabled ''
+      hl.env("NIX_PROFILES", "/run/current-system/sw /nix/var/nix/profiles/default /etc/profiles/per-user/${config.home.username} ${config.home.homeDirectory}/.local/state/nix/profile ${config.home.homeDirectory}/.nix-profile")
+    ''
+    + lib.optionalString (productionEnabled && (config.home.sessionSearchVariables ? CLAP_PATH)) ''
+      hl.env("CLAP_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.CLAP_PATH}")
+      hl.env("DSSI_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.DSSI_PATH}")
+      hl.env("LADSPA_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.LADSPA_PATH}")
+      hl.env("LV2_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.LV2_PATH}")
+      hl.env("LXVST_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.LXVST_PATH}")
+      hl.env("VST_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.VST_PATH}")
+      hl.env("VST3_PATH", "${lib.concatStringsSep ":" config.home.sessionSearchVariables.VST3_PATH}")
+    '';
 
   # Apps & UI
   kitty = "${pkgs.kitty}/bin/kitty";
@@ -180,7 +195,7 @@ lib.mkIf hyprlandEnabled {
       --------------------------------------------------
       hl.env("QT_QPA_PLATFORM", "wayland;xcb")
       hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
-      ${qtEnv}
+      ${qtEnv}${audioEnv}
 
       --------------------------------------------------
       -- Monitors
@@ -308,6 +323,90 @@ lib.mkIf hyprlandEnabled {
       -- Smart Gaps: edge-to-edge tiled windows; floating ones keep their frame
       hl.window_rule({ match = { float = false, workspace = "w[t1]" }, border_size = 0, rounding = 0 })
       hl.window_rule({ match = { float = false, workspace = "f[1]" }, border_size = 0, rounding = 0 })
+      ${lib.optionalString productionEnabled ''
+        -- Prevent untitled XWayland drag-proxy windows (spawned when dragging
+        -- modulation cables in JUCE synths such as Vital and Surge XT) from
+        -- stealing focus and aborting the drag.
+        hl.window_rule({
+          name = "fix-xwayland-drags",
+          match = {
+            class = "^$",
+            title = "^$",
+            xwayland = true,
+            float = true,
+            fullscreen = false,
+            pin = false,
+          },
+          no_focus = true,
+        })
+        -- REAPER & yabridge: keep untitled XWayland popup/dropdown menus
+        -- floating without defocusing the parent DAW or bridged VST editor
+        -- window, while leaving titled popups free to use their native UI
+        -- coordinates when REAPER supplies them.
+        hl.window_rule({
+          match = { class = "^(REAPER)$", title = "^$" },
+          float = true,
+          no_initial_focus = true,
+        })
+        hl.window_rule({
+          match = { class = "^(yabridge-host\\.exe\\.so)$" },
+          float = true,
+        })
+        hl.window_rule({
+          match = { class = "^(yabridge-host\\.exe\\.so)$", title = "^$" },
+          float = true,
+          no_initial_focus = true,
+        })
+
+        -- UI-anchored REAPER popups (track routing/I/O, envelopes, menus,
+        -- saved dialogs) compute real X11 coordinates via ClientToScreen or
+        -- GetCursorPos, whereas unpositioned new dialogs initialize at
+        -- {0, 0, w, h} in libSwell and emit a post-map XConfigureWindow at
+        -- (0, 0). Only center floating REAPER/yabridge windows that actually
+        -- land at (0, 0), preserving normal UI-integrated placement everywhere
+        -- else.
+        local function reaper_target_monitor()
+          local mains = hl.get_windows({ class = "REAPER", floating = false })
+          if mains and mains[1] and mains[1].monitor then
+            return mains[1].monitor, mains[1].workspace
+          end
+          local mon = hl.get_active_monitor()
+          return mon, mon and (mon.active_special_workspace or mon.active_workspace) or nil
+        end
+
+        local function center_if_spawned_at_origin(win)
+          if not win or not win.mapped or not win.floating then
+            return
+          end
+          if win.class ~= "REAPER" and win.class ~= "yabridge-host.exe.so" then
+            return
+          end
+          local at = win.at
+          if not at or at.x ~= 0 or at.y ~= 0 then
+            return
+          end
+          local target_mon, target_ws = reaper_target_monitor()
+          if target_mon and win.monitor ~= target_mon and target_ws then
+            hl.dispatch(hl.dsp.window.move({ window = win, workspace = target_ws, follow = false }))
+          end
+          hl.dispatch(hl.dsp.window.center({ window = win }))
+        end
+
+        hl.on("window.open", function(win)
+          if not win or not win.floating then
+            return
+          end
+          if win.class ~= "REAPER" and win.class ~= "yabridge-host.exe.so" then
+            return
+          end
+          center_if_spawned_at_origin(win)
+          for _, delay in ipairs({ 25, 100, 250 }) do
+            hl.timer(function()
+              center_if_spawned_at_origin(win)
+            end, { timeout = delay, type = "oneshot" })
+          end
+        end)
+      ''}
 
       --------------------------------------------------
       -- On-Screen Display (swayosd)
