@@ -101,6 +101,17 @@
         ];
       };
 
+      # Strict variant used by CI as a retirement check for the temporary GTK 2
+      # broken-package exception in modules/nixos/base.nix. CI expects this
+      # evaluation to fail specifically on GTK 2 while Lutris still needs it.
+      nixosConfigurations.junixosStrictGtk2 = self.nixosConfigurations.junixos.extendModules {
+        modules = [
+          ({ lib, ... }: {
+            nixpkgs.config.problems.handlers."gtk+".broken = lib.mkForce "error";
+          })
+        ];
+      };
+
       nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [

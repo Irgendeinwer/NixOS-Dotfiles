@@ -64,6 +64,10 @@ in
 
     # Package manager settings
     nixpkgs.config.allowUnfree = true;
+    # GTK 2 is marked broken upstream, but Lutris still includes it in its
+    # FHS environment for legacy runners. Keep that dependency evaluable until
+    # Lutris drops it or GTK 2 is removed from nixpkgs.
+    nixpkgs.config.problems.handlers."gtk+".broken = "warn";
     nix.settings.experimental-features = [
       "nix-command"
       "flakes"
