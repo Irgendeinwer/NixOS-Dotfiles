@@ -92,13 +92,23 @@ is gone for good.
    `ssh-to-age < ssh_host_ed25519_key.pub` recipient as `&host_junixsrv` in
    `.sops.yaml` (include `*host_junixsrv` under `secrets/common\.yaml$` and add
    a `secrets/junixsrv\.yaml$` rule **above** the catch-all
-   `secrets/[^/]+\.yaml$` rule), run `sops updatekeys secrets/common.yaml`, and
-   provision two repository-scoped GitHub deploy keys in `secrets/junixsrv.yaml`
+   `secrets/[^/]+\.yaml$` rule), run `sops updatekeys secrets/common.yaml` **and**
+   `sops updatekeys secrets/junixsrv.yaml`, then provision two repository-scoped
+   GitHub deploy keys in `secrets/junixsrv.yaml`
    (GitHub forbids reusing one deploy key across two repositories):
    - `nix_nightly_ssh_key`: read/write deploy key on `Irgendeinwer/NixOS-Dotfiles`
    - `wallpaper_deploy_key`: read-only deploy key on `Irgendeinwer/wallpaper`
-   Using dedicated deploy keys in `secrets/junixsrv.yaml` avoids placing the
-   personal `user_ssh_key` inside a `PrivateUsers=no` container.
+   The dedicated deploy keys mean the nightly job does not need to install the
+   personal `user_ssh_key` for its own Git operations. However, `junixsrv` is
+   currently a recipient of `secrets/common.yaml`, so its root can decrypt every
+   secret in that file, including `user_ssh_key`. Before relying on that boundary,
+   move `user_ssh_key` to `secrets/users/julian.yaml` with SOPS and re-encrypt
+   `secrets/common.yaml`; the user-specific recipient rule excludes `junixsrv`,
+   and the remote-builder module prefers that file when present. Because earlier
+   ciphertext remains in Git history, rotate the SSH key and update the server's
+   authorized key list as well.
+   The `junixsrv` configuration enables Discord notifications, so ensure the
+   `nix_nightly_webhook` key described below is present before deploying it.
 3. Build the rootfs archive and copy it to the Debian host:
    `nix build .#nixosConfigurations.junixsrv.config.system.build.tarball`
 4. Extract `result/tarball/nixos-container-junixsrv-x86_64-linux.tar.xz`
@@ -144,3 +154,52 @@ is gone for good.
    `/etc/ssh/ssh_host_ed25519_key.pub` and `/var/lib/harmonia/cache-pub-key.pem`,
    then deploy updates from a LAN client with:
    `nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.local`
+
+## Nightly notifications
+
+`junixsrv` reports the result of every `nix-nightly-update` run directly to
+Discord (`custom.services.buildServer.nightly.notify.enable = true`). This
+notification option is off by default on other hosts.
+
+- success: hosts pre-built, `flake.lock` state, push result, self-upgrade
+- warning: activation was deferred because the updated `flake.lock` could not be
+  pushed or `main` advanced while the hosts were building. Staged roots are
+  removed when publication fails, so unpublished outputs are eligible for normal
+  garbage collection (they may remain substitutable until collected).
+- failure: stage and exit code; the full log remains on the host at
+  `/var/lib/nix-nightly/last-run.log` (root-only, mode `0600`)
+
+Delivery is best-effort and never changes the nightly run's exit status. The
+service attempts a failure notification after its four-hour startup timeout,
+but systemd may still kill the unit before delivery completes. Raw logs are
+never sent to Discord; summaries contain run metadata such as host names, lock
+and push status, duration, and upgrade state. Restrict access to the channel.
+
+1. Create the webhook in Discord: *Server Settings → Integrations → Webhooks →
+   New Webhook*, then copy its URL.
+2. Store it as `nix_nightly_webhook` in the host secrets file — the URL is a
+   credential, so it must not be committed in plaintext:
+   `sops secrets/junixsrv.yaml`
+   ```yaml
+   nix_nightly_webhook: https://discord.com/api/webhooks/<id>/<token>
+   ```
+3. Deploy (`nh os switch -H junixsrv --target-host root@junixsrv.local`); the
+   secret is installed at `/run/secrets/nix_nightly_webhook` (`0400`, root) and
+   read at runtime.
+4. Smoke-test the webhook without triggering a full run:
+   ```bash
+   url="$(sudo cat /run/secrets/nix_nightly_webhook)"
+   jq -n '{username:"nix-nightly",embeds:[{title:"test",description:"junixsrv nightly hook"}]}' \
+     | curl --config <(printf 'url = "%s"\n' "$url") -sS --fail-with-body \
+         -H 'Content-Type: application/json' --data-binary @-
+   ```
+   The first real report then arrives after the next 02:15 run. A switch that
+   precedes step 2 fails in `sops-install-secrets` because the key does not
+   exist yet.
+
+GC-root promotion replaces host links individually, not as a single transaction.
+If a run is interrupted, the cache can temporarily retain a mixture of old and
+new closures; a later successful run rebuilds and replaces them. Staging data
+from older versions that contains a rollback transaction is retained under
+`/nix/var/nix/gcroots/nix-nightly/.staging.*` and reported in the nightly log;
+inspect it before removing it after a successful run.

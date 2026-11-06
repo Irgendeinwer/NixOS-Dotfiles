@@ -12,6 +12,8 @@ Keep changes small, consistent with the existing structure, and verified.
   - `nix build .#nixosConfigurations.junixbook.config.system.build.toplevel --dry-run`
   - `nix build .#nixosConfigurations.junixsrv.config.system.build.toplevel --dry-run`
   - `nix flake check --no-build`
+  - `nix build .#checks.x86_64-linux.nightly-runtime`
+  - `nix build .#checks.x86_64-linux.remote-builder-options .#checks.x86_64-linux.build-server-options .#checks.x86_64-linux.without-userns-filter`
 - Prefer packages from nixpkgs; do not vendor, download or version-pin upstream tools without a concrete reason.
 - Never commit plaintext secrets. Secrets are sops-encrypted files under `secrets/`.
 

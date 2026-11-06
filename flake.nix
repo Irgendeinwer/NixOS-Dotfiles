@@ -70,25 +70,53 @@
           [ ];
 
       myOverlays = loadOverlays ./modules/overlays;
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       # `nix fmt` formats every .nix file in the repo with nixfmt
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+      formatter.${system} = pkgs.nixfmt-tree;
 
-      checks.x86_64-linux.without-userns-filter =
-        let
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        in
-        pkgs.runCommand "without-userns-filter-test" { } ''
+      checks.${system} = {
+        nightly-runtime =
+          pkgs.runCommand "nightly-runtime-tests"
+            {
+              nativeBuildInputs = with pkgs; [
+                bash
+                coreutils
+                git
+                gnugrep
+                jq
+              ];
+            }
+            ''
+              export NIGHTLY_NOTIFY_HELPER=${./modules/services/scripts/nightly-notify.sh}
+              export NIGHTLY_FINISH_HELPER=${./modules/services/scripts/nightly-finish.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-notify.sh}
+              export NIGHTLY_GCROOTS_HELPER=${./modules/services/scripts/nightly-gcroots.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-gcroots.sh}
+              export NIGHTLY_LOG_HELPER=${./modules/services/scripts/nightly-log.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-log.sh}
+              export NIGHTLY_ACTIVATE_HELPER=${./modules/services/scripts/nightly-activate.sh}
+              export NIGHTLY_SIGNALS_HELPER=${./modules/services/scripts/nightly-signals.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-flow.sh}
+              mkdir -p "$out"
+            '';
+
+        remote-builder-options = import ./tests/remote-builder-options.nix {
+          inherit nixpkgs pkgs system;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+
+        build-server-options = import ./tests/build-server-options.nix {
+          inherit nixpkgs pkgs system;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+
+        without-userns-filter = pkgs.runCommand "without-userns-filter-test" { } ''
           ${pkgs.callPackage ./pkgs/without-userns.nix { }}/bin/without-userns ${pkgs.coreutils}/bin/true
           mkdir -p "$out"
         '';
-
-      checks.x86_64-linux.remote-builder-options = import ./tests/remote-builder-options.nix {
-        inherit nixpkgs;
-        system = "x86_64-linux";
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        sopsModule = inputs.sops-nix.nixosModules.sops;
       };
 
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {

@@ -8,6 +8,16 @@ let
   cfg = config.custom.services.buildServer;
   sopsFile = ../../secrets + "/${config.networking.hostName}.yaml";
 
+  notifyEnabled = cfg.enable && cfg.nightly.enable && cfg.nightly.notify.enable;
+  # `config.sops.secrets.<name>.path` only exists when the matching entry below
+  # is declared, so guard the lookup behind the same condition (Nix `if` is lazy).
+  webhookPath =
+    if notifyEnabled then
+      config.sops.secrets.nix_nightly_webhook.path
+    else
+      "/run/secrets/nix_nightly_webhook";
+  notifyEnabledStr = if notifyEnabled then "1" else "0";
+
   nixBin = lib.getExe' config.nix.package.out "nix";
   nixStoreBin = lib.getExe' config.nix.package.out "nix-store";
   nixEnvBin = lib.getExe' config.nix.package.out "nix-env";
@@ -20,10 +30,60 @@ let
       config.nix.package
       pkgs.bash
       pkgs.coreutils
+      pkgs.curl
       pkgs.git
+      pkgs.jq
       pkgs.openssh
     ];
     text = ''
+      notify_enabled=${lib.escapeShellArg notifyEnabledStr}
+      webhook_file=${lib.escapeShellArg webhookPath}
+      host_label=${lib.escapeShellArg config.networking.hostName}
+      state_dir="/var/lib/nix-nightly"
+      log_file="$state_dir/last-run.log"
+      stage="startup"
+      activation_deferred=0
+      signal_received=0
+      summary=""
+
+      add_summary() {
+        summary="$summary$1"$'\n'
+      }
+
+      format_duration() {
+        local total="$1" hours minutes seconds
+        hours=$((total / 3600))
+        minutes=$(((total % 3600) / 60))
+        seconds=$((total % 60))
+        if [ "$hours" -gt 0 ]; then
+          printf '%dh %dm %ds' "$hours" "$minutes" "$seconds"
+        elif [ "$minutes" -gt 0 ]; then
+          printf '%dm %ds' "$minutes" "$seconds"
+        else
+          printf '%ds' "$seconds"
+        fi
+      }
+
+      # Inline helpers so ShellCheck can analyze cross-function globals rather
+      # than treating variables consumed by these functions as unused.
+      ${builtins.readFile ./scripts/nightly-notify.sh}
+      ${builtins.readFile ./scripts/nightly-gcroots.sh}
+      ${builtins.readFile ./scripts/nightly-log.sh}
+      ${builtins.readFile ./scripts/nightly-finish.sh}
+      ${builtins.readFile ./scripts/nightly-signals.sh}
+      ${builtins.readFile ./scripts/nightly-activate.sh}
+
+      nix_env_bin=${lib.escapeShellArg nixEnvBin}
+      install_nightly_signal_traps
+
+      # Start a fresh log before any preflight that can fail; never quote a
+      # previous run's log as though it belonged to this one.
+      prepare_private_log
+      exec 5>&1 6>&2
+      # Keep potentially sensitive command output in the root-only log, not journal.
+      exec > >(tee -a "$log_file" >/dev/null) 2>&1
+      tee_pid="$!"
+
       repo_ssh_key="${config.sops.secrets.nix_nightly_ssh_key.path}"
       flake_ssh_key="${config.sops.secrets.nix_nightly_flake_ssh_key.path}"
 
@@ -46,14 +106,16 @@ let
         GIT_SSH_COMMAND="ssh $flake_ssh_opts" NIX_SSHOPTS="$flake_ssh_opts" ${nixBin} "$@"
       }
 
-      state_dir="/var/lib/nix-nightly"
       repo_dir="$state_dir/repo"
       gcroots_dir="/nix/var/nix/gcroots/nix-nightly"
-      mkdir -p "$state_dir" "$gcroots_dir"
+      mkdir -p "$gcroots_dir"
+      stage="clean stale gcroot staging"
+      cleanup_stale_gcroot_staging
 
       branch="main"
       repo_url="git@github.com:Irgendeinwer/NixOS-Dotfiles.git"
 
+      stage="sync $branch from $repo_url"
       if [ ! -d "$repo_dir/.git" ]; then
         rm -rf "$repo_dir"
         repo_git clone --branch "$branch" "$repo_url" "$repo_dir"
@@ -68,74 +130,62 @@ let
       git reset --hard "origin/$branch"
       git clean -fdx
 
+      stage="flake update"
       lock_updated=0
       flake_nix flake update nixpkgs
       if git diff --quiet flake.lock; then
         echo "No nixpkgs updates available; pre-building current $branch closures."
+        add_summary "flake.lock: already current"
       else
         echo "New nixpkgs revision found; updating remaining flake inputs."
         flake_nix flake update
         lock_updated=1
+        add_summary "flake.lock: updated"
       fi
 
       hosts=(${lib.escapeShellArgs nightlyHosts})
+      add_summary "hosts: ''${hosts[*]}"
       tmp_gcroots="$(mktemp -d "$gcroots_dir/.staging.XXXXXX")"
-      cleanup_staging() {
-        rm -rf "$tmp_gcroots"
-      }
-      trap cleanup_staging EXIT
 
       # Evaluate and build hosts sequentially so only one NixOS evaluation heap
       # stays resident in RAM at a time, while staging each result inside
       # /nix/var/nix/gcroots immediately so min-free auto-GC cannot sweep
       # earlier closures during subsequent builds.
       for host in "''${hosts[@]}"; do
+        stage="pre-build $host"
+        # Background + wait so the shell can handle SIGTERM during a stalled
+        # client request and run the bounded notification/cleanup path.
         flake_nix build --out-link "$tmp_gcroots/host-$host" \
-          ".#nixosConfigurations.$host.config.system.build.toplevel"
-      done
-
-      for link in "$tmp_gcroots"/host-*; do
-        mv -Tf "$link" "$gcroots_dir/$(basename "$link")"
-      done
-      for existing in "$gcroots_dir"/host-*; do
-        [ -L "$existing" ] || continue
-        existing_name="$(basename "$existing")"
-        keep=0
-        for host in "''${hosts[@]}"; do
-          if [ "$existing_name" = "host-$host" ]; then
-            keep=1
-            break
-          fi
-        done
-        if [ "$keep" -eq 0 ]; then
-          rm -f "$existing"
+          ".#nixosConfigurations.$host.config.system.build.toplevel" &
+        build_pid="$!"
+        if wait "$build_pid"; then
+          build_pid=""
+        else
+          build_status="$?"
+          build_pid=""
+          exit "$build_status"
         fi
       done
-      rmdir "$tmp_gcroots"
-      trap - EXIT
 
+      stage="commit and push flake.lock"
       if [ "$lock_updated" -eq 1 ] && ! git diff --quiet flake.lock; then
         git config user.name "Irgendeinwer"
         git config user.email "175053643+Irgendeinwer@users.noreply.github.com"
         git add flake.lock
         git commit -m "chore(flake): update inputs"
-        if ! repo_git push origin "HEAD:$branch"; then
-          echo "nix-nightly-update: origin/$branch advanced during the build; skipping push of untested rebase so the next run evaluates cleanly against the new tip." >&2
-          exit 0
+        if repo_git push origin "HEAD:$branch"; then
+          add_summary "push: pushed flake.lock to $branch"
+        else
+          echo "nix-nightly-update: could not push flake.lock; retaining the tested build and deferring activation until the next run." >&2
+          add_summary "push: failed; activation deferred until the next run"
+          activation_deferred=1
         fi
+      else
+        add_summary "push: not needed"
       fi
 
-      self_link="$gcroots_dir/host-${config.networking.hostName}"
-      if [ -L "$self_link" ]; then
-        self_toplevel="$(readlink -f "$self_link")"
-        current_toplevel="$(readlink -f /run/current-system || true)"
-        ${nixEnvBin} -p /nix/var/nix/profiles/system --set "$self_toplevel"
-        if [ "$self_toplevel" != "$current_toplevel" ]; then
-          "$self_toplevel/bin/switch-to-configuration" switch
-        else
-          echo "nix-nightly-update: ${config.networking.hostName} is already at $self_toplevel; skipping switch."
-        fi
-      fi
+      complete_nightly_run
+      stage="done"
     '';
   };
 in
@@ -178,6 +228,19 @@ in
         ];
         defaultText = lib.literalExpression "[ config.networking.hostName \"junixbook\" \"junixos\" ]";
         description = "Flake nixosConfigurations to evaluate and pre-build into Harmonia each night.";
+      };
+
+      notify.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          POST a run summary to a Discord webhook whose URL is read at runtime
+          from the `nix_nightly_webhook` sops key in this host's secrets file.
+          Success, deferred-push warnings, and failure stage/exit codes are
+          reported; full logs remain root-only on the host. Delivery is best
+          effort and never fails the nightly run. See docs/recovery.md to
+          create and enroll the webhook.
+        '';
       };
     };
   };
@@ -234,19 +297,25 @@ in
       allowedTCPPorts = [ 5000 ];
     };
 
-    sops.secrets = lib.mkIf cfg.nightly.enable {
-      nix_nightly_ssh_key = {
-        inherit sopsFile;
-        key = "nix_nightly_ssh_key";
-        owner = "root";
-        mode = "0400";
-      };
-      nix_nightly_flake_ssh_key = {
-        inherit sopsFile;
-        key = "wallpaper_deploy_key";
-        owner = "root";
-        mode = "0400";
-      };
+    sops.secrets.nix_nightly_ssh_key = lib.mkIf cfg.nightly.enable {
+      inherit sopsFile;
+      key = "nix_nightly_ssh_key";
+      owner = "root";
+      mode = "0400";
+    };
+
+    sops.secrets.nix_nightly_flake_ssh_key = lib.mkIf cfg.nightly.enable {
+      inherit sopsFile;
+      key = "wallpaper_deploy_key";
+      owner = "root";
+      mode = "0400";
+    };
+
+    sops.secrets.nix_nightly_webhook = lib.mkIf notifyEnabled {
+      inherit sopsFile;
+      key = "nix_nightly_webhook";
+      owner = "root";
+      mode = "0400";
     };
 
     # Generate a persistent signing keypair at boot BEFORE harmonia.service evaluates LoadCredential
@@ -294,7 +363,10 @@ in
         serviceConfig = {
           Type = "oneshot";
           StateDirectory = "nix-nightly";
+          StateDirectoryMode = "0700";
           TimeoutStartSec = "4h";
+          # Leave time for bounded cleanup and webhook retries after TimeoutStartSec.
+          TimeoutStopSec = "40s";
           CPUSchedulingPolicy = "idle";
           IOSchedulingClass = "idle";
           ExecStart = lib.getExe nightlyScript;

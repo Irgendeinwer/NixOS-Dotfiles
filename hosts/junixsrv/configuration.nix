@@ -39,7 +39,12 @@
     };
 
     services = {
-      buildServer.enable = true;
+      buildServer = {
+        enable = true;
+        # Requires the `nix_nightly_webhook` key (Discord webhook URL) in
+        # secrets/junixsrv.yaml; see docs/recovery.md.
+        nightly.notify.enable = true;
+      };
     };
   };
 
