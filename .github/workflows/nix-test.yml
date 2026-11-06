@@ -25,7 +25,7 @@ jobs:
         run: nix fmt -- --ci
 
       - name: Test namespace filter
-        run: nix build .#checks.x86_64-linux.without-userns-filter
+        run: nix build .#checks.x86_64-linux.without-userns-filter .#checks.x86_64-linux.remote-builder-options
 
       - name: Evaluate junixos
         run: nix eval .#nixosConfigurations.junixos.config.system.build.toplevel.drvPath --show-trace

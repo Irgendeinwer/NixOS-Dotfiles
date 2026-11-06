@@ -84,6 +84,13 @@
           mkdir -p "$out"
         '';
 
+      checks.x86_64-linux.remote-builder-options = import ./tests/remote-builder-options.nix {
+        inherit nixpkgs;
+        system = "x86_64-linux";
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        sopsModule = inputs.sops-nix.nixosModules.sops;
+      };
+
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [

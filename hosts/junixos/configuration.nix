@@ -103,7 +103,12 @@
       };
       android.enable = true;
       security.hardening.enable = true;
-      remoteBuilder.enable = true;
+      # Use junixsrv as a substituter without submitting local builds to it.
+      # Offloaded outputs are not automatically added to the server's cache.
+      remoteBuilder = {
+        enable = true;
+        offload = false;
+      };
     };
 
     hardware = {

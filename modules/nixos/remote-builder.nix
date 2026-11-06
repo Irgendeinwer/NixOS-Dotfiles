@@ -7,7 +7,11 @@
 let
   cfg = config.custom.system.remoteBuilder;
   targetHost = lib.removeSuffix "." cfg.host;
+  userName = config.custom.user;
   useAvahiMdns = lib.hasSuffix ".local" targetHost && !config.services.resolved.enable;
+  userSecretsFile = ../../secrets + "/users/${userName}.yaml";
+  builderKeyFile =
+    if builtins.pathExists userSecretsFile then userSecretsFile else ../../secrets/common.yaml;
   avahiLibDir = "${lib.getLib pkgs.avahi}/lib";
 
   # Lix/Nix calls `__nss_configure_lookup("hosts", "files dns")` inside
@@ -269,7 +273,17 @@ let
 in
 {
   options.custom.system.remoteBuilder = {
-    enable = lib.mkEnableOption "offload Nix builds and pull binary substitutions from the LAN build server";
+    enable = lib.mkEnableOption "pull binary substitutions from, and optionally offload builds to, the LAN build server";
+
+    offload = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+      description = ''
+        Submit builds to the remote server over ssh-ng. When disabled, this
+        module still configures the server as a binary substituter, but local
+        build outputs are not automatically published to that server's cache.
+      '';
+    };
 
     host = lib.mkOption {
       type = lib.types.str;
@@ -292,13 +306,14 @@ in
     maxJobs = lib.mkOption {
       type = lib.types.ints.positive;
       default = 8;
-      description = "Maximum concurrent build jobs to schedule on the remote server.";
+      description = "Maximum concurrent jobs sent to the remote server when offloading is enabled.";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    sops.secrets.nix_builder_ssh_key = {
-      sopsFile = ../../secrets/common.yaml;
+    # Only needed for offloading; a cache-only client never needs the user key.
+    sops.secrets.nix_builder_ssh_key = lib.mkIf cfg.offload {
+      sopsFile = builderKeyFile;
       key = "user_ssh_key";
       owner = "root";
       mode = "0400";
@@ -368,7 +383,7 @@ in
       };
     };
 
-    programs.ssh = {
+    programs.ssh = lib.mkIf cfg.offload {
       knownHosts = lib.optionalAttrs (cfg.hostPublicKey != null) {
         ${targetHost}.publicKey = cfg.hostPublicKey;
       };
@@ -388,9 +403,11 @@ in
     };
 
     nix = {
-      distributedBuilds = true;
+      # Do not force the global setting off when this server is cache-only;
+      # another module may configure a different remote builder.
+      distributedBuilds = lib.mkIf cfg.offload true;
 
-      buildMachines = [
+      buildMachines = lib.optionals cfg.offload [
         {
           hostName = targetHost;
           protocol = "ssh-ng";
@@ -398,6 +415,7 @@ in
           sshKey = config.sops.secrets.nix_builder_ssh_key.path;
           systems = [ "x86_64-linux" ];
           inherit (cfg) maxJobs;
+          # Scheduling weight for this builder; tune against observed throughput.
           speedFactor = 2;
           supportedFeatures = [
             "benchmark"
