@@ -48,6 +48,7 @@
         upower.enable = true;
         ignorePowerKey = true;
       };
+      remoteBuilder.enable = true;
     };
 
     hardware.bluetooth.enable = true;

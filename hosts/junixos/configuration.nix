@@ -103,6 +103,7 @@
       };
       android.enable = true;
       security.hardening.enable = true;
+      remoteBuilder.enable = true;
     };
 
     hardware = {

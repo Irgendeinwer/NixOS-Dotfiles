@@ -1,8 +1,14 @@
-{ config, ... }:
+{
+  config,
+  lib,
+  osConfig ? null,
+  ...
+}:
 let
+  officeEnabled = if osConfig != null then (osConfig.custom.desktop.office.enable or false) else true;
   p = config.custom.theme.palette;
 in
-{
+lib.mkIf officeEnabled {
   programs.zathura = {
     enable = true;
     options = {

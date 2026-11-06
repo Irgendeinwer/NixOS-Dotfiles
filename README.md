@@ -10,6 +10,7 @@ desktop and user environment.
 | :---------- | :------ |
 | `junixos`   | Desktop |
 | `junixbook` | Laptop  |
+| `junixsrv`  | Server  |
 
 Hosts contribute their hardware configuration and pick the features they
 use. Everything else is shared.

@@ -75,6 +75,15 @@
       # `nix fmt` formats every .nix file in the repo with nixfmt
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
 
+      checks.x86_64-linux.without-userns-filter =
+        let
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        in
+        pkgs.runCommand "without-userns-filter-test" { } ''
+          ${pkgs.callPackage ./pkgs/without-userns.nix { }}/bin/without-userns ${pkgs.coreutils}/bin/true
+          mkdir -p "$out"
+        '';
+
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
         modules = [
@@ -111,6 +120,27 @@
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
           nixos-hardware.nixosModules.common-pc-laptop # TLP power management
+
+          inputs.sops-nix.nixosModules.sops
+          inputs.lanzaboote.nixosModules.lanzaboote
+          inputs.home-manager.nixosModules.default
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+
+            home-manager.backupFileExtension = "backup";
+          }
+
+          inputs.nixvim.nixosModules.nixvim
+        ];
+      };
+
+      nixosConfigurations."junixsrv" = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
+        modules = [
+          { nixpkgs.overlays = myOverlays; }
+
+          ./hosts/junixsrv/configuration.nix
 
           inputs.sops-nix.nixosModules.sops
           inputs.lanzaboote.nixosModules.lanzaboote

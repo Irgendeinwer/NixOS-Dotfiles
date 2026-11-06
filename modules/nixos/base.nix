@@ -6,6 +6,8 @@
 }:
 let
   user = config.custom.user;
+  isContainer = config.boot.isContainer;
+  hasDesktop = config.custom.desktop.hyprland.enable;
 in
 {
   options.custom.user = lib.mkOption {
@@ -15,13 +17,13 @@ in
   };
 
   config = {
-    # Boot loader
-    boot.loader.systemd-boot.enable = true;
-    boot.loader.efi.canTouchEfiVariables = true;
+    # Boot loader (containers boot via /sbin/init instead of UEFI)
+    boot.loader.systemd-boot.enable = lib.mkIf (!isContainer) true;
+    boot.loader.efi.canTouchEfiVariables = lib.mkIf (!isContainer) true;
 
     # Networking & Firewall baseline
     networking = {
-      networkmanager.enable = true;
+      networkmanager.enable = lib.mkIf (!isContainer) true;
       firewall.enable = true;
     };
 
@@ -52,8 +54,10 @@ in
       isNormalUser = true;
       hashedPasswordFile = config.sops.secrets.user_password.path;
       extraGroups = [
-        "networkmanager"
         "wheel"
+      ]
+      ++ lib.optionals (!isContainer) [
+        "networkmanager"
       ];
     };
 
@@ -75,38 +79,41 @@ in
       dates = [ "weekly" ];
     };
 
-    # Core system packages shared across all hosts
-    environment.systemPackages = with pkgs; [
-      bat
-      brightnessctl
-      cliphist
-      curl
-      dconf
-      dig
-      inkscape
-      libnotify
-      obsidian
-      pdf4qt
-      playerctl
-      python3
-      qimgv
-      ripgrep
-      traceroute
-      unzip
-      wev
-      wget
-      whois
-      wl-clipboard
-      yt-dlp
-      zip
+    # Core system packages shared across all hosts (GUI utilities only on desktops)
+    environment.systemPackages = [
+      pkgs.bat
+      pkgs.curl
+      pkgs.dig
+      pkgs.kitty.terminfo
+      pkgs.python3
+      pkgs.ripgrep
+      pkgs.traceroute
+      pkgs.unzip
+      pkgs.wget
+      pkgs.whois
+      pkgs.yt-dlp
+      pkgs.zip
+    ]
+    ++ lib.optionals hasDesktop [
+      pkgs.brightnessctl
+      pkgs.cliphist
+      pkgs.dconf
+      pkgs.inkscape
+      pkgs.libnotify
+      pkgs.obsidian
+      pkgs.pdf4qt
+      pkgs.playerctl
+      pkgs.qimgv
+      pkgs.wev
+      pkgs.wl-clipboard
     ];
 
     # XDG Portals & Polkit
-    xdg.portal = {
+    xdg.portal = lib.mkIf hasDesktop {
       enable = true;
       xdgOpenUsePortal = true;
     };
-    security.polkit.enable = true;
+    security.polkit.enable = lib.mkIf (!isContainer) true;
 
     # System security & diagnostics
     programs.mtr.enable = true;
@@ -115,8 +122,8 @@ in
       enableSSHSupport = true;
     };
 
-    # Graphics baseline
-    hardware.graphics = {
+    # Graphics baseline (skip Mesa/32-bit drivers on headless server containers)
+    hardware.graphics = lib.mkIf hasDesktop {
       enable = true;
       enable32Bit = true;
     };

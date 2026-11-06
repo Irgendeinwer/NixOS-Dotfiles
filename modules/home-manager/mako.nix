@@ -1,8 +1,15 @@
-{ config, ... }:
+{
+  config,
+  lib,
+  osConfig ? null,
+  ...
+}:
 let
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
   p = config.custom.theme.palette;
 in
-{
+lib.mkIf hyprlandEnabled {
   # Declarative notification daemon, themed from custom.theme.palette.
   # Started on demand via D-Bus activation.
   services.mako = {

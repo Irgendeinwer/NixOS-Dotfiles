@@ -24,8 +24,17 @@ jobs:
       - name: Check formatting
         run: nix fmt -- --ci
 
+      - name: Test namespace filter
+        run: nix build .#checks.x86_64-linux.without-userns-filter
+
       - name: Evaluate junixos
         run: nix eval .#nixosConfigurations.junixos.config.system.build.toplevel.drvPath --show-trace
 
       - name: Evaluate junixbook
         run: nix eval .#nixosConfigurations.junixbook.config.system.build.toplevel.drvPath --show-trace
+
+      - name: Evaluate junixsrv
+        run: nix eval .#nixosConfigurations.junixsrv.config.system.build.toplevel.drvPath --show-trace
+
+      - name: Evaluate junixsrv container tarball
+        run: nix eval .#nixosConfigurations.junixsrv.config.system.build.tarball.drvPath --show-trace

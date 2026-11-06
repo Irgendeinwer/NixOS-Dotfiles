@@ -7,9 +7,10 @@ Keep changes small, consistent with the existing structure, and verified.
 
 - Flakes only see git-tracked files: `git add` new files before evaluating.
 - Format all Nix code with the repo formatter (`nix fmt`); CI rejects unformatted files.
-- Before committing, both hosts must evaluate:
+- Before committing, all hosts must evaluate:
   - `nix build .#nixosConfigurations.junixos.config.system.build.toplevel --dry-run`
   - `nix build .#nixosConfigurations.junixbook.config.system.build.toplevel --dry-run`
+  - `nix build .#nixosConfigurations.junixsrv.config.system.build.toplevel --dry-run`
   - `nix flake check --no-build`
 - Prefer packages from nixpkgs; do not vendor, download or version-pin upstream tools without a concrete reason.
 - Never commit plaintext secrets. Secrets are sops-encrypted files under `secrets/`.

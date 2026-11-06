@@ -1,5 +1,14 @@
-{ pkgs, ... }:
 {
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
+let
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+in
+lib.mkIf hyprlandEnabled {
   # User-scope twin of modules/nixos/notify-failure.nix: user units opt
   # in with Unit.OnFailure = [ "notify-failure@%N.service" ] to get a
   # critical desktop notification when they fail (critical shows even

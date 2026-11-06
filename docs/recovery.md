@@ -77,3 +77,70 @@ The same rekey and enrollment steps apply when replacing either
 machine: add the new host key to `.sops.yaml`, run `sops updatekeys`
 on the affected files, and remove the old host anchor once the machine
 is gone for good.
+
+## Reinstalling junixsrv
+
+`junixsrv` runs as a `systemd-nspawn` container on a Debian 12 host under
+`/var/lib/machines/junixsrv`.
+
+1. On the Debian 12 host, install the container tooling:
+   `sudo apt install systemd-container`
+   (If replacing an existing rootfs, clear NixOS's immutable flag before
+   removing the old tree: `sudo chattr -i /var/lib/machines/junixsrv/var/empty`.)
+2. On an existing NixOS machine, pre-generate or restore the container's SSH
+   host key (`ssh-keygen -t ed25519 -N "" -f ssh_host_ed25519_key`), add its
+   `ssh-to-age < ssh_host_ed25519_key.pub` recipient as `&host_junixsrv` in
+   `.sops.yaml` (include `*host_junixsrv` under `secrets/common\.yaml$` and add
+   a `secrets/junixsrv\.yaml$` rule **above** the catch-all
+   `secrets/[^/]+\.yaml$` rule), run `sops updatekeys secrets/common.yaml`, and
+   provision two repository-scoped GitHub deploy keys in `secrets/junixsrv.yaml`
+   (GitHub forbids reusing one deploy key across two repositories):
+   - `nix_nightly_ssh_key`: read/write deploy key on `Irgendeinwer/NixOS-Dotfiles`
+   - `wallpaper_deploy_key`: read-only deploy key on `Irgendeinwer/wallpaper`
+   Using dedicated deploy keys in `secrets/junixsrv.yaml` avoids placing the
+   personal `user_ssh_key` inside a `PrivateUsers=no` container.
+3. Build the rootfs archive and copy it to the Debian host:
+   `nix build .#nixosConfigurations.junixsrv.config.system.build.tarball`
+4. Extract `result/tarball/nixos-container-junixsrv-x86_64-linux.tar.xz`
+   into `/var/lib/machines/junixsrv` with `sudo tar --numeric-owner -xpf`,
+   and install `ssh_host_ed25519_key` (`0600`) and `ssh_host_ed25519_key.pub`
+   (`0644`) into `/var/lib/machines/junixsrv/etc/ssh/` so secrets decrypt
+   cleanly on first boot.
+5. Write `/etc/systemd/nspawn/junixsrv.nspawn` and the cgroup v2 unit drop-in
+   before first start (`PrivateUsers=no` keeps `/nix/store` ownership intact
+   and shares UID 0 trust with the host; `SystemCallFilter=@pkey @keyring` adds
+   `@pkey` and `@keyring` to nspawn's seccomp allowlist for Nix build sandboxes;
+   `SYSTEMD_NSPAWN_UNIFIED_HIERARCHY=1` prevents Debian 12's `nspawn` v252 from
+   falling back to legacy cgroup v1 when FHS `/lib/systemd` is absent):
+   ```ini
+   # /etc/systemd/nspawn/junixsrv.nspawn
+   [Exec]
+   Boot=yes
+   PrivateUsers=no
+   Capability=CAP_SYS_ADMIN CAP_SYS_PTRACE CAP_DAC_READ_SEARCH CAP_SETPCAP
+   SystemCallFilter=@pkey @keyring
+   ResolvConf=off
+   Timezone=off
+
+   [Network]
+   VirtualEthernet=no
+   MACVLAN=<wired-interface>
+   ```
+   ```ini
+   # /etc/systemd/system/systemd-nspawn@junixsrv.service.d/override.conf
+   [Service]
+   Environment=SYSTEMD_NSPAWN_UNIFIED_HIERARCHY=1
+   ```
+   `MACVLAN=` requires a wired Ethernet interface (802.11 Wi-Fi APs reject
+   secondary MACs) and isolates direct IP traffic between the Debian host
+   itself and `junixsrv` unless a host-side macvlan shim is configured. Use
+   `sudo machinectl shell junixsrv` from the Debian host, or SSH to
+   `junixsrv.local` from another LAN machine.
+6. Run `sudo systemctl daemon-reload`, then enable and start the container with
+   `sudo machinectl enable junixsrv && sudo machinectl start junixsrv`.
+   If `/etc/ssh` or `/var/lib/harmonia` was not restored from a previous
+   backup, update `hostPublicKey` and `cachePublicKey` in
+   `modules/nixos/remote-builder.nix` with the new keys from
+   `/etc/ssh/ssh_host_ed25519_key.pub` and `/var/lib/harmonia/cache-pub-key.pem`,
+   then deploy updates from a LAN client with:
+   `nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.local`

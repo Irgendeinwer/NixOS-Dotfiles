@@ -1,6 +1,13 @@
-{ pkgs, ... }:
+{
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
 
 let
+  mediaEnabled = if osConfig != null then (osConfig.custom.desktop.media.enable or false) else true;
+
   mpvWithScripts = pkgs.mpv.override {
     scripts = with pkgs.mpvScripts; [
       mpris
@@ -29,6 +36,6 @@ let
     text = builtins.readFile ./scripts/listen.sh;
   };
 in
-{
+lib.mkIf mediaEnabled {
   home.packages = [ listen ];
 }

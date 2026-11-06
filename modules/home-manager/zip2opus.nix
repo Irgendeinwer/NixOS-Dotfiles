@@ -1,6 +1,13 @@
-{ pkgs, ... }:
+{
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
 
 let
+  mediaEnabled = if osConfig != null then (osConfig.custom.desktop.media.enable or false) else true;
+
   zip2opus = pkgs.writeShellApplication {
     name = "zip2opus";
 
@@ -25,6 +32,6 @@ let
     text = builtins.readFile ./scripts/zip2opus.sh;
   };
 in
-{
+lib.mkIf mediaEnabled {
   home.packages = [ zip2opus ];
 }

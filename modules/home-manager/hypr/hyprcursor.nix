@@ -1,4 +1,14 @@
-{ pkgs, ... }: {
+{
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
+let
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+in
+lib.mkIf hyprlandEnabled {
   home.pointerCursor = {
     enable = true;
     package = pkgs.runCommand "rose-pine-combined" { } ''

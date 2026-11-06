@@ -1,10 +1,13 @@
 {
   config,
   lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
 let
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
   p = config.custom.theme.palette;
 
   # libadwaita's named colors, filled in from custom.theme.palette: views
@@ -80,7 +83,7 @@ let
     )
     + "}\n";
 in
-{
+lib.mkIf hyprlandEnabled {
   dconf.settings = {
     # The system accent, for libadwaita apps that cannot read the user CSS
     # (the sandboxed Flatpaks); everything else gets the palette accent.
