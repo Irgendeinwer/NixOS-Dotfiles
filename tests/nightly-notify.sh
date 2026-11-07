@@ -6,8 +6,8 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
 mkdir -p "$tmpdir/bin"
-cat > "$tmpdir/bin/curl" <<'CURL_STUB'
-#!/usr/bin/env bash
+printf '#!%s\n' "$BASH" > "$tmpdir/bin/curl"
+cat >> "$tmpdir/bin/curl" <<'CURL_STUB'
 set -euo pipefail
 : > "$CURL_ARGS_FILE"
 : > "$CURL_PAYLOAD_FILE"
@@ -34,8 +34,8 @@ fi
 CURL_STUB
 chmod +x "$tmpdir/bin/curl"
 real_jq="$(command -v jq)"
-cat > "$tmpdir/bin/jq" <<'JQ_STUB'
-#!/usr/bin/env bash
+printf '#!%s\n' "$BASH" > "$tmpdir/bin/jq"
+cat >> "$tmpdir/bin/jq" <<'JQ_STUB'
 printf '%s\n' "$@" >> "$JQ_ARGS_FILE"
 exec "$REAL_JQ" "$@"
 JQ_STUB

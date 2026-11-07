@@ -6,8 +6,8 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
 mkdir -p "$tmpdir/bin"
-cat > "$tmpdir/bin/curl" <<'CURL_STUB'
-#!/usr/bin/env bash
+printf '#!%s\n' "$BASH" > "$tmpdir/bin/curl"
+cat >> "$tmpdir/bin/curl" <<'CURL_STUB'
 set -euo pipefail
 : > "$CURL_ARGS_FILE"
 : > "$CURL_PAYLOAD_FILE"
@@ -85,7 +85,7 @@ git -C "$stale_writer" push >/dev/null 2>&1
 
 # A failed push must leave staged outputs unpromoted and must not run nix-env.
 mkdir -p "$tmpdir/gcroots" "$tmpdir/staging"
-printf '#!/usr/bin/env bash\nprintf called > %q\n' "$tmpdir/nix-env-called" > "$tmpdir/nix-env"
+printf '#!%s\nprintf called > %q\n' "$BASH" "$tmpdir/nix-env-called" > "$tmpdir/nix-env"
 chmod +x "$tmpdir/nix-env"
 ln -s /nix/store/test-unpublished "$tmpdir/staging/host-test"
 gcroots_dir="$tmpdir/gcroots"
