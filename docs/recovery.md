@@ -161,7 +161,8 @@ is gone for good.
 Discord (`custom.services.buildServer.nightly.notify.enable = true`). This
 notification option is off by default on other hosts.
 
-- success: hosts pre-built, `flake.lock` state, push result, self-upgrade
+- no updates: nixpkgs is already current; pre-build and self-upgrade still run
+- success: updated inputs were built and published
 - warning: activation was deferred because the updated `flake.lock` could not be
   pushed or `main` advanced while the hosts were building. Staged roots are
   removed when publication fails, so unpublished outputs are eligible for normal
@@ -174,6 +175,11 @@ service attempts a failure notification after its four-hour startup timeout,
 but systemd may still kill the unit before delivery completes. Raw logs are
 never sent to Discord; summaries contain run metadata such as host names, lock
 and push status, duration, and upgrade state. Restrict access to the channel.
+The webhook sends the display name `Nix Nightly` and a public `avatar_url` for
+`assets/nightly-icon.png`, rendered from `assets/icon.svg`. Discord fetches the
+PNG from this repository's `main` branch, so it appears after the asset is
+published there. A failed pre-build is still reported as a failure even if no
+nixpkgs update was available.
 
 1. Create the webhook in Discord: *Server Settings → Integrations → Webhooks →
    New Webhook*, then copy its URL.

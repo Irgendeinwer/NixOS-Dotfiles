@@ -15,15 +15,19 @@ notify_discord() {
   fi
   case "$status" in
     success)
-      title=":white_check_mark: Nightly update succeeded on $host_label"
+      title="✅ Nightly update complete · $host_label"
       color=3066993
       ;;
+    up_to_date)
+      title="🌙 No nixpkgs updates · $host_label"
+      color=5793266
+      ;;
     warning)
-      title=":warning: Nightly update finished with warnings on $host_label"
+      title="⚠️ Nightly update deferred · $host_label"
       color=16761095
       ;;
     *)
-      title=":x: Nightly update FAILED on $host_label"
+      title="❌ Nightly run failed · $host_label"
       color=15158332
       ;;
   esac
@@ -33,13 +37,16 @@ notify_discord() {
   if ! payload="$(printf '%s\0%s\0%s' "$title" "$color" "$body" | jq -Rs \
     'split("\u0000") as [$title, $color, $body]
      | {
-       username: "nix-nightly",
+       username: "Nix Nightly",
+       avatar_url: "https://raw.githubusercontent.com/Irgendeinwer/NixOS-Dotfiles/main/assets/nightly-icon.png",
+       allowed_mentions: {parse: []},
        embeds: [{
          title: $title,
          description: (if ($body | length) <= 2000 then $body
                        else "…(truncated)\n" + ($body[-1900:])
                        end),
-         color: ($color | tonumber)
+         color: ($color | tonumber),
+         footer: {text: "NixOS · Nightly build"}
        }]
      }')"; then
     echo "nix-nightly-update: warning: could not encode Discord notification; skipping." >&2

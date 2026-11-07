@@ -80,8 +80,11 @@ if grep -Fq "$token" "$CURL_ARGS_FILE" \
   exit 1
 fi
 jq -e '
-  .username == "nix-nightly"
-  and .embeds[0].title == ":warning: Nightly update finished with warnings on test-host"
+  .username == "Nix Nightly"
+  and .avatar_url == "https://raw.githubusercontent.com/Irgendeinwer/NixOS-Dotfiles/main/assets/nightly-icon.png"
+  and .allowed_mentions.parse == []
+  and .embeds[0].title == "⚠️ Nightly update deferred · test-host"
+  and .embeds[0].footer.text == "NixOS · Nightly build"
   and .embeds[0].description == "flake.lock push deferred"
 ' "$CURL_PAYLOAD_FILE" >/dev/null
 

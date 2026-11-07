@@ -102,7 +102,7 @@ grep -Fq 'activation was deferred' <<< "$summary"
 (
   notify_enabled=0
   activation_deferred=1
-    tmp_gcroots="$tmpdir/staging"
+  tmp_gcroots="$tmpdir/staging"
   tee_pid=""
   build_pid=""
   signal_received=0
@@ -127,9 +127,33 @@ build_pid=""
 signal_received=0
 stage="test failure"
 summary=""
+
+# No nixpkgs update is a calm success only after the rest of the run succeeds.
+(
+  lock_updated=0
+  install_nightly_signal_traps
+  exit 0
+)
+jq -e '.embeds[0].title == "🌙 No nixpkgs updates · test" and .embeds[0].color == 5793266' "$CURL_PAYLOAD_FILE" >/dev/null
+(
+  lock_updated=1
+  install_nightly_signal_traps
+  exit 0
+)
+jq -e '.embeds[0].title == "✅ Nightly update complete · test"' "$CURL_PAYLOAD_FILE" >/dev/null
+(
+  lock_updated=0
+  activation_deferred=1
+  install_nightly_signal_traps
+  exit 0
+)
+jq -e '.embeds[0].title == "⚠️ Nightly update deferred · test"' "$CURL_PAYLOAD_FILE" >/dev/null
+
+# Even if no update was available, a failed pre-build is still a failure.
 export CURL_FAIL=1
 set +e
 (
+  lock_updated=0
   install_nightly_signal_traps
   exit 37
 ) 2>"$tmpdir/exit-error"
@@ -137,7 +161,7 @@ exit_status=$?
 set -e
 [[ "$exit_status" -eq 37 ]]
 grep -Fq 'could not deliver Discord notification' "$tmpdir/exit-error"
-jq -e '.embeds[0].description | contains("exit code: 37")' "$CURL_PAYLOAD_FILE" >/dev/null
+jq -e '.embeds[0].title == "❌ Nightly run failed · test" and (.embeds[0].description | contains("**Exit code:** 37"))' "$CURL_PAYLOAD_FILE" >/dev/null
 
 # TERM maps to timeout status 124, runs the same EXIT reporter, and remains
 # best-effort when notification transport is unavailable.
@@ -167,7 +191,7 @@ set -e
 grep -Fq 'could not deliver Discord notification' "$tmpdir/timeout-error"
 jq -e '
   .embeds[0].description
-  | contains("stage: pre-build") and contains("exit code: 124")
+  | contains("**Stage:** pre-build") and contains("**Exit code:** 124")
 ' "$CURL_PAYLOAD_FILE" >/dev/null
 
 echo 'nightly flow tests passed'

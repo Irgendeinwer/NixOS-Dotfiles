@@ -47,7 +47,7 @@ let
       summary=""
 
       add_summary() {
-        summary="$summary$1"$'\n'
+        summary="$summary• $1"$'\n'
       }
 
       format_duration() {
@@ -135,7 +135,7 @@ let
       flake_nix flake update nixpkgs
       if git diff --quiet flake.lock; then
         echo "No nixpkgs updates available; pre-building current $branch closures."
-        add_summary "flake.lock: already current"
+        add_summary "nixpkgs: up to date; lockfile update skipped"
       else
         echo "New nixpkgs revision found; updating remaining flake inputs."
         flake_nix flake update
