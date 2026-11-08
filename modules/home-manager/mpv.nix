@@ -1,11 +1,13 @@
 {
   config,
   lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
 
 let
+  mediaEnabled = if osConfig != null then (osConfig.custom.desktop.media.enable or false) else true;
   a4k = "${pkgs.anime4k}";
 
   # Anime4K Mode A (Very Large / High-End GPU)
@@ -22,7 +24,7 @@ let
   # which only exists on hosts with custom.audio.virtualSurround enabled.
   surroundEnabled = config.custom.audio.virtualSurround.enable or false;
 in
-{
+lib.mkIf mediaEnabled {
   programs.mpv = {
     enable = true;
 

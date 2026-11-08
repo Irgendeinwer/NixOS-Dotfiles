@@ -19,7 +19,7 @@ let
     exec ${hyprctl} dispatch 'hl.dsp.dpms({ action = "on" })'
   '';
 in
-{
+lib.mkIf hyprlandEnabled {
   services.hypridle = {
     enable = true;
     settings = {

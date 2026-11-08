@@ -2,6 +2,7 @@ keys:
   - &user_julian age177xlgxsvy7pacq7t28s658ptk2aaecvhyzvyqumayfgcqth3ldwscr792q
   - &host_junixos age14sseru3gn4gruxuf7xgadjauyw78truclpcyedkzvfn7lvcqj5xqc6ejrc
   - &host_junixbook age1myg9n8p9ds5f2sle4f04a56v5r7cpgf87cgrfgqcm78c3g4aaa0qfm4tvw
+  - &host_junixsrv age1agzcllpjuy6u8370nyp5ecfrxavq8y55e8j4k7qsmfrga5ll2cxsqkzd3z
 
 creation_rules:
   - path_regex: secrets/common\.yaml$
@@ -10,6 +11,7 @@ creation_rules:
           - *user_julian
           - *host_junixos
           - *host_junixbook
+          - *host_junixsrv
   - path_regex: secrets/junixos\.yaml$
     key_groups:
       - age:
@@ -20,6 +22,11 @@ creation_rules:
       - age:
           - *user_julian
           - *host_junixbook
+  - path_regex: secrets/junixsrv\.yaml$
+    key_groups:
+      - age:
+          - *user_julian
+          - *host_junixsrv
   - path_regex: secrets/users/[^/]+\.yaml$
     key_groups:
       - age:

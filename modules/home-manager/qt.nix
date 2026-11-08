@@ -1,10 +1,13 @@
 {
   config,
   lib,
+  osConfig ? null,
   pkgs,
   ...
 }:
 let
+  hyprlandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
   p = config.custom.theme.palette;
   inherit (import ../theme/lib.nix { inherit lib; }) hex;
 
@@ -91,7 +94,7 @@ let
     };
   };
 in
-{
+lib.mkIf hyprlandEnabled {
   qt = {
     # mkDefault, so a host can still turn Qt theming off entirely
     enable = lib.mkDefault true;

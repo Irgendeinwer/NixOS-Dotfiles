@@ -70,10 +70,37 @@
           [ ];
 
       myOverlays = loadOverlays ./modules/overlays;
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
     in
     {
       # `nix fmt` formats every .nix file in the repo with nixfmt
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-tree;
+      formatter.${system} = pkgs.nixfmt-tree;
+
+      checks.${system} = {
+        remote-builder-mdns =
+          pkgs.runCommand "remote-builder-mdns-tests" { nativeBuildInputs = [ pkgs.python3 ]; }
+            ''
+              export REMOTE_BUILDER_MDNS_HELPER=${./modules/nixos/scripts/remote-builder-mdns.py}
+              python3 -B ${./tests/remote-builder-mdns.py}
+              mkdir -p "$out"
+            '';
+
+        container-options = import ./tests/container-options.nix {
+          inherit nixpkgs pkgs system;
+        };
+
+        remote-builder-options = import ./tests/remote-builder-options.nix {
+          inherit nixpkgs pkgs system;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+
+        without-userns-filter = pkgs.runCommandCC "without-userns-filter-test" { } ''
+          "$CC" -O2 -Wall -Wextra -Werror ${./tests/without-userns.c} -o filter-probe
+          ./filter-probe ${pkgs.callPackage ./pkgs/without-userns.nix { }}/bin/without-userns
+          mkdir -p "$out"
+        '';
+      };
 
       nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
         specialArgs = { inherit inputs; };
@@ -111,6 +138,27 @@
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
           nixos-hardware.nixosModules.common-pc-laptop # TLP power management
+
+          inputs.sops-nix.nixosModules.sops
+          inputs.lanzaboote.nixosModules.lanzaboote
+          inputs.home-manager.nixosModules.default
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+
+            home-manager.backupFileExtension = "backup";
+          }
+
+          inputs.nixvim.nixosModules.nixvim
+        ];
+      };
+
+      nixosConfigurations."junixsrv" = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
+        modules = [
+          { nixpkgs.overlays = myOverlays; }
+
+          ./hosts/junixsrv/configuration.nix
 
           inputs.sops-nix.nixosModules.sops
           inputs.lanzaboote.nixosModules.lanzaboote

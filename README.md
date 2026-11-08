@@ -10,6 +10,7 @@ desktop and user environment.
 | :---------- | :------ |
 | `junixos`   | Desktop |
 | `junixbook` | Laptop  |
+| `junixsrv`  | Server  |
 
 Hosts contribute their hardware configuration and pick the features they
 use. Everything else is shared.
@@ -33,16 +34,18 @@ use. Everything else is shared.
 
 ```
 .
-├── flake.nix          # Inputs and host outputs
-├── hosts/             # Hardware configuration and feature selection
+├── flake.nix         # Inputs and host outputs
+├── hosts/            # Hardware configuration and feature selection
 ├── modules/
-│   ├── nixos/         # System modules and the shared baseline
-│   ├── services/      # Optional services
-│   ├── home-manager/  # User environment and desktop programs
-│   ├── nixvim/        # Neovim configuration
-│   └── theme/         # Color palette (pure data, not a module)
-├── secrets/           # sops-encrypted secrets
-└── assets/            # Files referenced by the configuration
+│   ├── nixos/        # System modules and the shared baseline
+│   ├── services/     # Optional services
+│   ├── home-manager/ # User environment and desktop programs
+│   ├── nixvim/       # Neovim configuration
+│   └── theme/        # Color palette (pure data, not a module)
+├── pkgs/             # Local package definitions
+├── tests/            # Runtime and module-option regression checks
+├── secrets/          # sops-encrypted secrets
+└── assets/           # Files referenced by the configuration
 ```
 
 ## Usage

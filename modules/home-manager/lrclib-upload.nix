@@ -1,6 +1,13 @@
-{ pkgs, ... }:
+{
+  lib,
+  osConfig ? null,
+  pkgs,
+  ...
+}:
 
 let
+  mediaEnabled = if osConfig != null then (osConfig.custom.desktop.media.enable or false) else true;
+
   lrclib-upload = pkgs.writeShellApplication {
     name = "lrclib-upload";
 
@@ -14,6 +21,6 @@ let
     '';
   };
 in
-{
+lib.mkIf mediaEnabled {
   home.packages = [ lrclib-upload ];
 }
