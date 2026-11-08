@@ -32,7 +32,9 @@ let
         }
       ];
     };
-  lix =
+  lix = (evalContainer { lix = true; }).config;
+  # Non-root users get nixpkgs's nix-nswrapper ExecStart; only test our assertion here.
+  lixUnprivileged =
     (evalContainer {
       lix = true;
       daemonUser = "test";
@@ -68,6 +70,7 @@ assert !(cpp.nix.settings ? pasta-path);
 assert lix.environment.sessionVariables.NIX_REMOTE == "daemon";
 assert cpp.environment.sessionVariables.NIX_REMOTE == "daemon";
 assert wrapperAssertion lix == null;
+assert wrapperAssertion lixUnprivileged == null;
 assert wrapperAssertion disabled == null;
 assert wrapperAssertion cpp == null;
 assert !(wrapperAssertion cppUnprivileged).assertion;
