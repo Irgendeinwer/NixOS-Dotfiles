@@ -33,6 +33,12 @@ let
       ];
     };
   lix = (evalContainer { lix = true; }).config;
+  # Non-root users get nixpkgs's nix-nswrapper ExecStart; only test our assertion here.
+  lixUnprivileged =
+    (evalContainer {
+      lix = true;
+      daemonUser = "test";
+    }).config;
   cpp = (evalContainer { lix = false; }).config;
   cppUnprivileged =
     (evalContainer {
@@ -43,11 +49,13 @@ let
     (evalContainer {
       lix = false;
       enable = false;
+      daemonUser = "test";
     }).config;
+  # Successful assertions may have diagnostics that are only valid on failure.
   wrapperAssertion =
     cfg:
     lib.findFirst (
-      a: lib.hasPrefix "custom.system.container: the legacy C++ Nix" a.message
+      a: !a.assertion && lib.hasPrefix "custom.system.container: the legacy C++ Nix" a.message
     ) null cfg.assertions;
   cppExecStart = cpp.systemd.services.nix-daemon.serviceConfig.ExecStart;
   lixMonolithic = lix.systemd.units."nix-daemon.service".text;
@@ -62,8 +70,9 @@ assert !(cpp.nix.settings ? pasta-path);
 assert lix.environment.sessionVariables.NIX_REMOTE == "daemon";
 assert cpp.environment.sessionVariables.NIX_REMOTE == "daemon";
 assert wrapperAssertion lix == null;
+assert wrapperAssertion lixUnprivileged == null;
 assert wrapperAssertion disabled == null;
-assert (wrapperAssertion cpp).assertion;
+assert wrapperAssertion cpp == null;
 assert !(wrapperAssertion cppUnprivileged).assertion;
 assert builtins.head cppExecStart == "";
 assert lib.hasInfix "/bin/without-userns " (builtins.elemAt cppExecStart 1);
