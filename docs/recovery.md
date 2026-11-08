@@ -107,6 +107,8 @@ is gone for good.
    and the remote-builder module prefers that file when present. Because earlier
    ciphertext remains in Git history, rotate the SSH key and update the server's
    authorized key list as well.
+   The `junixsrv` configuration enables Discord notifications, so ensure the
+   `nix_nightly_webhook` key described below is present before deploying it.
 3. Build the rootfs archive and copy it to the Debian host:
    `nix build .#nixosConfigurations.junixsrv.config.system.build.tarball`
 4. Extract `result/tarball/nixos-container-junixsrv-x86_64-linux.tar.xz`
@@ -167,3 +169,67 @@ Nix user `nixbuilder`. Treat these as root-equivalent keys, even if adding SSH
 command restrictions: ordinary input-addressed `ssh-ng` builds need daemon
 trust, not merely permission to upload unsigned store paths. With
 `PrivateUsers=no`, the container is also not a strong boundary from the host.
+
+## Nightly notifications
+
+`junixsrv` reports the result of every `nix-nightly-update` run directly to
+Discord (`custom.services.buildServer.nightly.notify.enable = true`). This
+notification option is off by default on other hosts.
+
+- no updates: nixpkgs is already current; pre-build and self-upgrade still run
+- success: updated inputs were built and published
+- warning: activation was deferred because the updated `flake.lock` could not be
+  pushed or `main` advanced during the run. Staged roots are removed when
+  publication fails, so unpublished outputs may be garbage-collected. If `main`
+  advances after root promotion but before activation, tested closures remain
+  cached while activation is deferred; cache publication and the running
+  generation need not match.
+- failure: stage and exit code; the full log remains on the host at
+  `/var/lib/nix-nightly/last-run.log` (root-only, mode `0600`)
+
+Delivery is best-effort and never changes the nightly run's exit status. The
+service attempts a failure notification after its four-hour startup timeout,
+but systemd may still kill the unit before delivery completes. Raw logs are
+never sent to Discord or copied into the journal; log setup does not change
+activation's umask. Curl errors and response bodies are suppressed because they
+can echo webhook credentials; delivery warnings include only a numeric exit
+status. Summaries contain run metadata such as host names, lock and push status,
+duration, and upgrade state. Restrict access to the channel.
+The webhook sends the display name `Nix Nightly` and a public `avatar_url` for
+`assets/nightly-icon.png`, rendered from `assets/icon.svg`. Discord fetches the
+PNG from this repository's `main` branch, so it appears after the asset is
+published there. A failed pre-build is still reported as a failure even if no
+nixpkgs update was available.
+
+1. Create the webhook in Discord: *Server Settings → Integrations → Webhooks →
+   New Webhook*, then copy its URL.
+2. Store it as `nix_nightly_webhook` in the host secrets file — the URL is a
+   credential, so it must not be committed in plaintext:
+   `sops secrets/junixsrv.yaml`
+   ```yaml
+   nix_nightly_webhook: https://discord.com/api/webhooks/<id>/<token>
+   ```
+3. Deploy (`nh os switch -H junixsrv --target-host root@junixsrv.local`); the
+   secret is installed at `/run/secrets/nix_nightly_webhook` (`0400`, root) and
+   read at runtime.
+4. Smoke-test the webhook without triggering a full run:
+   ```bash
+   url="$(sudo cat /run/secrets/nix_nightly_webhook)"
+   if ! jq -n '{username:"Nix Nightly",embeds:[{title:"test",description:"junixsrv nightly hook"}]}' \
+     | curl --config <(printf 'url = "%s"\n' "$url") --globoff --proto '=https' \
+         --silent --fail --max-time 8 -H 'Content-Type: application/json' \
+         --data-binary @- >/dev/null 2>&1; then
+     echo 'Webhook smoke test failed; raw diagnostics suppressed to protect the URL.' >&2
+   fi
+   unset url
+   ```
+   The first real report then arrives after the next 02:15 run. A switch that
+   precedes step 2 fails in `sops-install-secrets` because the key does not
+   exist yet.
+
+GC-root promotion replaces host links individually, not as a single transaction.
+If a run is interrupted, the cache can temporarily retain a mixture of old and
+new closures; a later successful run rebuilds and replaces them. Staging data
+from older versions that contains a rollback transaction is retained under
+`/nix/var/nix/gcroots/nix-nightly/.staging.*` and reported in the nightly log;
+inspect it before removing it after a successful run.

@@ -26,9 +26,11 @@ jobs:
 
       - name: Test runtime helpers and module options
         run: >-
-          nix build .#checks.x86_64-linux.remote-builder-mdns
+          nix build .#checks.x86_64-linux.nightly-runtime
+          .#checks.x86_64-linux.remote-builder-mdns
           .#checks.x86_64-linux.container-options
           .#checks.x86_64-linux.remote-builder-options
+          .#checks.x86_64-linux.build-server-options
           .#checks.x86_64-linux.without-userns-filter
 
       - name: Evaluate junixos

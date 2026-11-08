@@ -78,6 +78,32 @@
       formatter.${system} = pkgs.nixfmt-tree;
 
       checks.${system} = {
+        nightly-runtime =
+          pkgs.runCommand "nightly-runtime-tests"
+            {
+              nativeBuildInputs = with pkgs; [
+                bash
+                coreutils
+                git
+                gnugrep
+                jq
+              ];
+            }
+            ''
+              export NIGHTLY_SUMMARY_HELPER=${./modules/services/scripts/nightly-summary.sh}
+              export NIGHTLY_NOTIFY_HELPER=${./modules/services/scripts/nightly-notify.sh}
+              export NIGHTLY_FINISH_HELPER=${./modules/services/scripts/nightly-finish.sh}
+              export NIGHTLY_GCROOTS_HELPER=${./modules/services/scripts/nightly-gcroots.sh}
+              export NIGHTLY_LOG_HELPER=${./modules/services/scripts/nightly-log.sh}
+              export NIGHTLY_ACTIVATE_HELPER=${./modules/services/scripts/nightly-activate.sh}
+              export NIGHTLY_SIGNALS_HELPER=${./modules/services/scripts/nightly-signals.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-notify.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-gcroots.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-log.sh}
+              ${pkgs.bash}/bin/bash ${./tests/nightly-flow.sh}
+              mkdir -p "$out"
+            '';
+
         remote-builder-mdns =
           pkgs.runCommand "remote-builder-mdns-tests" { nativeBuildInputs = [ pkgs.python3 ]; }
             ''
@@ -91,6 +117,11 @@
         };
 
         remote-builder-options = import ./tests/remote-builder-options.nix {
+          inherit nixpkgs pkgs system;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+
+        build-server-options = import ./tests/build-server-options.nix {
           inherit nixpkgs pkgs system;
           sopsModule = inputs.sops-nix.nixosModules.sops;
         };
