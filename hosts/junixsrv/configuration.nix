@@ -15,6 +15,13 @@
 
   networking.hostName = "junixsrv";
 
+  # Per-client parallelism; Debian's parent cgroup enforces the aggregate
+  # CPU/memory budget for this container (see docs/recovery.md).
+  nix.settings = {
+    max-jobs = 3;
+    cores = 3;
+  };
+
   environment.systemPackages = with pkgs; [
     git
     htop

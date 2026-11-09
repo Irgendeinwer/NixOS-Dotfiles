@@ -15,6 +15,9 @@
   networking.hostName = "junixbook";
   system.stateVersion = "24.05";
 
+  # ssh-ng forwards the client's core setting; this also applies locally.
+  nix.settings.cores = 3;
+
   # Corporate/School SSL Certificate
   environment.etc."ssl/certs/iserv.pem".source = ../../assets/iserv.pem;
 
@@ -48,7 +51,10 @@
         upower.enable = true;
         ignorePowerKey = true;
       };
-      remoteBuilder.enable = true;
+      remoteBuilder = {
+        enable = true;
+        maxJobs = 3;
+      };
     };
 
     hardware.bluetooth.enable = true;

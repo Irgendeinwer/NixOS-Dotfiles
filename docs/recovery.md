@@ -140,6 +140,10 @@ is gone for good.
    # /etc/systemd/system/systemd-nspawn@junixsrv.service.d/override.conf
    [Service]
    Environment=SYSTEMD_NSPAWN_UNIFIED_HIERARCHY=1
+   CPUQuota=960%
+   MemoryHigh=10G
+   MemoryMax=12G
+   MemorySwapMax=1G
    ```
    `MACVLAN=` requires a wired Ethernet interface (802.11 Wi-Fi APs reject
    secondary MACs) and isolates direct IP traffic between the Debian host
