@@ -116,6 +116,10 @@
         enable = true;
         lact.enable = true;
       };
+      xbox-controller = {
+        enable = true;
+        disableLed = true;
+      };
     };
 
     desktop = {
