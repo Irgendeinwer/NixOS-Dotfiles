@@ -58,6 +58,9 @@ them independently. For example, an X11 session can set
 Wayland compositor can set `custom.desktop.wayland.enable = true` without
 Hyprland. These options do not install or select an alternative compositor or
 session manager. For a non-Hyprland greetd session, set `greetd.command` too.
+The baseline does not enable XDG portals on its own. Hyprland enables its own
+backend and uses the portal for `xdg-open`; other sessions that need portals
+must supply a backend and select it in their session configuration.
 
 The shared desktop baseline supplies fonts, GTK/Qt styling, Kitty, rofi,
 Xcursor and failure-notification templates. The session still needs a
@@ -107,10 +110,11 @@ while their own explicit options still apply.
 | `custom.theme.wallpaper` | `path` (nullable string), `backend` (`hyprpaper` or `mpvpaper`, default `hyprpaper`). `hyprpaper` requires Hyprland; `mpvpaper` runs on compatible layer-shell Wayland compositors, with Hyprland-only autopause. A null path disables both. |
 | `custom.audio.virtualSurround` | `enable` defaults false; this is an independent Home Manager option. |
 | `custom.desktop.media` | `royalPresetProfile` defaults to `balanced`. Integrated NixOS uses the **system** option and media toggle instead; the Home Manager value is for standalone use. |
+| `custom.desktop.zen` | `profilePath` (nullable string) is available when importing `modules/zen/profile.nix`. Set it to a registered existing directory relative to `programs.zen-browser.profilesPath` to adopt it; `null` disables adoption without changing `configPath`. |
 
-Zen's `programs.zen-browser.*` options are upstream Home Manager options, not
-`custom.*`. The desktop and laptop opt into a shared profile configuration with
-host-specific existing paths; standalone Home Manager does not adopt a profile.
+The desktop and laptop keep the upstream Home Manager option
+`programs.zen-browser.configPath` set to `".zen"` even when adoption is disabled.
+Standalone Home Manager does not adopt a profile by default.
 See [Zen profile adoption](zen-browser.md) before switching.
 
 ## Palette

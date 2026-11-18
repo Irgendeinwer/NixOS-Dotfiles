@@ -2,6 +2,7 @@
   nixpkgs,
   pkgs,
   self,
+  sopsModule,
 }:
 let
   inherit (nixpkgs) lib;
@@ -127,6 +128,29 @@ let
   optOutHome = home desktopOptOut { };
   standaloneHome = home null { };
 
+  # Exercise the real NixOS base and portal modules, not just the desktop
+  # toggle declarations. i3 does not automatically provide a portal backend.
+  x11System =
+    (nixpkgs.lib.nixosSystem {
+      modules = [
+        sopsModule
+        ../modules/nixos/base.nix
+        ../modules/nixos/desktop.nix
+        ../modules/nixos/hypr.nix
+        ../modules/nixos/greetd.nix
+        {
+          networking.hostName = "x11-test";
+          nixpkgs.hostPlatform = pkgs.stdenv.hostPlatform.system;
+          system.stateVersion = "26.11";
+          custom.desktop.enable = true;
+          services.xserver = {
+            enable = true;
+            windowManager.i3.enable = true;
+          };
+        }
+      ];
+    }).config;
+
   monitorConfig =
     monitors:
     (system { custom.desktop.hyprland.monitors = monitors; }).custom.desktop.hyprland.monitors;
@@ -229,6 +253,13 @@ assert x11Home.programs.kitty.enable && x11Home.programs.rofi.enable;
 assert x11Home.home.pointerCursor.enable && !x11Home.home.pointerCursor.hyprcursor.enable;
 assert !(x11Home.gtk.gtk3.extraConfig ? gtk-decoration-layout);
 assert !x11Home.services.mako.enable;
+assert x11System.services.xserver.windowManager.i3.enable && !x11System.programs.hyprland.enable;
+assert !x11System.xdg.portal.enable && x11System.xdg.portal.extraPortals == [ ];
+assert !x11System.xdg.portal.xdgOpenUsePortal;
+assert desktopHost.xdg.portal.enable;
+assert builtins.elem desktopHost.programs.hyprland.portalPackage
+  desktopHost.xdg.portal.extraPortals;
+assert desktopHost.xdg.portal.xdgOpenUsePortal;
 assert wayland.custom.desktop.enable && !wayland.custom.desktop.hyprland.enable;
 assert waylandHome.services.mako.enable;
 assert waylandHome.systemd.user.services ? mpvpaper;

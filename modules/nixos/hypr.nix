@@ -101,6 +101,9 @@ in
       hyprlock.enable = true;
     };
 
+    # programs.hyprland supplies and enables its portal backend.
+    xdg.portal.xdgOpenUsePortal = lib.mkDefault true;
+
     # greetd's boot-time auto-login skips the password prompt, so start that
     # session behind hyprlock: Hyprland locks before the first frame, with no
     # flash of the desktop. Logging in through tuigreet stays a single prompt.

@@ -3,8 +3,8 @@
 
 Run `check` before Home Manager's write boundary and `apply` after it. Mod
 assets are fixed-output Nix store files; no network access is performed here.
-Only regular files with recognized hashes are replaced. Browser-owned registry
-entries and unlisted files are retained, and replaced files get unique backups.
+Only recognized regular files are replaced. The browser's profile registry is
+never written; unlisted mods are retained, and replaced files get unique backups.
 """
 
 import argparse
@@ -96,6 +96,64 @@ def snapshot(path):
             return Snapshot(path, stream.read(), stat.S_IMODE(current.st_mode) & 0o777)
     except OSError as exc:
         raise AdoptionError(f"cannot safely read {path}: {exc}") from exc
+
+
+def profile_registration(path, profile):
+    """Confirm that the browser-owned registry lists the existing profile."""
+    registry = snapshot(path)
+    if registry.data is None:
+        raise AdoptionError(f"profile registry is missing: {path}")
+    try:
+        encoding = "utf-16" if registry.data.startswith(b"\xff\xfe") else "utf-8-sig"
+        text = registry.data.decode(encoding)
+    except UnicodeDecodeError as exc:
+        raise AdoptionError(f"invalid Zen profile registry {path}: {exc}") from exc
+    if "\0" in text:
+        raise AdoptionError(f"invalid Zen profile registry {path}: contains a NUL byte")
+
+    # Gecko's INI parser preserves key case and the exact value after '='.
+    # Generic INI trimming could silently turn a different path into ours.
+    sections = {}
+    section = None
+    for number, raw_line in enumerate(re.split(r"\r\n|\r|\n", text), start=1):
+        line = raw_line.lstrip(" \t")
+        if not line or line.startswith((";", "#")):
+            continue
+        if line.startswith("["):
+            heading = re.fullmatch(r"\[([^\[\]]+)\][ \t]*", line)
+            if heading and heading[1] not in sections:
+                section = sections[heading[1]] = {}
+                continue
+        elif section is not None:
+            key, sep, value = line.partition("=")
+            if sep and key and key not in section:
+                section[key] = value
+                continue
+        raise AdoptionError(f"invalid Zen profile registry {path} at line {number}")
+
+    # Gecko reads Profile0, Profile1, ... and stops at the first missing
+    # IsRelative key. Install/default entries do not register profiles.
+    for index in range(len(sections)):
+        entry = sections.get(f"Profile{index}", {})
+        relative = entry.get("IsRelative")
+        if relative is None:
+            break
+        if not entry.get("Name") or not entry.get("Path"):
+            continue
+        candidate = Path(entry["Path"])
+        if relative == "1" and not candidate.is_absolute():
+            candidate = path.parent / candidate
+        elif relative != "0" or not candidate.is_absolute():
+            continue
+        try:
+            if candidate.samefile(profile):
+                return registry
+        except (FileNotFoundError, NotADirectoryError):
+            continue  # A different registered profile may no longer be on disk.
+    raise AdoptionError(
+        f"{profile} is not registered in {path}; verify the active Zen profile "
+        "and update custom.desktop.zen.profilePath (see docs/zen-browser.md)"
+    )
 
 
 def parse_json(data, path):
@@ -221,8 +279,10 @@ def same_stylesheet(left, right):
     def without_timestamp(data):
         if not data.startswith(CSS_PREFIX):
             return data
-        _, sep, rest = data[len(CSS_PREFIX) :].partition(b"\n")
-        return CSS_PREFIX + b"<timestamp>\n" + rest if sep else data
+        timestamp, sep, rest = data[len(CSS_PREFIX) :].partition(b"\n")
+        if not sep or b"*/" in timestamp:
+            return data
+        return CSS_PREFIX + b"<timestamp>\n" + rest
 
     return left is not None and without_timestamp(left) == without_timestamp(right)
 
@@ -298,6 +358,7 @@ def plan(profile, mods):
     new_state = {"schema": 1, "managed": dict(state["managed"])}
     merged = {}
     css_by_id = {}
+    old_css_by_id = {}
     declared = set()
 
     for entry, files, contents in mods:
@@ -318,6 +379,8 @@ def plan(profile, mods):
         for name, spec in files.items():
             old = watch(mod_dir / name)
             if old.data is not None:
+                if name == "chrome.css":
+                    old_css_by_id[mod_id] = old.data
                 accepted = {spec["sha256"], *spec.get("acceptedPreviousSha256", [])}
                 if name in recorded:
                     accepted.add(recorded[name])
@@ -355,6 +418,7 @@ def plan(profile, mods):
                 f"invalid UTF-8 in extra mod stylesheet: {old.path}"
             ) from exc
         css_by_id[mod_id] = old.data
+        old_css_by_id[mod_id] = old.data
 
     # Semantic comparison avoids rewriting browser-formatted JSON on every
     # activation, but order matters for CSS cascade and is made deterministic.
@@ -367,6 +431,25 @@ def plan(profile, mods):
     css_snap = watch(chrome / "zen-themes.css")
     css = stylesheet(merged, css_by_id)
     if not same_stylesheet(css_snap.data, css):
+        # A generated header alone doesn't prove the body is unedited. Compare
+        # against the old on-disk registry and assets, or the empty output Zen
+        # emits when all mods are disabled globally.
+        if css_snap.data is not None:
+            enabled = {
+                mod_id for mod_id, entry in registry.items() if entry.get("enabled", True)
+            }
+            if not (
+                same_stylesheet(css_snap.data, stylesheet({}, {}))
+                or (
+                    enabled <= old_css_by_id.keys()
+                    and same_stylesheet(css_snap.data, stylesheet(registry, old_css_by_id))
+                )
+            ):
+                raise AdoptionError(
+                    f"{css_snap.path} does not match generated Zen Mods CSS. "
+                    "Back it up, migrate any local rules into managed userChrome.css, "
+                    "and move it aside before switching (see docs/zen-browser.md)"
+                )
         change(css_snap, css)
     if state != new_state or state_snap.data is None:
         change(state_snap, encoded_json(new_state))
@@ -540,6 +623,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=["check", "apply"])
     parser.add_argument("--profile", type=Path, required=True)
+    parser.add_argument("--registry", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--backup-root", type=Path, required=True)
     args = parser.parse_args()
@@ -548,12 +632,22 @@ def main():
             raise AdoptionError(
                 f"existing profile directory is missing: {args.profile}"
             )
+        registry = profile_registration(args.registry, args.profile)
         require_dir(args.backup_root, missing_ok=True)
         mods = load_mods(args.manifest)
-        with profile_lock(args.profile, create=args.mode == "apply"):
+        applying = args.mode == "apply"
+        if applying and not exists(args.profile / ".parentlock"):
+            # On first use, refuse collisions before even creating the lock
+            # file. The plan is still rebuilt under the real lock below.
+            plan(args.profile, mods)
+        with profile_lock(args.profile, create=applying):
+            if snapshot(registry.path) != registry:
+                raise AdoptionError(
+                    f"profile registry changed while acquiring lock: {registry.path}"
+                )
             writes, watches = plan(args.profile, mods)
-            if args.mode == "apply":
-                apply(args.profile, args.backup_root, writes, watches)
+            if applying:
+                apply(args.profile, args.backup_root, writes, [registry, *watches])
             else:
                 print(f"zen-mods: preflight passed ({len(writes)} files would change)")
     except (AdoptionError, OSError, ValueError) as exc:

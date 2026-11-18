@@ -111,11 +111,8 @@ in
       pkgs.wl-clipboard
     ];
 
-    # XDG Portals & Polkit
-    xdg.portal = lib.mkIf hasDesktop {
-      enable = true;
-      xdgOpenUsePortal = true;
-    };
+    # Sessions select their own XDG portal backends. The desktop baseline
+    # also works with window managers that do not provide a portal.
     security.polkit.enable = lib.mkIf (!isContainer) true;
 
     # System security & diagnostics

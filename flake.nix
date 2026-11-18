@@ -156,10 +156,13 @@
           sopsModule = inputs.sops-nix.nixosModules.sops;
         };
 
-        desktop-options = import ./tests/desktop-options.nix { inherit nixpkgs pkgs self; };
+        desktop-options = import ./tests/desktop-options.nix {
+          inherit nixpkgs pkgs self;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
         standalone-home = import ./tests/standalone-home.nix { inherit inputs pkgs; };
         theme-options = import ./tests/theme-options.nix { inherit nixpkgs pkgs self; };
-        zen-options = import ./tests/zen-options.nix { inherit nixpkgs pkgs self; };
+        zen-options = import ./tests/zen-options.nix { inherit inputs pkgs self; };
 
         without-userns-filter = pkgs.runCommandCC "without-userns-filter-test" { } ''
           "$CC" -O2 -Wall -Wextra -Werror ${./tests/without-userns.c} -o filter-probe

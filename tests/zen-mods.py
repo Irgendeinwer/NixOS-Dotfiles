@@ -49,6 +49,11 @@ class ZenModsTests(unittest.TestCase):
         self.base = Path(self.temp.name)
         self.profile = self.base / "home with spaces" / ".zen" / "existing.default"
         self.profile.mkdir(parents=True)
+        self.profile_registry = self.profile.parent / "profiles.ini"
+        self.profile_registry.write_text(
+            f"[Profile0]\nName=default\nIsRelative=1\nPath={self.profile.name}\n",
+            encoding="utf-8",
+        )
         self.backups = self.base / "state with spaces" / "zen-mod-backups"
         self.sources = self.base / "sources"
         self.sources.mkdir()
@@ -116,6 +121,8 @@ class ZenModsTests(unittest.TestCase):
                 mode,
                 "--profile",
                 str(self.profile),
+                "--registry",
+                str(self.profile_registry),
                 "--manifest",
                 str(self.manifest_path),
                 "--backup-root",
@@ -141,6 +148,65 @@ class ZenModsTests(unittest.TestCase):
         path = self.profile / "zen-themes.json"
         path.write_text(json.dumps(value), encoding="utf-8")
         return path
+
+    def test_profile_registry_requires_a_registered_profile(self):
+        original = self.profile_registry.read_bytes()
+        self.profile.with_name("other.default").mkdir()
+        # An install section alone is not a profile entry. The relative and
+        # absolute flags must also agree with the form of the registered path.
+        for contents in (
+            b"[Profile0]\nName=other\nIsRelative=1\nPath=other.default\n",
+            f"[Install123]\nDefault={self.profile.name}\n".encode(),
+            f"[Profile0]\nName=default\nIsRelative=0\nPath={self.profile.name}\n".encode(),
+            b"[DEFAULT]\nName=default\nIsRelative=1\nPath=existing.default\n[Profile0]\n",
+            original.replace(b"[Profile0]", b"[Profile1]"),
+            original.replace(b"Path=", b"Path ="),
+            original.replace(b".default\n", b".default \n"),
+        ):
+            with self.subTest(registry=contents):
+                self.profile_registry.write_bytes(contents)
+                for mode in ("check", "apply"):
+                    result = self.call(mode, ok=False)
+                    self.assertIn("is not registered", result.stderr)
+                    self.assertEqual(tree(self.profile), {})
+                    self.assertEqual(self.profile_registry.read_bytes(), contents)
+                    self.assertFalse(self.backups.exists())
+        self.profile_registry.write_bytes(b"not an INI file")
+        self.assertIn("invalid Zen profile registry", self.call("check", ok=False).stderr)
+        self.profile_registry.unlink()
+        self.assertIn("profile registry is missing", self.call("apply", ok=False).stderr)
+        linked_registry = self.base / "prior-home-manager-files" / "profiles.ini"
+        linked_registry.parent.mkdir()
+        linked_registry.write_bytes(original)
+        self.profile_registry.symlink_to(linked_registry)
+        self.assertIn("not a symlink", self.call("apply", ok=False).stderr)
+        self.assertEqual(linked_registry.read_bytes(), original)
+        self.assertEqual(tree(self.profile), {})
+        self.profile_registry.unlink()
+        # Keep install entries and other profiles byte-for-byte, including an
+        # older registered directory that is no longer on disk.
+        registered = (
+            "[Profile0]\nName=old\nIsRelative=1\nPath=old.default\n\n"
+            f"[Profile1]\nName=default\nIsRelative=0\nPath={self.profile}\n\n"
+            f"[Install123]\nDefault={self.profile}\nLocked=1\n"
+        ).encode()
+        self.profile_registry.write_bytes(registered)
+        self.call("apply")
+        self.assertTrue((self.profile / "zen-themes.json").is_file())
+        self.assertEqual(self.profile_registry.read_bytes(), registered)
+
+    def test_relative_registry_path_preserves_whitespace_and_handles_crlf(self):
+        renamed = self.profile.with_name("a recovered profile with trailing space ")
+        self.profile.rename(renamed)
+        self.profile = renamed
+        registry = (
+            f"[Profile0]\r\nName=default\r\nIsRelative=1\r\nPath={renamed.name}\r\n"
+        ).encode("utf-8-sig")
+        self.profile_registry.write_bytes(registry)
+        self.call("check")
+        self.call("apply")
+        self.assertTrue((renamed / "zen-themes.json").is_file())
+        self.assertEqual(self.profile_registry.read_bytes(), registry)
 
     def test_empty_profile_check_is_read_only_and_apply_is_idempotent(self):
         (self.profile / "prefs.js").write_text("personal prefs", encoding="utf-8")
@@ -203,7 +269,7 @@ class ZenModsTests(unittest.TestCase):
             A: {
                 "id": A,
                 "name": "old name",
-                "enabled": False,
+                "enabled": True,
                 "customProperty": {"keep": 1},
             },
             DISABLED: {"id": DISABLED, "name": "Disabled", "enabled": False},
@@ -212,7 +278,22 @@ class ZenModsTests(unittest.TestCase):
         original_registry = registry_path.read_bytes()
         original_mode = registry_path.stat().st_mode & 0o777
         aggregate = self.profile / "chrome" / "zen-themes.css"
-        aggregate.write_bytes(b"/* existing generated or personal CSS */\n")
+        # Match the pinned Zen browser's wire format independently of our
+        # renderer, including an older approved version of a managed asset.
+        old_aggregate = (
+            b"/* Zen Mods - Generated by ZenMods.\n"
+            b"* FILE GENERATED AT: Tuesday, November 17, 2026 at 2:00:00 PM GMT\n"
+            b"* DO NOT EDIT THIS FILE DIRECTLY!\n"
+            b"* Your changes will be overwritten.\n"
+            b"* Instead, go to the preferences and edit the mods there.\n"
+            b"*/\n"
+            b"\n/* Name: Extra */\n/* Description: Kept */\n/* Author: @Other */\n"
+            + extra_css
+            + b"\n/* Name: old name */\n/* Description: undefined */\n/* Author: @undefined */\n"
+            + self.a_old
+            + b"\n/* End of Zen Mods */\n"
+        )
+        aggregate.write_bytes(old_aggregate)
         self.call("check")
         result = self.call("apply")
         self.assertIn("saved replaced files", result.stdout)
@@ -224,7 +305,7 @@ class ZenModsTests(unittest.TestCase):
         self.assertEqual((backup / "zen-themes.json").read_bytes(), original_registry)
         self.assertEqual(
             (backup / "chrome" / "zen-themes.css").read_bytes(),
-            b"/* existing generated or personal CSS */\n",
+            old_aggregate,
         )
         report = json.loads((backup / "backup-manifest.json").read_text())
         self.assertIn(f"chrome/zen-themes/{B}/chrome.css", report["created"])
@@ -245,6 +326,41 @@ class ZenModsTests(unittest.TestCase):
             (self.profile / "chrome" / "zen-themes" / LEFTOVER / "notes.txt").exists()
         )
         self.assertEqual(backup.stat().st_mode & 0o777, 0o700)
+
+    def test_unknown_aggregate_is_not_overwritten_even_with_a_generated_header(self):
+        self.call("apply")
+        aggregate = self.profile / "chrome" / "zen-themes.css"
+        generated = aggregate.read_bytes()
+        # Exercise refusal when no lock file has been created yet, too.
+        (self.profile / ".parentlock").unlink()
+        custom = b".personal { color: red; }\n"
+        for contents in (
+            custom,
+            generated.replace(b"/* End of Zen Mods */", custom + b"/* End of Zen Mods */"),
+            generated.replace(
+                b"NixOS-Dotfiles reconciliation", b"*/ " + custom.strip() + b" /*"
+            ),
+        ):
+            with self.subTest(css=contents):
+                aggregate.write_bytes(contents)
+                before = tree(self.profile)
+                for mode in ("check", "apply"):
+                    result = self.call(mode, ok=False)
+                    self.assertIn("does not match generated Zen Mods CSS", result.stderr)
+                    self.assertEqual(tree(self.profile), before)
+                    self.assertFalse(self.backups.exists())
+
+    def test_generated_empty_aggregate_from_disabling_all_mods_can_be_replaced(self):
+        self.call("apply")
+        aggregate = self.profile / "chrome" / "zen-themes.css"
+        generated = aggregate.read_bytes()
+        empty = zen.stylesheet({}, {})
+        aggregate.write_bytes(empty)
+        self.call("check")
+        self.call("apply")
+        self.assertEqual(aggregate.read_bytes(), generated)
+        backup = next(self.backups.iterdir())
+        self.assertEqual((backup / "chrome" / "zen-themes.css").read_bytes(), empty)
 
     def test_unknown_local_hash_stops_check_and_apply_without_data_loss(self):
         path = self.mod_file(A, "chrome.css", b"local custom CSS")

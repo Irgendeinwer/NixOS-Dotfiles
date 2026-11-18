@@ -1,10 +1,10 @@
 {
-  nixpkgs,
+  inputs,
   pkgs,
   self,
 }:
 let
-  inherit (nixpkgs) lib;
+  inherit (inputs.nixpkgs) lib;
   home = cfg: cfg.home-manager.users.${cfg.custom.user};
   desktop = home self.nixosConfigurations.junixos.config;
   laptop = home self.nixosConfigurations.junixbook.config;
@@ -52,22 +52,59 @@ let
       && builtins.elemAt args (i + 1) == key
       && builtins.elemAt args (i + 2) == value
     ) (lib.range 0 (builtins.length args - 3));
+  absoluteHomePath =
+    homeConfig: path:
+    if lib.hasPrefix "/" path then path else "${homeConfig.home.homeDirectory}/${path}";
   managedZenFiles =
     homeConfig:
-    lib.filterAttrs (_: file: file.enable && lib.hasPrefix ".zen/" file.target) homeConfig.home.file;
-  checkHost =
-    homeConfig: path:
+    let
+      zen = homeConfig.programs.zen-browser;
+      inDir =
+        path: file:
+        lib.hasPrefix "${absoluteHomePath homeConfig path}/" (absoluteHomePath homeConfig file.target);
+    in
+    lib.filterAttrs (
+      _: file: file.enable && (inDir zen.configPath file || inDir zen.profilesPath file)
+    ) homeConfig.home.file;
+  checkWrapper =
+    homeConfig:
+    let
+      zen = homeConfig.programs.zen-browser;
+      args = zen.finalPackage.makeWrapperArgs;
+    in
+    assert zen.enable;
+    assert wrapperHas args "MOZ_APP_DATA" (absoluteHomePath homeConfig zen.configPath);
+    assert wrapperHas args "MOZ_LEGACY_PROFILES" "1";
+    true;
+  checkUnmanaged =
+    homeConfig:
+    let
+      zen = homeConfig.programs.zen-browser;
+      activation = homeConfig.home.activation;
+    in
+    assert checkWrapper homeConfig;
+    assert zen.profiles == { } && managedZenFiles homeConfig == { };
+    assert !(activation ? checkExistingZenProfile) && !(activation ? checkZenMods);
+    assert !(activation ? reconcileZenMods) && !(activation ? zen-browser-default);
+    assert !(zen.policies ? ExtensionSettings);
+    true;
+  checkAdopted =
+    homeConfig:
     let
       zen = homeConfig.programs.zen-browser;
       profile = zen.profiles.default;
       files = managedZenFiles homeConfig;
-      base = ".zen/${path}";
-      settings = profile.settings;
-      policies = zen.policies.ExtensionSettings;
+      path = homeConfig.custom.desktop.zen.profilePath;
+      base = "${zen.profilesPath}/${path}";
+      registry = "${zen.configPath}/profiles.ini";
+      profileArg = lib.escapeShellArg (absoluteHomePath homeConfig base);
+      registryArg = lib.escapeShellArg (absoluteHomePath homeConfig registry);
+      palette = homeConfig.custom.theme.palette;
+      urlbarColor = if palette.bg_current_word != null then palette.bg_current_word else palette.bg1;
     in
-    assert zen.enable && zen.configPath == ".zen" && zen.profilesPath == ".zen";
+    assert checkWrapper homeConfig;
     assert profile.id == 0 && profile.isDefault && profile.path == path;
-    assert !homeConfig.home.file.".zen/profiles.ini".enable;
+    assert !homeConfig.home.file."${registry}".enable;
     assert
       builtins.attrNames files == [
         "${base}/.keep"
@@ -80,48 +117,23 @@ let
     assert builtins.elem "writeBoundary" homeConfig.home.activation.reconcileZenMods.after;
     assert builtins.elem "linkGeneration" homeConfig.home.activation.reconcileZenMods.before;
     assert builtins.elem "zen-browser-default" homeConfig.home.activation.reconcileZenMods.before;
-    assert lib.hasInfix "${homeConfig.home.homeDirectory}/${base}"
-      homeConfig.home.activation.checkZenMods.data;
+    assert lib.hasInfix profileArg homeConfig.home.activation.checkExistingZenProfile.data;
+    assert lib.hasInfix "--profile ${profileArg}" homeConfig.home.activation.checkZenMods.data;
+    assert lib.hasInfix "--registry ${registryArg}" homeConfig.home.activation.checkZenMods.data;
     assert lib.hasInfix "zen-pinned-mods.json" homeConfig.home.activation.checkZenMods.data;
     assert lib.hasInfix "DRY_RUN" homeConfig.home.activation.reconcileZenMods.data;
-    assert
-      settings == (
-        reportedPreferences
-        // {
-          "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
-          "zen.mods.auto-update" = false;
-          "zen.mods.last-update" = 0;
-          "zen.mods.milestone" = lib.getVersion zen.package;
-        }
-      );
-    assert settings."browser.aboutConfig.showWarning" == false;
-    assert settings."toolkit.legacyUserProfileCustomizations.stylesheets";
-    assert settings."mod.remove-tab-x.scope" == "all";
-    assert settings."theme.no_gaps.border" && !settings."theme.no_gaps.gaps";
-    assert settings."uc.hidecontext.icons" && !settings."uc.hidecontext.navigation";
-    assert settings."uc.private-browsing-top-bar.highlighting-style" == "gradient";
-    assert
-      settings."uc.urlbar.custom-bg-color" == "${homeConfig.custom.theme.palette.bg_current_word} ";
-    assert settings."uc.urlbar.custom-bg-color.mode" == "AlwaysColor";
-    assert settings."zen.tab-unloader.timeout-minutes" == 60;
-    assert !settings."zen.mods.auto-update" && !settings."zen.themes.disable-all";
-    assert settings."zen.mods.last-update" == 0;
-    assert settings."zen.mods.milestone" == lib.getVersion zen.package;
-    assert !settings."zen.view.use-single-toolbar" && settings."zen.workspaces.continue-where-left-off";
-    assert !(settings ? "extensions.webextensions.ExtensionStorageIDB.enabled");
-    assert lib.hasInfix homeConfig.custom.theme.palette.accent profile.userChrome;
-    assert lib.hasInfix homeConfig.custom.theme.palette.bg0 profile.userChrome;
+    assert lib.hasInfix "--profile ${profileArg}" homeConfig.home.activation.reconcileZenMods.data;
+    assert lib.hasInfix "--registry ${registryArg}" homeConfig.home.activation.reconcileZenMods.data;
+    assert profile.settings."uc.urlbar.custom-bg-color" == "${urlbarColor} ";
+    assert profile.settings."toolkit.legacyUserProfileCustomizations.stylesheets";
+    assert !profile.settings."zen.mods.auto-update" && !profile.settings."zen.themes.disable-all";
+    assert profile.settings."zen.mods.last-update" == 0;
+    assert profile.settings."zen.mods.milestone" == lib.getVersion zen.package;
+    assert !(profile.settings ? "extensions.webextensions.ExtensionStorageIDB.enabled");
+    assert lib.hasInfix "--zen-primary-color: ${palette.accent} !important;" profile.userChrome;
+    assert lib.hasInfix "--toolbar-bgcolor: ${palette.bg0} !important;" profile.userChrome;
+    assert lib.hasInfix "--zen-urlbar-background: ${urlbarColor} !important;" profile.userChrome;
     assert !(lib.hasInfix "zen-themes.css" profile.userChrome);
-    assert lib.hasInfix ''user_pref("mod.remove-tab-x.scope", "all");'' files."${base}/user.js".text;
-    assert builtins.attrNames policies == lib.sort builtins.lessThan extensionIds;
-    assert lib.all (
-      id:
-      policies.${id}.installation_mode == "normal_installed"
-      &&
-        policies.${id}.install_url
-        == "https://addons.mozilla.org/firefox/downloads/latest/${lib.escapeURL id}/latest.xpi"
-      && !(policies.${id} ? updates_disabled)
-    ) extensionIds;
     assert profile.extensions.packages == [ ] && profile.extensions.settings == { };
     # Avoid the binary wrapper's forced links in the shared native-host directory.
     assert zen.nativeMessagingHosts == [ ];
@@ -131,9 +143,6 @@ let
     assert !profile.bookmarks.enable && !profile.search.enable && !profile.handlers.enable;
     assert !zen.setAsDefaultBrowser;
     assert zen.policies.DisableAppUpdate && zen.policies.DisableTelemetry;
-    assert wrapperHas zen.finalPackage.makeWrapperArgs "MOZ_APP_DATA"
-      "${homeConfig.home.homeDirectory}/.zen";
-    assert wrapperHas zen.finalPackage.makeWrapperArgs "MOZ_LEGACY_PROFILES" "1";
     # These upstream cleanup fragments have no declared presets/buttons. The
     # preflight blocks their old markers instead of letting them alter prefs.js.
     assert
@@ -142,30 +151,71 @@ let
         "extension buttons"
       ];
     true;
-  fallbackPalette = desktop.custom.theme.palette // {
-    bg_current_word = null;
-    bg1 = "#010203";
+  checkHost =
+    homeConfig:
+    if (homeConfig.custom.desktop.zen.profilePath or null) == null then
+      checkUnmanaged homeConfig
+    else
+      checkAdopted homeConfig;
+
+  # Exercise recovery without depending on either machine's profile name or
+  # palette. The wrapper must keep the same root before and after adoption.
+  fixture =
+    profilePath:
+    (inputs.home-manager.lib.homeManagerConfiguration {
+      inherit pkgs;
+      extraSpecialArgs = { inherit inputs; };
+      modules = [
+        ../modules/home-manager/theme.nix
+        ../modules/home-manager/zen-browser.nix
+        ../modules/zen/profile.nix
+        {
+          home = {
+            username = "test";
+            homeDirectory = "/home/test";
+            stateVersion = "24.05";
+          };
+          programs.zen-browser.configPath = ".zen";
+          custom.desktop.zen = { inherit profilePath; };
+          custom.theme.palette = (import ../modules/theme/gruvbox-material-mix-dark-medium.nix) // {
+            bg0 = "#123456";
+            bg1 = "#010203";
+            accent = "#abcdef";
+            bg_current_word = null;
+          };
+        }
+      ];
+    }).config;
+  fresh = fixture null;
+  recovered = fixture "recovered profile.default";
+  fixtureZen = recovered.programs.zen-browser;
+  fixtureUserJs = recovered.home.file.".zen/recovered profile.default/user.js".text;
+  fixturePolicies = fixtureZen.policies.ExtensionSettings;
+  expectedSettings = reportedPreferences // {
+    "uc.urlbar.custom-bg-color" = "#010203 ";
+    "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
+    "zen.mods.auto-update" = false;
+    "zen.mods.last-update" = 0;
+    "zen.mods.milestone" = lib.getVersion fixtureZen.package;
   };
-  fallbackSettings = import ../modules/zen/settings.nix {
-    palette = fallbackPalette;
-    zenVersion = "test";
-  };
-  fallbackCss = import ../modules/zen/user-chrome.nix { palette = fallbackPalette; };
   removeTabX = lib.findFirst (mod: mod.entry.id == "1b88a6d1-d931-45e8-b6c3-bfdca2c7e9d6") null mods;
 in
-assert checkHost desktop "mpjpva0z.default";
-assert checkHost laptop "xtezh31k.default";
-assert
-  desktop.programs.zen-browser.profiles.default.settings
-  == laptop.programs.zen-browser.profiles.default.settings;
-assert
-  desktop.programs.zen-browser.profiles.default.userChrome
-  == laptop.programs.zen-browser.profiles.default.userChrome;
-assert
-  desktop.programs.zen-browser.policies.ExtensionSettings
-  == laptop.programs.zen-browser.policies.ExtensionSettings;
-assert fallbackSettings."uc.urlbar.custom-bg-color" == "#010203 ";
-assert lib.hasInfix "--zen-urlbar-background: #010203" fallbackCss;
+assert checkHost desktop;
+assert checkHost laptop;
+assert checkUnmanaged fresh;
+assert checkAdopted recovered;
+assert fresh.programs.zen-browser.configPath == ".zen" && fixtureZen.configPath == ".zen";
+assert fixtureZen.profiles.default.settings == expectedSettings;
+assert lib.hasInfix ''user_pref("mod.remove-tab-x.scope", "all");'' fixtureUserJs;
+assert builtins.attrNames fixturePolicies == lib.sort builtins.lessThan extensionIds;
+assert lib.all (
+  id:
+  fixturePolicies.${id}.installation_mode == "normal_installed"
+  &&
+    fixturePolicies.${id}.install_url
+    == "https://addons.mozilla.org/firefox/downloads/latest/${lib.escapeURL id}/latest.xpi"
+  && !(fixturePolicies.${id} ? updates_disabled)
+) extensionIds;
 assert modIds == expectedModIds && lib.length (lib.unique modIds) == 10;
 assert lib.all (mod: mod.entry.enabled && mod.files ? "chrome.css") mods;
 assert lib.all (

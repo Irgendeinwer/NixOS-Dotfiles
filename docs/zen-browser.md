@@ -7,7 +7,9 @@ explicit `programs.zen-browser.enable` can override that default.
 
 ## Shared configuration and ownership
 
-`junixos` and `junixbook` import `modules/zen/profile.nix`, using their own
+`junixos` and `junixbook` keep `programs.zen-browser.configPath = ".zen"` in
+`hosts/<host>/home.nix`, independently of profile adoption. They import
+`modules/zen/profile.nix` and set `custom.desktop.zen.profilePath` to their own
 **existing** profile directories:
 
 | Host | Registry | Profile |
@@ -19,8 +21,15 @@ The wrapper uses `~/.zen` and sets `MOZ_LEGACY_PROFILES=1`. Zen, not Home
 Manager, owns `profiles.ini` and its other profile/install entries. The Nix
 profile's `id` and `isDefault` do **not** select the active profile while the
 registry is unmanaged: confirm the actual profile in `about:profiles` and the
-installation entries before switching. The guard verifies existence, not which
-profile Zen selects.
+installation entries before switching. The guard requires a regular, non-symlink
+registry and a matching `[ProfileN]` entry, interpreting `Path` according to
+`IsRelative`. It does not determine which registered profile Zen selects.
+
+For a fresh install, leave `configPath` and the import in place and set
+`custom.desktop.zen.profilePath = null`. This keeps the wrapper on `~/.zen`
+without declaring profiles, profile links, mod reconciliation, or the extension
+policy below. Let Zen create its own profile, then follow the adoption steps to
+set the actual directory. See [recovery](recovery.md) for the reinstall flow.
 
 Home Manager links `.keep`, `user.js`, and `chrome/userChrome.css` inside the
 selected profile. The shared `settings.nix` contains the supplied filtered
@@ -124,16 +133,23 @@ all-or-nothing transaction and other system changes may already have happened.
 Before writing, the helper rejects invalid JSON, symlink/special-file collisions,
 missing CSS for an enabled extra mod, and a managed asset whose hash is neither
 pinned, one of the three approved prior hashes, nor a hash recorded by a prior
-reconciliation. It never silently overwrites an unrecognized local edit. It
-checks again while holding the browser's POSIX `fcntl` profile lock, stages
-writes atomically per file, and attempts rollback if a write fails. A unique
-backup of each replaced file and a `backup-manifest.json` are kept under
+reconciliation. It will replace an existing `chrome/zen-themes.css` only when
+it matches generated output for the old registry and per-mod assets (or the
+empty output Zen generates with all mods disabled). Timestamp-only changes are
+ignored. A generated header alone is not enough; a handwritten or modified
+aggregate is a collision. Back up the file, migrate any wanted custom rules into
+managed `userChrome.css` (not the generated aggregate), and move the original to
+a new unused name before trying again.
+
+The helper checks again while holding the browser's POSIX `fcntl` profile lock,
+stages writes atomically per file, and attempts rollback if a write fails. A
+unique backup of each replaced file and a `backup-manifest.json` are kept under
 `$XDG_STATE_HOME/nixos-dotfiles/zen-mod-backups/` (normally
 `~/.local/state/nixos-dotfiles/zen-mod-backups/`). The manifest lists newly
 created files and records original modes; backup files themselves are private.
-These backups cover **only**
-files replaced by this helper, not the whole profile. Do not remove them until
-you have verified your independent backup and the new setup.
+These backups cover **only** files replaced by this helper, not the whole
+profile. Do not remove them until you have verified your independent backup
+and the new setup.
 
 `zen.mods.auto-update` is set to false. Zen 1.24.2b would still check if its
 last-update timestamp were missing or its browser-version milestone changed,
@@ -152,9 +168,9 @@ this configuration: their activation would separately mutate the same files.
 
 1. Open `about:profiles`; confirm the active profile matches the table and
    inspect `~/.zen/profiles.ini`, including installation entries. If the path
-   differs, stop and update that host's `profilePath` to the real existing
-   profile rather than creating a replacement. Close **all** Zen processes and
-   keep them closed until activation completes.
+   differs, stop and update that host's `custom.desktop.zen.profilePath` to the
+   real existing profile rather than creating a replacement. Close **all** Zen
+   processes and keep them closed until activation completes.
 2. Make and verify an independent backup of the entire `~/.zen` tree. For
    example, as the desktop user:
 
@@ -173,13 +189,42 @@ this configuration: their activation would separately mutate the same files.
    any targets outside `.zen` separately. Keep an existing `~/.zen.bak`, but do
    not assume it is complete or current; Sync is not a backup. The laptop has
    no configured backup job (see [recovery](recovery.md)).
+
+   If `profiles.ini` is a symlink (for example, to an old Home Manager
+   generation), stop: Home Manager's orphan cleanup can remove it. With Zen
+   closed and the full backup verified, preserve both the link and the exact
+   registry bytes, then replace **only the link** with a writable regular file.
+   For a link with a valid target, as the desktop user:
+
+   ```bash
+   (
+     set -eu
+     registry="$HOME/.zen/profiles.ini"
+     test -L "$registry"
+     test -f "$registry"
+     saved=$(mktemp -d "$HOME/zen-registry-backup.XXXXXXXX")
+     cp -a -- "$registry" "$saved/profiles.ini.link"
+     cp -L -- "$registry" "$saved/profiles.ini"
+     cmp -- "$registry" "$saved/profiles.ini"
+     replacement=$(mktemp "$HOME/.zen/.profiles.ini.XXXXXXXX")
+     trap 'rm -f -- "$replacement"' EXIT
+     cat -- "$saved/profiles.ini" > "$replacement"
+     cmp -- "$replacement" "$saved/profiles.ini"
+     mv -T -- "$replacement" "$registry"
+     printf 'Saved link and registry contents in %s\n' "$saved"
+   )
+   ```
+
+   For a dangling symlink or missing registry, recover the real registry from
+   a verified backup. Do not generate a new registry or discard its profile
+   and install entries to bypass the guard.
 3. Set `profile` to the path for **this** host and inspect possible conflicts:
 
    ```bash
    # Choose the right line for the current host:
    profile="$HOME/.zen/mpjpva0z.default"   # junixos
    # profile="$HOME/.zen/xtezh31k.default" # junixbook
-   for target in "$profile/.keep" "$profile/user.js" "$profile/chrome/userChrome.css"; do
+   for target in "$profile/.keep" "$profile/user.js" "$profile/chrome/userChrome.css" "$profile/chrome/zen-themes.css"; do
      for path in "$target" "$target.backup"; do
        if [ -e "$path" ] || [ -L "$path" ]; then
          ls -ld -- "$path"

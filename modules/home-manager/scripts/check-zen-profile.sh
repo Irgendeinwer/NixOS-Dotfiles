@@ -18,6 +18,14 @@ case "$manage_user_js" in
   *) echo "MANAGE_USER_JS must be yes or no" >&2; exit 2 ;;
 esac
 
+# A link into an old Home Manager generation can disappear during orphan
+# cleanup because the new generation deliberately does not own profiles.ini.
+if [ -L "$config_dir/profiles.ini" ]; then
+  echo "Zen profile adoption: $config_dir/profiles.ini is a symlink; a browser-owned regular file is required." >&2
+  echo "Back up the link and its contents, then preserve the registry as a regular file. See docs/zen-browser.md." >&2
+  exit 1
+fi
+
 if [ ! -f "$config_dir/profiles.ini" ]; then
   echo "Zen profile adoption: $config_dir/profiles.ini is missing; refusing to create a new profile." >&2
   echo "Verify the existing profile and see docs/zen-browser.md before activating." >&2

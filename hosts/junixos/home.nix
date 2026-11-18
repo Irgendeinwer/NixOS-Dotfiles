@@ -12,11 +12,12 @@ in
 
   imports = [
     ../../modules/home-manager
-    (import ../../modules/zen/profile.nix { profilePath = "mpjpva0z.default"; })
+    ../../modules/zen/profile.nix
   ];
 
-  # The shared Zen configuration adopts this existing profile. See
-  # docs/zen-browser.md before switching with the pinned mods for the first time.
+  # Keep the browser's registry location even when adoption is disabled.
+  programs.zen-browser.configPath = ".zen";
+  custom.desktop.zen.profilePath = "mpjpva0z.default"; # See docs/zen-browser.md before adoption.
 
   # Custom options
   custom = {

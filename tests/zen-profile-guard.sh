@@ -19,7 +19,7 @@ expect_failure() {
 # Never make a missing registry or profile directory as an accidental new profile.
 expect_failure "$config_dir" "$profile" "$store" yes
 grep -q 'profiles.ini is missing' "$tmp/message"
-printf '[Profile0]\nPath=existing.default\n' >"$config_dir/profiles.ini"
+printf '[Profile0]\nName=default\nIsRelative=1\nPath=existing.default\n' >"$config_dir/profiles.ini"
 expect_failure "$config_dir" "$profile" "$store" yes
 grep -q 'refusing to create a new profile' "$tmp/message"
 mkdir -p "$profile"
@@ -41,9 +41,25 @@ expect_failure "$config_dir" "$profile" "$store" yes
 [ "$(cat "$tmp/foreign-user.js")" = foreign ]
 rm -- "$profile/user.js"
 
-# A symlink from any Home Manager generation may be updated normally.
+# The registry is different from the managed profile files. Previously linked
+# registries would be removed by Home Manager's orphan cleanup after preflight.
 managed="$store/hash-home-manager-files/.zen/existing.default"
 mkdir -p "$managed"
+mv -- "$config_dir/profiles.ini" "${managed%/*}/profiles.ini"
+ln -s "${managed%/*}/profiles.ini" "$config_dir/profiles.ini"
+expect_failure "$config_dir" "$profile" "$store" yes
+grep -q 'profiles.ini is a symlink' "$tmp/message"
+[ -L "$config_dir/profiles.ini" ]
+grep -q '^Path=existing.default$' "${managed%/*}/profiles.ini"
+rm -- "$config_dir/profiles.ini"
+ln -s "$tmp/missing-registry" "$config_dir/profiles.ini"
+expect_failure "$config_dir" "$profile" "$store" yes
+grep -q 'profiles.ini is a symlink' "$tmp/message"
+rm -- "$config_dir/profiles.ini"
+cp -- "${managed%/*}/profiles.ini" "$config_dir/profiles.ini"
+bash "$guard" "$config_dir" "$profile" "$store" yes
+
+# Links to other managed files can still be updated normally.
 printf 'managed\n' >"$managed/user.js"
 ln -s "$managed/user.js" "$profile/user.js"
 bash "$guard" "$config_dir" "$profile" "$store" yes

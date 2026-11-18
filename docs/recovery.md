@@ -46,14 +46,16 @@ in `hosts/junixbook/disk-config.nix`.
 1. Boot the NixOS installer and clone this repo. Evaluating the flake
    needs SSH access to the private wallpaper input, so have the user
    SSH key available (or a checkout copied from another machine). The
-   laptop's Zen module adopts an existing `~/.zen/xtezh31k.default` and
-   refuses to create it. Restore the verified `~/.zen` backup into the
-   new user's home before Home Manager activation, or temporarily omit
-   the `modules/zen/profile.nix` import from `hosts/junixbook/home.nix`.
-   For a new profile, start Zen once, find its actual path, restore the
-   import with that path, and follow [Zen adoption](zen-browser.md)
-   before switching. Never create an empty profile merely to satisfy the
-   guard or overwrite a different existing profile.
+   laptop's Zen module adopts an existing profile and refuses to create it.
+   Restore the verified `~/.zen` backup into the new user's home before Home
+   Manager activation and check its registry as described in
+   [Zen adoption](zen-browser.md). If starting fresh instead, set
+   `custom.desktop.zen.profilePath = null` in `hosts/junixbook/home.nix`.
+   Keep the import and `programs.zen-browser.configPath = ".zen"`: Zen will
+   create its own registry and profile under `~/.zen`, with adoption off.
+   Start Zen once after installation, find its actual path in `about:profiles`,
+   close Zen, and follow the adoption guide before setting the new profile path
+   and switching. Never create an empty directory just to satisfy the guard.
 2. In `hosts/junixbook/disk-config.nix`, replace the placeholder device
    with the new disk (`ls /dev/disk/by-id`).
 3. In `flake.nix`, add `inputs.disko.nixosModules.disko` and
