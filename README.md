@@ -17,16 +17,18 @@ use. Everything else is shared.
 
 ## Design
 
-- Features are options under `custom.*` and default to off; hosts turn on
-  what they need. A shared baseline (`modules/nixos/base.nix`) always
-  applies.
-- Modules are auto-imported by directory scan, so a new file needs no
-  import list and must be safe to import on every host.
-- Home Manager modules read the host configuration, so user setup follows
-  the same feature choices as the system.
-- One palette in `modules/theme/` provides every color. Programs take
-  their theme from it instead of defining their own.
-- Secrets are stored sops-encrypted and decrypted on the target machine.
+- Most features are options under `custom.*` and default to off; a few
+  tools default on, and desktop/Wayland defaults follow Hyprland. A shared
+  baseline (`modules/nixos/base.nix`) always applies. See the
+  [options and scope guide](docs/options.md).
+- Modules are auto-imported by directory scan, so a new module needs no
+  import list and must be safe to import on every host. Shared helpers live
+  outside the scanned directories.
+- Home Manager modules read host choices through `osConfig`, keeping
+  user-level services aligned with the system.
+- One palette in `modules/theme/` supplies the system, Home Manager and
+  Nixvim themes; hosts can provide another complete palette.
+- Secrets generally use sops and are decrypted on the target machine.
 - Inputs are pinned in `flake.lock`. Drop-in overlays placed in
   `modules/overlays/` are picked up automatically.
 
@@ -36,6 +38,7 @@ use. Everything else is shared.
 .
 ├── flake.nix         # Inputs and host outputs
 ├── hosts/            # Hardware configuration and feature selection
+├── lib/              # Shared scanner, renderers and activation helpers
 ├── modules/
 │   ├── nixos/        # System modules and the shared baseline
 │   ├── services/     # Optional services
@@ -50,6 +53,9 @@ use. Everything else is shared.
 
 ## Usage
 
+Before activating a configuration that adopts existing application data,
+back it up and follow the relevant guide in `docs/`.
+
 ```bash
 git clone <repo-url> ~/dotfiles
 cd ~/dotfiles
@@ -61,6 +67,10 @@ The checkout belongs in `~/dotfiles`; helper tooling points there.
 Evaluating the flake needs SSH access to a private input that holds the
 wallpapers.
 
-Conventions, the commit schema and the pre-commit checks live in
-[CONTRIBUTING.md](CONTRIBUTING.md). Reinstall and recovery steps live in
-[docs/recovery.md](docs/recovery.md).
+## Documentation
+
+- [Contributing](CONTRIBUTING.md) — conventions and checks.
+- [Custom options](docs/options.md) — scopes, defaults and composition.
+- [Application data](docs/zen-browser.md) — Zen profile adoption and backups.
+- [Recovery](docs/recovery.md) — reinstall and recovery steps.
+- [Agent guide](AGENTS.md) — repository-specific guidance for coding agents.
