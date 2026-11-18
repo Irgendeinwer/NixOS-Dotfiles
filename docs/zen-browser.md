@@ -206,11 +206,11 @@ this configuration: their activation would separately mutate the same files.
    name for the machine you are on:
 
    ```bash
+   host=junixos  # Set to junixbook on the laptop.
    nix build .#checks.x86_64-linux.zen-options
-   nix build .#nixosConfigurations.junixos.config.system.build.toplevel --no-link
-   sudo nixos-rebuild switch --flake .#junixos
+   nix build ".#nixosConfigurations.${host}.config.system.build.toplevel" --no-link
+   sudo nixos-rebuild switch --flake ".#${host}"
    systemctl status home-manager-julian.service
-   # On junixbook use .#nixosConfigurations.junixbook... and .#junixbook instead.
    ```
 
    Git flakes need new files staged or committed before evaluation. A build or
