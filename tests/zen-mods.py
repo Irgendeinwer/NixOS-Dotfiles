@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Isolated tests for Zen Mod adoption; never touches a real browser profile."""
 
+import fcntl
 import hashlib
 import importlib.util
 import json
@@ -431,39 +432,82 @@ class ZenModsTests(unittest.TestCase):
         result = self.call("check", ok=False)
         self.assertIn("no stylesheet", result.stderr)
 
-    def test_actual_posix_lock_and_legacy_lock_prevent_reconciliation(self):
+    def test_live_posix_lock_blocks_even_if_marker_names_a_different_pid(self):
         lock = self.profile / ".parentlock"
         lock.touch()
-        child = subprocess.Popen(
-            [
-                sys.executable,
-                "-u",
-                "-c",
-                "import fcntl,sys,time; f=open(sys.argv[1], 'w'); "
-                "fcntl.lockf(f, fcntl.LOCK_EX); print('locked', flush=True); time.sleep(30)",
-                str(lock),
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-        try:
-            self.assertEqual(child.stdout.readline().strip(), "locked")
-            before = tree(self.profile)
-            for mode in ("check", "apply"):
-                result = self.call(mode, ok=False)
-                self.assertIn("close all Zen processes", result.stderr)
+        for target in (None, f"127.0.0.2:+{os.getpid() + 1}"):
+            with self.subTest(target=target):
+                if target is not None:
+                    (self.profile / "lock").symlink_to(target)
+                before = tree(self.profile)
+                # self.call runs in a different process from this lock holder.
+                with lock.open("r+b") as holder:
+                    fcntl.lockf(holder, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    for mode in ("check", "apply"):
+                        result = self.call(mode, ok=False)
+                        self.assertIn(f"cannot lock {lock}", result.stderr)
                 self.assertEqual(tree(self.profile), before)
-        finally:
-            child.terminate()
-            child.wait(timeout=5)
-            child.stdout.close()
-            child.stderr.close()
+                self.assertFalse(self.backups.exists())
+
+    def test_free_posix_lock_allows_gecko_marker_without_changing_it(self):
+        lock = self.profile / ".parentlock"
+        lock.write_bytes(b"do not truncate")
         legacy = self.profile / "lock"
-        legacy.symlink_to("127.0.0.1:+123456")
-        result = self.call("apply", ok=False)
-        self.assertIn("legacy Zen lock exists", result.stderr)
-        self.assertTrue(legacy.is_symlink())
+        # Even a live PID in the symlink is not evidence of a held lock.
+        target = f"127.0.0.2:+{os.getpid()}"
+        legacy.symlink_to(target)
+        inode = legacy.lstat().st_ino
+        before = tree(self.profile)
+        self.call("check")
+        self.assertEqual(tree(self.profile), before)
+        self.call("apply")
+        self.assertTrue((self.profile / "zen-themes.json").is_file())
+        self.assertEqual(os.readlink(legacy), target)
+        self.assertEqual(legacy.lstat().st_ino, inode)
+        self.assertEqual(lock.read_bytes(), b"do not truncate")
+
+    def test_marker_without_parentlock_refuses_even_first_apply(self):
+        (self.profile / "lock").symlink_to("127.0.0.2:+123456")
+        before = tree(self.profile)
+        for mode in ("check", "apply"):
+            self.assertIn("legacy Zen lock", self.call(mode, ok=False).stderr)
+            self.assertEqual(tree(self.profile), before)  # No new .parentlock.
+        self.assertFalse(self.backups.exists())
+
+    def test_marker_does_not_authorize_a_symlinked_parentlock(self):
+        outside = self.base / "not-the-profile-lock"
+        outside.write_bytes(b"leave alone")
+        (self.profile / ".parentlock").symlink_to(outside)
+        (self.profile / "lock").symlink_to("127.0.0.2:+123456")
+        before = tree(self.profile)
+        for mode in ("check", "apply"):
+            result = self.call(mode, ok=False)
+            self.assertIn("cannot open Zen profile lock", result.stderr)
+            self.assertEqual(tree(self.profile), before)
+        self.assertEqual(outside.read_bytes(), b"leave alone")
+
+    def test_symlink_only_and_unknown_legacy_locks_remain_collisions(self):
+        (self.profile / ".parentlock").touch()
+        legacy = self.profile / "lock"
+        for target in (
+            "127.0.0.2:123456",
+            "999.0.0.2:+123456",
+            "127.0.0.2:+0",
+            "127.0.0.2:+oops",
+            "../foreign-lock",
+            None,
+        ):
+            with self.subTest(target=target):
+                if target is None:
+                    legacy.write_text("127.0.0.2:+123456")  # Not a symlink.
+                else:
+                    legacy.symlink_to(target)
+                before = tree(self.profile)
+                for mode in ("check", "apply"):
+                    self.assertIn("legacy Zen lock", self.call(mode, ok=False).stderr)
+                    self.assertEqual(tree(self.profile), before)
+                self.assertFalse(self.backups.exists())
+                legacy.unlink()
 
     def test_upstream_cleanup_marker_blocks_before_prefs_can_be_touched(self):
         (self.profile / "prefs.js").write_bytes(b"keep these prefs")

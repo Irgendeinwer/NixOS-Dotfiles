@@ -125,10 +125,19 @@ later Nix update can recognize its own older files. Removing an entry from the
 manifest does **not** delete or disable its old profile files; manage that
 separately and deliberately.
 
-**Close Zen before every Home Manager activation**, not just the first switch.
-The preflight stops activation if the profile is in use; after closing Zen,
-retry the switch and check the Home Manager service. A NixOS switch is not an
-all-or-nothing transaction and other system changes may already have happened.
+**Quit Zen before every Home Manager activation**, not just the first switch.
+On Linux the running browser holds a POSIX lock on `.parentlock`. Its separate
+`lock -> IPv4:+PID` compatibility symlink can outlive the process or name a
+different PID than the current lock holder. Preflight and reconciliation leave
+the symlink untouched and accept it only while holding the lock on the existing
+`.parentlock`. A symlink-only `IPv4:PID` lock (no `+`), an unrecognized marker,
+or a marker without `.parentlock` still blocks activation.
+
+If `.parentlock` is busy even after the window closes, use
+`lslocks --notruncate -o PID,COMMAND,TYPE,PATH` to find the holder for this
+profile. Let it exit, then retry the switch; do not delete either lock file.
+A NixOS switch is not an all-or-nothing transaction and other system changes
+may already have happened.
 
 Before writing, the helper rejects invalid JSON, symlink/special-file collisions,
 missing CSS for an enabled extra mod, and a managed asset whose hash is neither
@@ -264,10 +273,10 @@ this configuration: their activation would separately mutate the same files.
    mod hashes were not supplied), inspect that file locally and compare it with
    the pinned source. After backing it up, explicitly approve a known old hash
    in the manifest or move the file to a new unused name; never discard it just
-   to bypass the guard. Then retry. For a stale `lock` symlink, first verify that
-   no browser or other machine uses the profile, back it up and move it aside;
-   never remove a live lock. The fcntl lock covers reconciliation, not the
-   entire Home Manager activation, so do not reopen Zen during the switch.
+   to bypass the guard. Then retry. If the helper cannot verify a legacy `lock`,
+   inspect the profile on every machine that can use it rather than assuming the
+   recorded PID is stale. The fcntl lock covers reconciliation, not the entire
+   Home Manager activation, so do not reopen Zen during the switch.
 5. If activation fails, read `journalctl -u home-manager-julian.service -b`.
    The helper reports its backup directory and attempts to roll back completed
    writes, but a crash or failed rollback can leave a partial update. Keep Zen

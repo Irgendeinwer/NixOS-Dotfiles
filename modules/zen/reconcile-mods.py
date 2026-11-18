@@ -8,8 +8,10 @@ never written; unlisted mods are retained, and replaced files get unique backups
 """
 
 import argparse
+import errno
 import fcntl
 import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -456,24 +458,61 @@ def plan(profile, mods):
     return writes, watches
 
 
+def check_legacy_lock(path, *, locked_existing):
+    """Inspect the symlink itself; never follow, remove or replace it."""
+    try:
+        target = os.readlink(path)
+    except FileNotFoundError:
+        return
+    except OSError as exc:
+        raise AdoptionError(
+            f"cannot read legacy Zen lock {path} as a symlink: {exc}"
+        ) from exc
+
+    if not locked_existing:
+        raise AdoptionError(
+            f"legacy Zen lock {path} exists without a verified .parentlock; "
+            "inspect it before switching"
+        )
+
+    # Gecko's LockWithSymlink writes IPv4:+PID when backed by fcntl, but
+    # IPv4:PID when the symlink *is* the lock. Never use PID liveness as proof.
+    match = re.fullmatch(r"([0-9.]+):\+[1-9][0-9]*", target)
+    if match:
+        try:
+            ipaddress.IPv4Address(match[1])
+        except ipaddress.AddressValueError:
+            pass
+        else:
+            return
+    raise AdoptionError(
+        f"symlink-only or unrecognized legacy Zen lock {path} -> {target!r}; "
+        "inspect it before switching"
+    )
+
+
 @contextmanager
 def profile_lock(profile, *, create):
     """Hold Gecko's POSIX record lock, not flock's incompatible lock type."""
     legacy = profile / "lock"
-    if exists(legacy):
-        raise AdoptionError(
-            f"legacy Zen lock exists: {legacy}; close Zen and inspect it"
-        )
     lock = profile / ".parentlock"
-    flags = os.O_WRONLY | os.O_NOFOLLOW | os.O_NONBLOCK | (os.O_CREAT if create else 0)
+    flags = os.O_WRONLY | os.O_NOFOLLOW | os.O_NONBLOCK
     try:
-        fd = os.open(lock, flags, 0o600)
+        fd = os.open(lock, flags)
+        existing = True
     except FileNotFoundError:
-        if create:
-            raise
-        # A check must not create the lock before Home Manager's write boundary.
-        yield
-        return
+        # A new inode cannot prove a pre-existing marker is obsolete.
+        check_legacy_lock(legacy, locked_existing=False)
+        if not create:
+            yield  # Read-only preflight of a profile with neither lock file.
+            return
+        try:
+            fd = os.open(lock, flags | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError as exc:
+            raise AdoptionError(
+                f"{lock} appeared while locking; retry with Zen closed"
+            ) from exc
+        existing = False
     except OSError as exc:
         raise AdoptionError(f"cannot open Zen profile lock {lock}: {exc}") from exc
     try:
@@ -483,16 +522,16 @@ def profile_lock(profile, *, create):
         try:
             fcntl.lockf(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError as exc:
-            raise AdoptionError(
-                f"cannot lock {lock}; close all Zen processes: {exc}"
-            ) from exc
+            if exc.errno in (errno.EAGAIN, errno.EACCES):
+                raise AdoptionError(
+                    f"cannot lock {lock}: profile is in use; check lslocks for the "
+                    "holder and quit Zen before switching"
+                ) from exc
+            raise AdoptionError(f"cannot lock {lock}: {exc}") from exc
         on_disk = lock.lstat()
         if (info.st_dev, info.st_ino) != (on_disk.st_dev, on_disk.st_ino):
             raise AdoptionError(f"Zen profile lock changed while locking: {lock}")
-        if exists(legacy):
-            raise AdoptionError(
-                f"legacy Zen lock exists: {legacy}; close Zen and inspect it"
-            )
+        check_legacy_lock(legacy, locked_existing=existing)
         yield
     finally:
         os.close(fd)
