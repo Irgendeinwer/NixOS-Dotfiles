@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  inputs,
   ...
 }:
 let
@@ -15,7 +14,6 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = with pkgs; [
-      inputs.zen-browser.packages.x86_64-linux.default
       tor-browser
       firefox
       ungoogled-chromium
