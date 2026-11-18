@@ -23,6 +23,9 @@ rec {
   bg_visual_green = "#3b4439";
   bg_visual_blue = "#374141";
   bg_visual_purple = "#443840";
+  bg_diff_red = "#402120";
+  bg_diff_green = "#34381b";
+  bg_diff_blue = "#0e363e";
 
   # Foregrounds and greys
   fg0 = "#e2cca9";
@@ -39,6 +42,10 @@ rec {
   aqua = "#8bba7f";
   blue = "#80aa9e";
   purple = "#d3869b";
+  # Strong accent backgrounds used by the Neovim colorscheme.
+  bg_red = "#db4740";
+  bg_green = green;
+  bg_yellow = yellow;
 
   # Focus, borders and highlights across the desktop
   accent = yellow;
