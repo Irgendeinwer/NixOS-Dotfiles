@@ -5,8 +5,7 @@
   ...
 }:
 let
-  hyprlandEnabled =
-    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  desktopEnabled = if osConfig != null then (osConfig.custom.desktop.enable or false) else true;
   p = config.custom.theme.palette;
   # color0 .. color15 from the palette's terminal colors
   ansi = lib.listToAttrs (
@@ -16,7 +15,7 @@ let
     }) p.ansi
   );
 in
-lib.mkIf hyprlandEnabled {
+lib.mkIf desktopEnabled {
   programs.kitty = {
     enable = true;
 

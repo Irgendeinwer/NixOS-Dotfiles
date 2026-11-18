@@ -11,7 +11,8 @@ in
   options.custom.desktop.fonts = {
     enable = lib.mkOption {
       type = lib.types.bool;
-      default = config.custom.desktop.hyprland.enable;
+      default = config.custom.desktop.enable;
+      defaultText = lib.literalExpression "config.custom.desktop.enable";
       description = "Enable desktop system fonts and fontconfig defaults.";
     };
   };

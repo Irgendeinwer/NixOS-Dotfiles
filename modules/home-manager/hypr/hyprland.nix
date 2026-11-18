@@ -69,48 +69,10 @@ let
     }
   );
 
-  formatMonitor =
-    m:
-    let
-      bitdepthStr = if m ? bitdepth then "\n      bitdepth = ${toString m.bitdepth}," else "";
-      cmStr = if m ? cm then "\n      cm = \"${m.cm}\"," else "";
-      sdrbrightnessStr =
-        if m ? sdrbrightness then "\n      sdrbrightness = ${toString m.sdrbrightness}," else "";
-    in
-    ''
-      hl.monitor({
-        output = "${m.output}",
-        mode = "${m.mode or "preferred"}",
-        position = "${m.position or "auto"}",
-        scale = ${toString (m.scale or 1)},${bitdepthStr}${cmStr}${sdrbrightnessStr}
-      })
-    '';
-
-  configuredMonitors =
-    if osConfig != null then (osConfig.custom.desktop.hyprland.monitors or [ ]) else [ ];
-
-  monitorsLua =
-    if configuredMonitors != [ ] then
-      lib.concatMapStringsSep "\n\n" formatMonitor configuredMonitors
-    else
-      ''
-        hl.monitor({
-          output = "",
-          mode = "preferred",
-          position = "auto",
-          scale = 1,
-        })
-      '';
-
-  # The monitor (if any) the HDR toggle keybind switches: marked with
-  # `hdr = true` in the host's monitor list.
-  hdrMonitor = lib.findFirst (m: m.hdr or false) null configuredMonitors;
-  hasHdr = hdrMonitor != null;
-  hdrMode = if hasHdr then (hdrMonitor.mode or "preferred") else "preferred";
-  hdrPos = if hasHdr then (hdrMonitor.position or "auto") else "auto";
-  hdrScale = if hasHdr then toString (hdrMonitor.scale or 1) else "1";
-  hdrBitdepth = if hasHdr then toString (hdrMonitor.bitdepth or 10) else "10";
-  hdrBaseCm = if hasHdr then (hdrMonitor.cm or "srgb") else "srgb";
+  monitorConfig = import ../../../lib/hyprland-monitors.nix { inherit lib; } {
+    monitors = if osConfig != null then (osConfig.custom.desktop.hyprland.monitors or [ ]) else [ ];
+    inherit notifySend;
+  };
 in
 lib.mkIf hyprlandEnabled {
   # Polkit agent as a user service bound to the Hyprland session. (The package
@@ -185,7 +147,7 @@ lib.mkIf hyprlandEnabled {
       --------------------------------------------------
       -- Monitors
       --------------------------------------------------
-      ${monitorsLua}
+      ${monitorConfig.layout}
 
       --------------------------------------------------
       -- Autostart (exec-once)
@@ -364,26 +326,7 @@ lib.mkIf hyprlandEnabled {
       hl.bind(mainMod .. " + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
       hl.bind("ALT + Tab", hl.dsp.exec_cmd("${windowSwitcher}"))
 
-      ${lib.optionalString hasHdr ''
-        -- HDR toggle for the monitor marked `hdr = true`
-        local hdr_on = false
-        local function toggle_hdr()
-          hdr_on = not hdr_on
-          hl.monitor({
-            output = "${hdrMonitor.output}",
-            mode = "${hdrMode}",
-            position = "${hdrPos}",
-            scale = ${hdrScale},
-            bitdepth = ${hdrBitdepth},
-            cm = hdr_on and "hdr" or "${hdrBaseCm}",
-            sdrbrightness = hdr_on and 1.2 or 1.0,
-          })
-
-          local status = hdr_on and "HDR Enabled (${hdrBitdepth}-bit)" or "SDR Mode (${hdrBitdepth}-bit)"
-          hl.exec_cmd(string.format([[${notifySend} "Display" "%s" -t 5000]], status))
-        end
-        hl.bind(mainMod .. " + SHIFT + H", toggle_hdr)
-      ''}
+      ${monitorConfig.hdrToggle}
 
       -- Utilities
       hl.bind("PRINT", hl.dsp.exec_cmd("${hyprshot} -m region --freeze -o ${config.programs.hyprshot.saveLocation}"))

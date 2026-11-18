@@ -11,7 +11,10 @@ with lib;
 let
   cfg = config.custom.theme.wallpaper;
 
-  # Same gate as hyprland.nix: skip when another compositor is in use
+  # Hyprpaper and the event-based autopause helper are Hyprland-specific;
+  # the mpvpaper wallpaper itself also works with compatible Wayland sessions.
+  waylandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.wayland.enable or false) else true;
   hyprlandEnabled =
     if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
 
@@ -52,10 +55,10 @@ in
     };
   };
 
-  config = mkIf (hyprlandEnabled && cfg.path != null) (mkMerge [
+  config = mkIf (cfg.path != null) (mkMerge [
 
     # 1. Hyprpaper (Static / Laptop)
-    (mkIf (cfg.backend == "hyprpaper") {
+    (mkIf (hyprlandEnabled && cfg.backend == "hyprpaper") {
       services.hyprpaper = {
         enable = true;
         settings = {
@@ -73,7 +76,7 @@ in
     })
 
     # 2. Mpvpaper (Video / Desktop)
-    (mkIf (cfg.backend == "mpvpaper") {
+    (mkIf (waylandEnabled && cfg.backend == "mpvpaper") {
       systemd.user.services.mpvpaper = {
         Unit = {
           Description = "mpvpaper video wallpaper daemon";
@@ -91,7 +94,7 @@ in
         Install.WantedBy = [ "graphical-session.target" ];
       };
 
-      systemd.user.services.mpvpaper-autopause = {
+      systemd.user.services.mpvpaper-autopause = mkIf hyprlandEnabled {
         Unit = {
           Description = "Instant event-based auto-pause for mpvpaper";
           After = [

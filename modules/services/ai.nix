@@ -64,7 +64,7 @@ in
     };
 
     geminiKeyCount = lib.mkOption {
-      type = lib.types.int;
+      type = lib.types.ints.positive;
       default = 10;
       description = "Number of Gemini project keys to register and rotate.";
     };

@@ -7,7 +7,8 @@
 let
   user = config.custom.user;
   isContainer = config.boot.isContainer;
-  hasDesktop = config.custom.desktop.hyprland.enable;
+  hasDesktop = config.custom.desktop.enable;
+  hasWayland = config.custom.desktop.wayland.enable;
 in
 {
   options.custom.user = lib.mkOption {
@@ -96,7 +97,6 @@ in
     ]
     ++ lib.optionals hasDesktop [
       pkgs.brightnessctl
-      pkgs.cliphist
       pkgs.dconf
       pkgs.inkscape
       pkgs.libnotify
@@ -104,6 +104,9 @@ in
       pkgs.pdf4qt
       pkgs.playerctl
       pkgs.qimgv
+    ]
+    ++ lib.optionals hasWayland [
+      pkgs.cliphist
       pkgs.wev
       pkgs.wl-clipboard
     ];

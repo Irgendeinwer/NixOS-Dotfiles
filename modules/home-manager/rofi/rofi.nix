@@ -6,8 +6,7 @@
   ...
 }:
 let
-  hyprlandEnabled =
-    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  desktopEnabled = if osConfig != null then (osConfig.custom.desktop.enable or false) else true;
   p = config.custom.theme.palette;
 
   # Color variables for layout.rasi, generated from the palette.
@@ -29,7 +28,7 @@ let
 
   '';
 in
-lib.mkIf hyprlandEnabled {
+lib.mkIf desktopEnabled {
   programs.rofi = {
     enable = true;
     # A string path, so Home Manager emits @theme "<file>" for it.

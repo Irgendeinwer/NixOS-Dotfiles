@@ -5,11 +5,11 @@
   ...
 }:
 let
-  hyprlandEnabled =
-    if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  waylandEnabled =
+    if osConfig != null then (osConfig.custom.desktop.wayland.enable or false) else true;
   p = config.custom.theme.palette;
 in
-lib.mkIf hyprlandEnabled {
+lib.mkIf waylandEnabled {
   # Declarative notification daemon, themed from custom.theme.palette.
   # Started on demand via D-Bus activation.
   services.mako = {

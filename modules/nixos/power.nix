@@ -18,7 +18,7 @@ in
       enable = lib.mkEnableOption "Suspend-then-hibernate after a configured timeout (clears RAM keys to encrypted swap)";
 
       hibernateDelaySec = lib.mkOption {
-        type = lib.types.int;
+        type = lib.types.ints.unsigned;
         default = 3600;
         description = "Time in seconds to wait in suspend before hibernating to disk (default: 3600s = 1 hour).";
       };

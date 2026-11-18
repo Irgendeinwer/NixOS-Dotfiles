@@ -6,6 +6,7 @@
   ...
 }:
 let
+  desktopEnabled = if osConfig != null then (osConfig.custom.desktop.enable or false) else true;
   hyprlandEnabled =
     if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
   p = config.custom.theme.palette;
@@ -83,7 +84,7 @@ let
     )
     + "}\n";
 in
-lib.mkIf hyprlandEnabled {
+lib.mkIf desktopEnabled {
   dconf.settings = {
     # The system accent, for libadwaita apps that cannot read the user CSS
     # (the sandboxed Flatpaks); everything else gets the palette accent.
@@ -94,7 +95,7 @@ lib.mkIf hyprlandEnabled {
     # are managed by keybinds, so headerbars keep only the app's own controls.
     # Set here (read via the settings portal) and as gtk-decoration-layout in
     # settings.ini below, since GTK picks one or the other depending on setup.
-    "org/gnome/desktop/wm/preferences" = {
+    "org/gnome/desktop/wm/preferences" = lib.mkIf hyprlandEnabled {
       button-layout = ":";
     };
   };
@@ -120,9 +121,11 @@ lib.mkIf hyprlandEnabled {
 
     gtk3 = {
       extraConfig = {
-        gtk-decoration-layout = ":";
         gtk-button-images = true;
         gtk-menu-images = true;
+      }
+      // lib.optionalAttrs hyprlandEnabled {
+        gtk-decoration-layout = ":";
       };
       extraCss = namedColors;
     };
@@ -135,9 +138,11 @@ lib.mkIf hyprlandEnabled {
         # Plain GTK 4 apps (pavucontrol) take adw-gtk3's GTK 4 style;
         # libadwaita apps ignore this
         gtk-theme-name = "adw-gtk3-dark";
-        gtk-decoration-layout = ":";
         gtk-button-images = true;
         gtk-menu-images = true;
+      }
+      // lib.optionalAttrs hyprlandEnabled {
+        gtk-decoration-layout = ":";
       };
       extraCss = namedColors + cssVariables;
     };
