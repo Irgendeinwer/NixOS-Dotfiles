@@ -72,6 +72,36 @@
       myOverlays = loadOverlays ./modules/overlays;
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+
+      # Keep host-specific modules explicit, while sharing the integrations
+      # and Home Manager setup that every host needs.
+      mkHost =
+        name: hostModules:
+        nixpkgs.lib.nixosSystem {
+          specialArgs = { inherit inputs; };
+          modules = [
+            { nixpkgs.overlays = myOverlays; }
+          ]
+          ++ hostModules
+          ++ [
+            inputs.sops-nix.nixosModules.sops
+            inputs.lanzaboote.nixosModules.lanzaboote
+            inputs.home-manager.nixosModules.default
+            (
+              { config, ... }:
+              {
+                home-manager = {
+                  useGlobalPkgs = true;
+                  useUserPackages = true;
+                  backupFileExtension = "backup";
+                  extraSpecialArgs = { inherit inputs; };
+                  users.${config.custom.user} = import (./hosts + "/${name}/home.nix");
+                };
+              }
+            )
+            inputs.nixvim.nixosModules.nixvim
+          ];
+        };
     in
     {
       # `nix fmt` formats every .nix file in the repo with nixfmt
@@ -133,75 +163,24 @@
         '';
       };
 
-      nixosConfigurations."junixos" = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [
-          { nixpkgs.overlays = myOverlays; }
-
+      nixosConfigurations = {
+        junixos = mkHost "junixos" [
           inputs.disko.nixosModules.disko
           ./hosts/junixos/disk-config.nix
           ./hosts/junixos/configuration.nix
-
           nixos-hardware.nixosModules.common-cpu-intel-cpu-only
           nixos-hardware.nixosModules.common-pc-ssd
-
-          inputs.sops-nix.nixosModules.sops
-          inputs.lanzaboote.nixosModules.lanzaboote
-          inputs.home-manager.nixosModules.default
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-
-            home-manager.backupFileExtension = "backup";
-          }
-
-          inputs.nixvim.nixosModules.nixvim
         ];
-      };
 
-      nixosConfigurations."junixbook" = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [
-          { nixpkgs.overlays = myOverlays; }
-
+        junixbook = mkHost "junixbook" [
           ./hosts/junixbook/configuration.nix
-
           nixos-hardware.nixosModules.common-cpu-intel
           nixos-hardware.nixosModules.common-pc-ssd
           nixos-hardware.nixosModules.common-pc-laptop # TLP power management
-
-          inputs.sops-nix.nixosModules.sops
-          inputs.lanzaboote.nixosModules.lanzaboote
-          inputs.home-manager.nixosModules.default
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-
-            home-manager.backupFileExtension = "backup";
-          }
-
-          inputs.nixvim.nixosModules.nixvim
         ];
-      };
 
-      nixosConfigurations."junixsrv" = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [
-          { nixpkgs.overlays = myOverlays; }
-
+        junixsrv = mkHost "junixsrv" [
           ./hosts/junixsrv/configuration.nix
-
-          inputs.sops-nix.nixosModules.sops
-          inputs.lanzaboote.nixosModules.lanzaboote
-          inputs.home-manager.nixosModules.default
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-
-            home-manager.backupFileExtension = "backup";
-          }
-
-          inputs.nixvim.nixosModules.nixvim
         ];
       };
     };

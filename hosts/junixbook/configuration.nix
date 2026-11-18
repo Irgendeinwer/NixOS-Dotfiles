@@ -1,9 +1,4 @@
-{
-  config,
-  inputs,
-  pkgs,
-  ...
-}:
+{ pkgs, ... }:
 
 {
   imports = [
@@ -29,13 +24,6 @@
 
   # Host-specific daemons
   services.fstrim.enable = true;
-
-  home-manager = {
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-      "${config.custom.user}" = import ./home.nix;
-    };
-  };
 
   # --------------------custom options---------------
 

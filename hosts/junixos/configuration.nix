@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   pkgs,
   ...
 }:
@@ -83,13 +82,6 @@
 
   sops.secrets.hotspot_password = {
     sopsFile = ../../secrets/junixos.yaml;
-  };
-
-  home-manager = {
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-      "${config.custom.user}" = import ./home.nix;
-    };
   };
 
   # --------------------custom options---------------

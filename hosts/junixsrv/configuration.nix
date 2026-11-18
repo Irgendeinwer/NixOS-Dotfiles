@@ -1,6 +1,4 @@
 {
-  config,
-  inputs,
   lib,
   pkgs,
   ...
@@ -28,13 +26,6 @@
     tmux
     tree
   ];
-
-  home-manager = {
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-      "${config.custom.user}" = import ./home.nix;
-    };
-  };
 
   # --------------------custom options---------------
 
