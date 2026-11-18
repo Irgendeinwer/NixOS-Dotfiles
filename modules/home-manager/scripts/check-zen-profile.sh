@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Refuse to create a missing profile or silently replace an existing user.js
-# when adopting a browser-owned profile into Home Manager.
+# Refuse to create a missing profile or silently replace existing profile
+# files when adopting a browser-owned profile into Home Manager.
 set -eu
 
-if [ "$#" -ne 4 ]; then
-  echo "Usage: check-zen-profile CONFIG_DIR PROFILE_DIR STORE_DIR MANAGE_USER_JS" >&2
+if [ "$#" -lt 4 ]; then
+  echo "Usage: check-zen-profile CONFIG_DIR PROFILE_DIR STORE_DIR MANAGE_USER_JS [OTHER_TARGET ...]" >&2
   exit 2
 fi
 
@@ -12,6 +12,7 @@ config_dir=$1
 profile_dir=$2
 store_dir=$3
 manage_user_js=$4
+shift 4
 case "$manage_user_js" in
   yes|no) ;;
   *) echo "MANAGE_USER_JS must be yes or no" >&2; exit 2 ;;
@@ -29,19 +30,26 @@ if [ ! -d "$profile_dir" ]; then
   exit 1
 fi
 
-if [ "$manage_user_js" = yes ]; then
-  target="$profile_dir/user.js"
+check_target() {
+  target=$1
   if [ -e "$target" ] || [ -L "$target" ]; then
     if [ -L "$target" ]; then
       link=$(readlink -- "$target")
       case "$link" in
-        "$store_dir"/*-home-manager-files/*) exit 0 ;;
+        "$store_dir"/*-home-manager-files/*) return 0 ;;
       esac
     fi
 
     echo "Zen profile adoption: $target is not managed by Home Manager." >&2
-    echo "Back it up, migrate any preferences, and move it aside before activating." >&2
-    echo "See docs/zen-browser.md; no existing user.js was changed." >&2
+    echo "Back it up, migrate any wanted settings or CSS, and move it aside before activating." >&2
+    echo "See docs/zen-browser.md; the existing file was not changed." >&2
     exit 1
   fi
+}
+
+if [ "$manage_user_js" = yes ]; then
+  check_target "$profile_dir/user.js"
 fi
+for target in "$@"; do
+  check_target "$target"
+done

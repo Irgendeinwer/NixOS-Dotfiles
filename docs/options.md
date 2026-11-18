@@ -109,7 +109,9 @@ while their own explicit options still apply.
 | `custom.desktop.media` | `royalPresetProfile` defaults to `balanced`. Integrated NixOS uses the **system** option and media toggle instead; the Home Manager value is for standalone use. |
 
 Zen's `programs.zen-browser.*` options are upstream Home Manager options, not
-`custom.*`. See [Zen profile adoption](zen-browser.md) before switching.
+`custom.*`. The desktop and laptop opt into a shared profile configuration with
+host-specific existing paths; standalone Home Manager does not adopt a profile.
+See [Zen profile adoption](zen-browser.md) before switching.
 
 ## Palette
 

@@ -23,12 +23,16 @@ Keep changes small, consistent with the existing structure, and verified.
 
 - Custom options live under `custom.<domain>.<feature>` (domains: `system`, `desktop`, `hardware`, `services`, `theme`, `audio`). See [docs/options.md](docs/options.md) for their scopes and exceptions.
 - Feature modules generally expose `options.custom.<...>.enable` (default off); preserve and document deliberate default-on or derived defaults. A nested name alone does not imply a parent gate.
-- Modules are auto-imported (`modules/default.nix` and `modules/home-manager/default.nix`): adding a `.nix` module is enough. The scanner skips every `default.nix` and symlink; pure data and helpers belong outside scanned directories, e.g. `modules/theme/` or `lib/`.
+- Modules in scanned directories are auto-imported (`modules/default.nix` and `modules/home-manager/default.nix`); they must be safe on every host. The scanner skips every `default.nix` and symlink. Pure data, helpers and explicitly opted-in profile modules belong outside scanned directories, e.g. `modules/theme/`, `modules/zen/` or `lib/`.
 - Host files (`hosts/<host>/`) contain only toggles and host-specific facts. Shared behaviour belongs in `modules/`; refer to the host through options, not by importing host files.
 - Home Manager modules read host toggles through `osConfig` where behaviour depends on them; standalone Home Manager (no `osConfig`) must still evaluate with its documented defaults.
 - Themed programs take their colours from `custom.theme.palette`; do not add hardcoded theme colours. A palette override must contain all required roles and 16 ANSI entries.
 - Whatever a feature toggle installs or opens, its consumers respect the same toggle: autostarts, firewall ports and dependent config live behind it too.
-- For existing Zen profiles, follow the backup and collision checks in [docs/zen-browser.md](docs/zen-browser.md) before activating.
+- Existing application data needs a read-only preflight before Home Manager's
+  write boundary, a `DRY_RUN`-aware mutation phase, collision-safe recovery and
+  appropriate application locking. Pin externally fetched assets and document
+  any runtime update path. For Zen, follow [docs/zen-browser.md](docs/zen-browser.md)
+  before activating.
 
 ## Commits
 

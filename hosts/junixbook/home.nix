@@ -12,7 +12,11 @@ in
 
   imports = [
     ../../modules/home-manager
+    (import ../../modules/zen/profile.nix { profilePath = "xtezh31k.default"; })
   ];
+
+  # The shared Zen configuration adopts the laptop's existing profile. See
+  # docs/zen-browser.md before switching; profile and extension data stay local.
 
   # Custom options
   custom.theme.wallpaper = {

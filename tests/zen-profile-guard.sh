@@ -48,6 +48,33 @@ printf 'managed\n' >"$managed/user.js"
 ln -s "$managed/user.js" "$profile/user.js"
 bash "$guard" "$config_dir" "$profile" "$store" yes
 [ -L "$profile/user.js" ]
+
+# The optional CSS targets are guarded even when user.js is already managed.
+css="$profile/chrome/userChrome.css"
+mkdir -p "$(dirname "$css")"
+printf '/* personal CSS */\n' >"$css"
+expect_failure "$config_dir" "$profile" "$store" yes "$css"
+grep -q 'not managed by Home Manager' "$tmp/message"
+grep -q 'personal CSS' "$css"
+rm -- "$css"
+ln -s "$tmp/missing-css" "$css"
+expect_failure "$config_dir" "$profile" "$store" yes "$css"
+rm -- "$css"
+mkdir -p "$managed/chrome"
+printf '/* managed */\n' >"$managed/chrome/userChrome.css"
+ln -s "$managed/chrome/userChrome.css" "$css"
+bash "$guard" "$config_dir" "$profile" "$store" yes "$css"
+[ -L "$css" ]
+
+# Other HM-managed targets, including the profile marker, get the same guard.
+marker="$profile/.keep"
+printf 'personal marker\n' >"$marker"
+expect_failure "$config_dir" "$profile" "$store" yes "$css" "$marker"
+grep -q 'personal marker' "$marker"
+rm -- "$marker"
+printf 'managed\n' >"$managed/.keep"
+ln -s "$managed/.keep" "$marker"
+bash "$guard" "$config_dir" "$profile" "$store" yes "$css" "$marker"
 expect_failure "$config_dir" "$profile" "$store" invalid
 
 echo 'Zen profile adoption guard: PASS'

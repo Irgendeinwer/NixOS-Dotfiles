@@ -1,0 +1,284 @@
+[
+  {
+    "entry": {
+      "id": "58649066-2b6f-4a5b-af6d-c3d21d16fc00",
+      "name": "Private Mode Highlighting",
+      "description": "This theme adds a configurable background, border and an icon to any private browsing window.",
+      "homepage": "https://github.com/danm36/zen-browser-private-browsing-toolbar-highlighting",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/58649066-2b6f-4a5b-af6d-c3d21d16fc00/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/58649066-2b6f-4a5b-af6d-c3d21d16fc00/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/58649066-2b6f-4a5b-af6d-c3d21d16fc00/image.png",
+      "author": "danm36",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/58649066-2b6f-4a5b-af6d-c3d21d16fc00/preferences.json",
+      "version": "1.0.5",
+      "tags": [
+        "Private Browsing"
+      ],
+      "createdAt": "2024-08-09",
+      "updatedAt": "2025-10-25",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/58649066-2b6f-4a5b-af6d-c3d21d16fc00/chrome.css",
+        "sha256": "21260be2be2193417047cb3135d09bde824565f3a455ef3e9fb65473e340e954"
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/58649066-2b6f-4a5b-af6d-c3d21d16fc00/preferences.json",
+        "sha256": "54e5b9b71afe506936ad86bb5abb8bc3a1359832c2dcbb503e52e341797e2f3d"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe",
+      "name": "Better Active Tab",
+      "description": "Adds a bright line next to the active tab to better highlight it.",
+      "homepage": "https://github.com/HliasOuzounis/zen-browser-better-active-tab-indicator",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe/image.png",
+      "author": "HliasOuzounis",
+      "version": "1.1.0",
+      "tags": [
+        "tabs"
+      ],
+      "createdAt": "2024-09-07",
+      "updatedAt": "2025-11-18",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe/preferences.json",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe/chrome.css",
+        "sha256": "3f10777b1e402653ca7c536db689a3248dfd36478071a3a43ea4f8d1a938fd4f"
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/d8b79d4a-6cba-4495-9ff6-d6d30b0e94fe/preferences.json",
+        "sha256": "91e5c424e5996cfadce13e48d7befff748812290baa157834b7b502f6002cec2"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "599a1599-e6ab-4749-ab22-de533860de2c",
+      "name": "Pimp your PiP",
+      "description": "Collection of tweaks and upgrades to PiP",
+      "homepage": "",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/599a1599-e6ab-4749-ab22-de533860de2c/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/599a1599-e6ab-4749-ab22-de533860de2c/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/599a1599-e6ab-4749-ab22-de533860de2c/image.png",
+      "author": "shldk",
+      "version": "1.0.0",
+      "tags": [],
+      "createdAt": "2025-02-07",
+      "updatedAt": "2025-05-13",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/599a1599-e6ab-4749-ab22-de533860de2c/chrome.css",
+        "sha256": "7ba920e5d821ab55054c6a51d9513431ec9df60633a4744cedb347e865e116ed",
+        "acceptedPreviousSha256": [
+          "64db2af55adab099ca3ac771f3c308a8df56a4d1b4a320072a8f4baf2ea96893"
+        ]
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "bfcc400a-4ecb-4752-bfd2-a68f116a2722",
+      "name": "No Gaps",
+      "description": "Removes the gaps in single-tab view.",
+      "homepage": "https://github.com/zen-browser/theme-store/tree/main/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/08e30eae4620d3aa7a947af61e41358b8d47b524/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/08e30eae4620d3aa7a947af61e41358b8d47b524/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/08e30eae4620d3aa7a947af61e41358b8d47b524/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722/image.png",
+      "author": "Peleret",
+      "version": "1.2.2",
+      "tags": [],
+      "createdAt": "2024-10-21",
+      "updatedAt": "2025-02-09",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/08e30eae4620d3aa7a947af61e41358b8d47b524/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722/preferences.json",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/08e30eae4620d3aa7a947af61e41358b8d47b524/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722/chrome.css",
+        "sha256": "b45426d2e002b90a84703a26516b58482a9aa58d20a3ba00a9e953ba4a8f371f",
+        "acceptedPreviousSha256": [
+          "9d4672c13809cf622f6cca8a386986d49b784fbad57716aaf9d1ee75d89aaabb"
+        ]
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/08e30eae4620d3aa7a947af61e41358b8d47b524/themes/bfcc400a-4ecb-4752-bfd2-a68f116a2722/preferences.json",
+        "sha256": "b6c48c96eb1daa8d26842082d81af90535cffb9cb24d77655b443bbe07e8afeb"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "d93e67f8-e5e1-401e-9b82-f9d5bab231e6",
+      "name": "Super Url Bar",
+      "description": "Get simple rounded edges, centered text, a removed border for your url bar and a background blur.",
+      "homepage": "https://github.com/JLBlk/Zen-Themes/tree/main/SuperUrlBar",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/253ec90e42bb381c53c926bdadd0a879487b39d9/themes/d93e67f8-e5e1-401e-9b82-f9d5bab231e6/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/253ec90e42bb381c53c926bdadd0a879487b39d9/themes/d93e67f8-e5e1-401e-9b82-f9d5bab231e6/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/253ec90e42bb381c53c926bdadd0a879487b39d9/themes/d93e67f8-e5e1-401e-9b82-f9d5bab231e6/image.png",
+      "author": "JLBlk",
+      "version": "1.4.2",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/253ec90e42bb381c53c926bdadd0a879487b39d9/themes/d93e67f8-e5e1-401e-9b82-f9d5bab231e6/preferences.json",
+      "tags": [
+        "urlbar"
+      ],
+      "createdAt": "2024-08-31",
+      "updatedAt": "2025-01-26",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/253ec90e42bb381c53c926bdadd0a879487b39d9/themes/d93e67f8-e5e1-401e-9b82-f9d5bab231e6/chrome.css",
+        "sha256": "8d5e2f1a0921546e7990fb51c41c0feda3c252ff93c5cfbaa514f7a553415874",
+        "acceptedPreviousSha256": [
+          "7bfeb07ffdf8dd02ed068192a949c1c7976ee0e2c05fcf53336826bcf90a040d"
+        ]
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/253ec90e42bb381c53c926bdadd0a879487b39d9/themes/d93e67f8-e5e1-401e-9b82-f9d5bab231e6/preferences.json",
+        "sha256": "977919dbed7da33665276303076b9ff128ce69ff53ceff4b975badbc90090b3e"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "13696593-837d-464d-adf4-ff13bd0e0545",
+      "name": "Download BG",
+      "description": "Add a background to the active download indicator.",
+      "homepage": "https://github.com/different55/download.bg",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/87fa8358342f557e9b69077c062196faf94b4bb0/themes/13696593-837d-464d-adf4-ff13bd0e0545/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/87fa8358342f557e9b69077c062196faf94b4bb0/themes/13696593-837d-464d-adf4-ff13bd0e0545/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/87fa8358342f557e9b69077c062196faf94b4bb0/themes/13696593-837d-464d-adf4-ff13bd0e0545/image.png",
+      "author": "different55",
+      "version": "1.0.0",
+      "tags": [],
+      "createdAt": "2024-12-29",
+      "updatedAt": "2025-01-26",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/87fa8358342f557e9b69077c062196faf94b4bb0/themes/13696593-837d-464d-adf4-ff13bd0e0545/chrome.css",
+        "sha256": "e31805a20906821631a5d56d4f5d055d189d1dda3350479dd7946fc77ac5797c"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "1b88a6d1-d931-45e8-b6c3-bfdca2c7e9d6",
+      "name": "Remove Tab X",
+      "description": "Removes the X from tabs which closes them.",
+      "homepage": "https://github.com/xXMacMillanXx/remove-tab-x",
+      "style": "https://raw.githubusercontent.com/xXMacMillanXx/remove-tab-x/c7a4c5f59022a9faf22a974a2baf06bcfbc5eb18/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/1b88a6d1-d931-45e8-b6c3-bfdca2c7e9d6/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/1b88a6d1-d931-45e8-b6c3-bfdca2c7e9d6/image.png",
+      "author": "xXMacMillanXx",
+      "version": "1.1.1",
+      "tags": [],
+      "createdAt": "2025-03-11",
+      "updatedAt": "2026-02-18",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/1b88a6d1-d931-45e8-b6c3-bfdca2c7e9d6/preferences.json",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/xXMacMillanXx/remove-tab-x/c7a4c5f59022a9faf22a974a2baf06bcfbc5eb18/chrome.css",
+        "sha256": "b54d1e0fdeaf68707aa84eac38937438d20ae1e265b3e75e850140ee0beb7667"
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/1b88a6d1-d931-45e8-b6c3-bfdca2c7e9d6/preferences.json",
+        "sha256": "fab6c828740f2128643971c4ae2247ee1e87d516b1a6fffa8383d93f8347ffd8"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "81fcd6b3-f014-4796-988f-6c3cb3874db8",
+      "name": "Zen Context Menu",
+      "description": "Declutter your right click menu, hide options you don't need",
+      "homepage": "https://github.com/KiKaraage/ZenMods/",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/81fcd6b3-f014-4796-988f-6c3cb3874db8/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/81fcd6b3-f014-4796-988f-6c3cb3874db8/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/81fcd6b3-f014-4796-988f-6c3cb3874db8/image.png",
+      "author": "KiKaraage",
+      "version": "3.1",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/81fcd6b3-f014-4796-988f-6c3cb3874db8/preferences.json",
+      "tags": [
+        "context menu"
+      ],
+      "createdAt": "2024-10-06",
+      "updatedAt": "2025-08-26",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/81fcd6b3-f014-4796-988f-6c3cb3874db8/chrome.css",
+        "sha256": "9752cb193a6569b71b0b0079e7604ad21e273871154c1025b231db8af41202cb"
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/81fcd6b3-f014-4796-988f-6c3cb3874db8/preferences.json",
+        "sha256": "5d0517cd462ddff40b4736579d94ca0771db467bd54165d687e2e89263348d92"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "f7c71d9a-bce2-420f-ae44-a64bd92975ab",
+      "name": "Better Unloaded Tabs",
+      "description": "Makes unloaded tabs easier to notice by making them greyscale and transparent.",
+      "homepage": "https://github.com/Felkazz/zen-browser-better-unloaded-tabs",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/image.png",
+      "author": "Felkazz",
+      "version": "1.0.1",
+      "tags": [],
+      "createdAt": "2024-10-12",
+      "updatedAt": "2025-01-26",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/f7c71d9a-bce2-420f-ae44-a64bd92975ab/chrome.css",
+        "sha256": "209033bd01e006188c357797df51391feb2b0191b053263ecb468b84c6a44ff6"
+      }
+    }
+  },
+  {
+    "entry": {
+      "id": "72f8f48d-86b9-4487-acea-eb4977b18f21",
+      "name": "Better CtrlTab Panel",
+      "description": "Re-style and add customization options for the CtrlTab panel.",
+      "homepage": "https://github.com/psu/zen-mods",
+      "style": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/72f8f48d-86b9-4487-acea-eb4977b18f21/chrome.css",
+      "readme": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/72f8f48d-86b9-4487-acea-eb4977b18f21/readme.md",
+      "image": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/72f8f48d-86b9-4487-acea-eb4977b18f21/image.png",
+      "author": "psu",
+      "version": "1.0.1",
+      "tags": [],
+      "createdAt": "2025-03-28",
+      "updatedAt": "2025-05-22",
+      "preferences": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/72f8f48d-86b9-4487-acea-eb4977b18f21/preferences.json",
+      "enabled": true
+    },
+    "files": {
+      "chrome.css": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/72f8f48d-86b9-4487-acea-eb4977b18f21/chrome.css",
+        "sha256": "0c63d6d9d126ffa49842e86dfde198e25a4b112657383d7fcc71601eba8e1a11"
+      },
+      "preferences.json": {
+        "url": "https://raw.githubusercontent.com/zen-browser/theme-store/7173dba5d060417fd65764b706856ae609496e31/themes/72f8f48d-86b9-4487-acea-eb4977b18f21/preferences.json",
+        "sha256": "679d4bdabc173f4e08f47147cb82c6e660dcb2d0fe8a1048b1657ffde5d51790"
+      }
+    }
+  }
+]

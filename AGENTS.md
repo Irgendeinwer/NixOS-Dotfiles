@@ -14,8 +14,8 @@ data unless a change is explicitly requested.
   `modules/home-manager/default.nix` scans its own directory. The shared
   scanner in `lib/scan-paths.nix` recursively imports regular `.nix` files and
   skips every `default.nix` and symlink. Scanned files must be safe on every
-  host. Put pure data and helper functions outside scanned directories, e.g.
-  `modules/theme/` or `lib/`.
+  host. Put pure data, helpers, and explicitly imported profile modules outside
+  scanned directories, e.g. `modules/theme/`, `modules/zen/`, or `lib/`.
 - `modules/nixvim/` configures system-wide Neovim; `modules/theme/` defines
   the shared palette and color helpers; `pkgs/` contains local packages.
   `tests/` contains Nix option evaluations and isolated runtime tests.
@@ -49,6 +49,12 @@ data unless a change is explicitly requested.
   migration, read its feature guide (e.g. [Zen](docs/zen-browser.md)), inspect
   upstream activation behavior and add regression coverage. Never activate,
   delete or replace user data in the agent environment without authorization.
+- Home Manager activation checks before `writeBoundary` must be read-only;
+  mutating phases must honor `DRY_RUN`, recheck collisions, and handle locking
+  and recovery. Distinguish application-owned writable state from immutable
+  Nix assets, and never silently replace an unrecognized file or foreign link.
+  Pin external assets to immutable revisions and hashes, and document any
+  application-managed update path that can change them after activation.
 - Use sops for new secrets. Do not print, copy into the Nix store, or commit
   private values. The existing opt-in ARK friend-server configuration is an
   owner-approved legacy exception; leave it unchanged unless requested.

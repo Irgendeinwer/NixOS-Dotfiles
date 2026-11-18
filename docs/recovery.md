@@ -31,8 +31,9 @@ gallery), `/etc/ssh`, `/var/lib/sops-nix` and `/var/lib/sbctl`.
 
 Not covered:
 
-- **junixbook has no backup job.** Its age key, `/etc/ssh` and Syncthing
-  identity exist only on the laptop; copy them somewhere safe by hand.
+- **junixbook has no backup job.** Its age key, `/etc/ssh`, Syncthing
+  identity and browser profile exist only on the laptop unless copied
+  somewhere safe by hand. Firefox Sync is not a full profile backup.
 - Service state under `/var/lib` (Immich and Jellyfin databases). Their
   media files are covered, the databases are not.
 - The Nix store and everything else reproducible from this flake.
@@ -44,7 +45,15 @@ in `hosts/junixbook/disk-config.nix`.
 
 1. Boot the NixOS installer and clone this repo. Evaluating the flake
    needs SSH access to the private wallpaper input, so have the user
-   SSH key available (or a checkout copied from another machine).
+   SSH key available (or a checkout copied from another machine). The
+   laptop's Zen module adopts an existing `~/.zen/xtezh31k.default` and
+   refuses to create it. Restore the verified `~/.zen` backup into the
+   new user's home before Home Manager activation, or temporarily omit
+   the `modules/zen/profile.nix` import from `hosts/junixbook/home.nix`.
+   For a new profile, start Zen once, find its actual path, restore the
+   import with that path, and follow [Zen adoption](zen-browser.md)
+   before switching. Never create an empty profile merely to satisfy the
+   guard or overwrite a different existing profile.
 2. In `hosts/junixbook/disk-config.nix`, replace the placeholder device
    with the new disk (`ls /dev/disk/by-id`).
 3. In `flake.nix`, add `inputs.disko.nixosModules.disko` and
