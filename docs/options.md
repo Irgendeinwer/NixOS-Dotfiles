@@ -24,7 +24,7 @@ to that value.
 | `custom.system.boot` | `silent.enable`; `secureboot.enable`, `secureboot.pkiBundle`. |
 | `custom.system.container` | `enable`, `authorizedKeys`; sets up the nspawn baseline and the container's SSH keys. |
 | `custom.system.power` | `upower.enable`, `ignorePowerKey`, `suspendThenHibernate.enable`, `suspendThenHibernate.hibernateDelaySec` (unsigned seconds, default 3600). These power features are independently selected. |
-| `custom.system.remoteBuilder` | `enable`, `offload` (default true), `host`, `hostPublicKey`, `cachePublicKey`, `maxJobs` (positive). Offload, the client key and remote builds take effect only when the feature is enabled; cache-only operation is supported. |
+| `custom.system.remoteBuilder` | `enable`, `offload` (default true), `host`, `hostPublicKey`, `cachePublicKey`, `maxJobs` (positive), `tailscaleHost` (nullable), `tailscaleSubstituter` (default false), `tailscaleSubstituterPriority` (positive, default 50). Offload, the client key and remote builds take effect only when the feature is enabled; cache-only operation is supported. `tailscaleHost` pins SSH host keys for remote/on-demand access without moving automatic builds off the LAN, and `tailscaleSubstituter` adds Harmonia as a lower-priority fallback behind `cache.nixos.org`. |
 | `custom.system.security.hardening` | `enable`, `lockdownEmergencyShell` (default false). Emergency-shell lockdown is applied only with hardening enabled. |
 | `custom.desktop` | `enable`, `wayland.enable`, `fonts.enable`; their related defaults and independent overrides are described below. |
 | `custom.desktop.hyprland` | `enable`, `layerBlur`, `monitors`. The last two affect the Hyprland session only. |
@@ -42,6 +42,7 @@ to that value.
 | `custom.services.immich` | `enable`, `openFirewall`, `host`, `mediaLocation`. |
 | `custom.services.jellyfin` | `enable`, `openFirewall`. |
 | `custom.services.syncthing` | `enable`, `user`, `openFirewall`. |
+| `custom.services.tailscale` | `enable`, `openFirewall` (default true), `shieldsUp` (default true), `acceptDns` (default false), `allowedTCPPorts`, `allowedUDPPorts`, `peers`. Opens only the WireGuard UDP port when `openFirewall` is true; `tailscale0` remains untrusted. |
 | `custom.services.archisteamfarm` | `enable`, `webUi`. |
 | `custom.services` | Independent toggles: `meilisearch.enable`, `openrgb.enable`, `playerctl.enable`, `printing.enable`, `zapret.enable`. |
 | `custom.theme` | `palette`, shared with system console, Nixvim and Home Manager by default. See [Palette](#palette). |

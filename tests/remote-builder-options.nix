@@ -69,12 +69,46 @@ let
       settings.connect-timeout = 30;
     };
   };
+  tailscaleFallback = evalRemoteBuilder {
+    extraConfig = {
+      imports = [ ../modules/services/tailscale.nix ];
+      custom.services.tailscale = {
+        enable = true;
+        peers."junixsrv.internal" = "100.64.0.10";
+      };
+      custom.system.remoteBuilder = {
+        tailscaleHost = "junixsrv.internal.";
+        tailscaleSubstituter = true;
+      };
+    };
+  };
+  tailscaleIpv6 = evalRemoteBuilder {
+    offload = false;
+    extraConfig.custom.system.remoteBuilder = {
+      tailscaleHost = "fd7a:115c:a1e0::10";
+      tailscaleSubstituter = true;
+      tailscaleSubstituterPriority = 60;
+    };
+  };
+  missingTailscaleHost = evalRemoteBuilder {
+    extraConfig.custom.system.remoteBuilder.tailscaleSubstituter = true;
+  };
+  duplicateTailscaleHost = evalRemoteBuilder {
+    extraConfig.custom.system.remoteBuilder.tailscaleHost = "junixsrv.local";
+  };
+  isBuilderAssertion = a: !a.assertion && lib.hasPrefix "custom.system.remoteBuilder:" a.message;
+  hasFailedAssertion = host: lib.any isBuilderAssertion host.config.assertions;
   cacheUrl = "http://junixsrv.local:5000";
+  tailscaleCacheUrl = "http://junixsrv.internal:5000?priority=50";
+  tailscaleIpv6Url = "http://[fd7a:115c:a1e0::10]:5000?priority=60";
   mdnsUnit = "remote-builder-mdns.service";
   hasMdns = host: builtins.hasAttr "remote-builder-mdns" host.config.systemd.services;
   ordersAfterMdns =
     service: builtins.elem mdnsUnit service.after && builtins.elem mdnsUnit service.wants;
   sshConfig = pkgs.writeText "remote-builder-ssh.conf" offloading.config.programs.ssh.extraConfig;
+  tsExtraSsh = tailscaleFallback.config.programs.ssh.extraConfig;
+  tsSshConfig = pkgs.writeText "remote-builder-ts-ssh.conf" tsExtraSsh;
+  tsExtraHosts = tailscaleFallback.config.programs.ssh.knownHosts."junixsrv.local".extraHostNames;
 in
 assert disabled.config.nix.buildMachines == [ ];
 assert !(builtins.elem cacheUrl disabled.config.nix.settings.substituters);
@@ -84,10 +118,20 @@ assert cacheOnly.config.nix.buildMachines == [ ];
 assert !cacheOnly.config.nix.distributedBuilds;
 assert builtins.elem cacheUrl cacheOnly.config.nix.settings.substituters;
 assert !(builtins.hasAttr "nix_builder_ssh_key" cacheOnly.config.sops.secrets);
+assert builtins.hasAttr "junixsrv.local" cacheOnly.config.programs.ssh.knownHosts;
 assert !(lib.hasInfix "IdentityAgent none" cacheOnly.config.programs.ssh.extraConfig);
 assert otherBuilder.config.nix.distributedBuilds;
 assert (builtins.head otherBuilder.config.nix.buildMachines).hostName == "other.example.invalid";
 assert otherBuilder.config.nix.settings.connect-timeout == 30;
+assert builtins.elem cacheUrl tailscaleFallback.config.nix.settings.substituters;
+assert builtins.elem tailscaleCacheUrl tailscaleFallback.config.nix.settings.substituters;
+assert builtins.length tailscaleFallback.config.nix.buildMachines == 1;
+assert (builtins.head tailscaleFallback.config.nix.buildMachines).hostName == "junixsrv.local";
+assert builtins.elem "junixsrv.internal" tsExtraHosts;
+assert builtins.elem "100.64.0.10" tsExtraHosts;
+assert builtins.elem tailscaleIpv6Url tailscaleIpv6.config.nix.settings.substituters;
+assert hasFailedAssertion missingTailscaleHost;
+assert hasFailedAssertion duplicateTailscaleHost;
 assert offloading.config.nix.distributedBuilds;
 assert builtins.length offloading.config.nix.buildMachines == 1;
 assert (builtins.head offloading.config.nix.buildMachines).hostName == "junixsrv.local";
@@ -143,6 +187,17 @@ pkgs.runCommand "remote-builder-option-combinations"
     ssh -G -F ${sshConfig} nixbuilder@other.example.invalid > other
     if grep -Fx 'identityagent none' other; then
       echo 'builder-only SSH options applied to another host' >&2
+      exit 1
+    fi
+    for host in junixsrv.local junixsrv.internal 100.64.0.10; do
+      ssh -G -F ${tsSshConfig} "nixbuilder@$host" > ts-builder
+      grep -Fx 'identityagent none' ts-builder
+      grep -Fx 'identitiesonly yes' ts-builder
+      grep -Fx 'connecttimeout 3' ts-builder
+    done
+    ssh -G -F ${tsSshConfig} julian@junixsrv.internal > ts-admin
+    if grep -Ex 'identityagent none|identitiesonly yes|connecttimeout 3' ts-admin; then
+      echo 'builder-only SSH options applied to julian over Tailscale' >&2
       exit 1
     fi
     mkdir -p "$out"

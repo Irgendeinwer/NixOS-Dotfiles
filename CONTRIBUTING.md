@@ -14,7 +14,7 @@ Keep changes small, consistent with the existing structure, and verified.
   - `nix flake check --no-build`
   - `nix build .#checks.x86_64-linux.nightly-runtime .#checks.x86_64-linux.remote-builder-mdns`
   - `nix build .#checks.x86_64-linux.container-options .#checks.x86_64-linux.remote-builder-options .#checks.x86_64-linux.build-server-options .#checks.x86_64-linux.without-userns-filter`
-  - `nix build .#checks.x86_64-linux.desktop-options .#checks.x86_64-linux.standalone-home .#checks.x86_64-linux.theme-options .#checks.x86_64-linux.zen-options`
+  - `nix build .#checks.x86_64-linux.desktop-options .#checks.x86_64-linux.standalone-home .#checks.x86_64-linux.theme-options .#checks.x86_64-linux.zen-options .#checks.x86_64-linux.tailscale-options`
   - The individual check targets can be built separately to reduce evaluation memory, as CI does.
 - Prefer packages from nixpkgs; do not vendor, download or version-pin upstream tools without a concrete reason.
 - Use sops-encrypted files under `secrets/` for new secrets. The existing opt-in ARK friend-server configuration is a deliberate legacy exception; leave it unchanged unless its owner requests otherwise.

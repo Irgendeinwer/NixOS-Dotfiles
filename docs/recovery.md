@@ -176,8 +176,13 @@ The legacy `without-userns` wrapper applies only when selecting C++ Nix
 (`custom.system.lix.enable = false`). It is a compatibility workaround, not a
 user-namespace security boundary: `clone3` is disabled as a whole and
 `setns(fd, 0)` cannot distinguish an existing user namespace from a network
-namespace. Lix's packaged pasta path is explicitly disabled in this container
-because `/dev/net/tun` is not exposed.
+namespace. Lix's packaged pasta path stays disabled independently of
+`/dev/net/tun` exposure for Tailscale.
+
+If `/var/lib/tailscale` was not preserved across a reinstall of `junixbook` or
+`junixsrv`, [enroll the node again](tailscale.md#enroll-the-nodes), remove the
+retired device entry from the Tailscale admin console, and update any static
+`custom.services.tailscale.peers` IP if `junixsrv`'s Tailscale address changed.
 
 Keys in `custom.services.buildServer.authorizedKeys` authenticate the trusted
 Nix user `nixbuilder`. Treat these as root-equivalent keys, even if adding SSH

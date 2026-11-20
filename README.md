@@ -72,5 +72,6 @@ wallpapers.
 - [Contributing](CONTRIBUTING.md) — conventions and checks.
 - [Custom options](docs/options.md) — scopes, defaults and composition.
 - [Application data](docs/zen-browser.md) — Zen profile adoption and backups.
+- [Tailscale](docs/tailscale.md) — private access to `junixsrv` on the LAN and remotely.
 - [Recovery](docs/recovery.md) — reinstall and recovery steps.
 - [Agent guide](AGENTS.md) — repository-specific guidance for coding agents.
