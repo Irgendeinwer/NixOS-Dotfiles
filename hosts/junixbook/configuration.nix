@@ -71,6 +71,7 @@
     };
 
     services = {
+      tailscale.enable = true;
       syncthing.enable = true;
       playerctl.enable = true;
     };

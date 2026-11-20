@@ -37,6 +37,11 @@
     };
 
     services = {
+      # Kernel TUN inside nspawn; see docs/tailscale.md.
+      tailscale = {
+        enable = true;
+        shieldsUp = false;
+      };
       buildServer = {
         enable = true;
         # Requires the `nix_nightly_webhook` key (Discord webhook URL) in

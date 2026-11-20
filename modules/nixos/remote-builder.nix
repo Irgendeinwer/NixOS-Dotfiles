@@ -6,7 +6,39 @@
 }:
 let
   cfg = config.custom.system.remoteBuilder;
-  targetHost = lib.removeSuffix "." cfg.host;
+  normalizeSshHost =
+    h:
+    let
+      trimmed = lib.removeSuffix "." h;
+    in
+    if lib.hasPrefix "[" trimmed && lib.hasSuffix "]" trimmed then
+      lib.removePrefix "[" (lib.removeSuffix "]" trimmed)
+    else
+      trimmed;
+  formatHttpHost =
+    h:
+    let
+      clean = normalizeSshHost h;
+    in
+    if lib.hasInfix ":" clean then "[${clean}]" else clean;
+  targetHost = normalizeSshHost cfg.host;
+  tailscaleTarget = lib.mapNullable normalizeSshHost cfg.tailscaleHost;
+  tailscalePeerIp =
+    if tailscaleTarget != null then
+      (config.custom.services.tailscale.peers or { }).${tailscaleTarget} or null
+    else
+      null;
+  tailscaleIpHost = lib.mapNullable normalizeSshHost tailscalePeerIp;
+  extraSshHosts = lib.unique (
+    lib.filter (h: h != null && h != "" && h != targetHost) [
+      tailscaleTarget
+      tailscaleIpHost
+    ]
+  );
+  builderSshHosts = [ targetHost ] ++ extraSshHosts;
+  useTailscaleCache =
+    cfg.cachePublicKey != null && cfg.tailscaleSubstituter && tailscaleTarget != null;
+  tailscalePriority = toString cfg.tailscaleSubstituterPriority;
   userName = config.custom.user;
   useAvahiMdns = lib.hasSuffix ".local" targetHost && !config.services.resolved.enable;
   userSecretsFile = ../../secrets + "/users/${userName}.yaml";
@@ -65,9 +97,52 @@ in
       default = 8;
       description = "Maximum concurrent jobs sent to the remote server when offloading is enabled.";
     };
+
+    tailscaleHost = lib.mkOption {
+      type = lib.types.nullOr lib.types.nonEmptyStr;
+      default = null;
+      example = "junixsrv.internal";
+      description = ''
+        Optional Tailscale hostname or IP address for the build server. Pins
+        SSH host keys for remote administration and on-demand --builders runs,
+        without switching automatic distributed builds off the LAN.
+      '';
+    };
+
+    tailscaleSubstituter = lib.mkOption {
+      type = lib.types.bool;
+      default = false;
+      description = ''
+        Add the build server's Harmonia cache over Tailscale at
+        tailscaleSubstituterPriority so custom derivations missing from
+        cache.nixos.org can still be substituted when outside the LAN.
+      '';
+    };
+
+    tailscaleSubstituterPriority = lib.mkOption {
+      type = lib.types.ints.positive;
+      default = 50;
+      description = ''
+        Binary cache priority for the Tailscale Harmonia URL (LAN Harmonia is
+        30; cache.nixos.org is 40). Keep above 40 so standard upstream
+        packages come from cache.nixos.org rather than the server's upload
+        link when remote.
+      '';
+    };
   };
 
   config = lib.mkIf cfg.enable {
+    assertions = [
+      {
+        assertion = cfg.tailscaleSubstituter -> cfg.tailscaleHost != null;
+        message = "custom.system.remoteBuilder: tailscaleSubstituter requires tailscaleHost to be set.";
+      }
+      {
+        assertion = tailscaleTarget == null || tailscaleTarget != targetHost;
+        message = "custom.system.remoteBuilder: tailscaleHost must differ from host (${targetHost}) so LAN and Tailscale cache priorities remain distinct.";
+      }
+    ];
+
     # Only needed for offloading; a cache-only client never needs the user key.
     sops.secrets.nix_builder_ssh_key = lib.mkIf cfg.offload {
       sopsFile = builderKeyFile;
@@ -135,15 +210,19 @@ in
       "nix-daemon@" = lib.mkIf (useAvahiMdns && config.nix.package.pname == "lix") mdnsDependencies;
     };
 
-    programs.ssh = lib.mkIf cfg.offload {
+    programs.ssh = {
       knownHosts = lib.optionalAttrs (cfg.hostPublicKey != null) {
-        ${targetHost}.publicKey = cfg.hostPublicKey;
+        ${targetHost} = {
+          publicKey = cfg.hostPublicKey;
+          extraHostNames = extraSshHosts;
+        };
       };
       # Bound SSH connection attempts away from the LAN and bypass agent hooks
       # only for build submissions; administrative logins keep their own defaults.
-      extraConfig = ''
-        Match host ${targetHost} user nixbuilder
+      extraConfig = lib.mkIf cfg.offload ''
+        Match host ${lib.concatStringsSep "," builderSshHosts} user nixbuilder
           Port 22
+          IdentityFile ${config.sops.secrets.nix_builder_ssh_key.path}
           IdentitiesOnly yes
           IdentityAgent none
           ConnectTimeout 3
@@ -183,9 +262,13 @@ in
         # This is global HTTP policy (max-connect-timeout in Lix), not only
         # the LAN cache. Let hosts override it for slow networks.
         connect-timeout = lib.mkDefault 3;
-        substituters = lib.optionals (cfg.cachePublicKey != null) [
-          "http://${targetHost}:5000"
-        ];
+        substituters =
+          lib.optionals (cfg.cachePublicKey != null) [
+            "http://${formatHttpHost targetHost}:5000"
+          ]
+          ++ lib.optionals useTailscaleCache [
+            "http://${formatHttpHost tailscaleTarget}:5000?priority=${tailscalePriority}"
+          ];
         trusted-public-keys = lib.optionals (cfg.cachePublicKey != null) [
           cfg.cachePublicKey
         ];

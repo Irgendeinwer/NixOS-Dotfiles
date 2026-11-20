@@ -28,7 +28,7 @@ jobs:
         run: |
           # Separate evaluations avoid retaining every host/module graph at once.
           for check in nightly-runtime remote-builder-mdns container-options \
-            remote-builder-options build-server-options desktop-options \
+            remote-builder-options build-server-options desktop-options tailscale-options \
             standalone-home theme-options zen-options without-userns-filter; do
             nix build ".#checks.x86_64-linux.$check" --no-link
           done

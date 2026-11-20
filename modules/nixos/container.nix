@@ -69,8 +69,9 @@ in
         )
       );
       # nixpkgs compiles a pasta path into Lix even though the raw upstream
-      # setting defaults to empty. Disable it without /dev/net/tun so fixed-
-      # output derivations do not enter an unusable private network namespace.
+      # setting defaults to empty. Keep it disabled for the container build
+      # baseline, independently of /dev/net/tun exposure for services such as
+      # Tailscale.
       pasta-path = lib.mkIf isLix "";
     };
 
