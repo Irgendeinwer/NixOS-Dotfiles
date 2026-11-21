@@ -22,6 +22,10 @@ covers, and how to reinstall junixbook on a new disk.
   re-approving the device on the others.
 - **`~/.ssh/id_ed25519`** needs no backup: sops materializes it from
   `secrets/`, and with it the SSH access to the private repositories.
+- **Local Root CA key** (`junix_ca_key` in `secrets/users/julian.yaml`):
+  signs internal TLS leaf certificates (`portal_tls_cert` / `portal_tls_key`
+  in `secrets/junixsrv.yaml`) trusted via `assets/junix-ca.pem`; see
+  [Server portal & PKI](portal.md).
 
 ## What the backup covers
 
@@ -105,11 +109,15 @@ is gone for good.
    `.sops.yaml` (include `*host_junixsrv` under `secrets/common\.yaml$` and add
    a `secrets/junixsrv\.yaml$` rule **above** the catch-all
    `secrets/[^/]+\.yaml$` rule), run `sops updatekeys secrets/common.yaml` **and**
-   `sops updatekeys secrets/junixsrv.yaml`, then provision two repository-scoped
-   GitHub deploy keys in `secrets/junixsrv.yaml`
+   `sops updatekeys secrets/junixsrv.yaml`, then provision the three
+   repository-scoped GitHub deploy keys and the portal TLS pair in
+   `secrets/junixsrv.yaml`
    (GitHub forbids reusing one deploy key across two repositories):
    - `nix_nightly_ssh_key`: read/write deploy key on `Irgendeinwer/NixOS-Dotfiles`
    - `wallpaper_deploy_key`: read-only deploy key on `Irgendeinwer/wallpaper`
+   - `nix_private_deploy_key`: read-only deploy key on `Irgendeinwer/nix-private`
+   - `portal_tls_cert` and `portal_tls_key`: HTTPS certificate chain and private
+     key signed by `assets/junix-ca.pem` (see [Server portal & PKI](portal.md))
    The dedicated deploy keys mean the nightly job does not need to install the
    personal `user_ssh_key` for its own Git operations. However, `junixsrv` is
    currently a recipient of `secrets/common.yaml`, so its root can decrypt every

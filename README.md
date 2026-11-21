@@ -64,8 +64,8 @@ nix fmt                                        # format all Nix files
 ```
 
 The checkout belongs in `~/dotfiles`; helper tooling points there.
-Evaluating the flake needs SSH access to a private input that holds the
-wallpapers.
+Evaluating the flake needs SSH access to the private `wallpaper` and
+`nix-private` inputs.
 
 ## Documentation
 
@@ -73,5 +73,6 @@ wallpapers.
 - [Custom options](docs/options.md) — scopes, defaults and composition.
 - [Application data](docs/zen-browser.md) — Zen profile adoption and backups.
 - [Tailscale](docs/tailscale.md) — private access to `junixsrv` on the LAN and remotely.
+- [Server portal & PKI](docs/portal.md) — HTTPS overview dashboard, custom scripts and private Root CA.
 - [Recovery](docs/recovery.md) — reinstall and recovery steps.
 - [Agent guide](AGENTS.md) — repository-specific guidance for coding agents.

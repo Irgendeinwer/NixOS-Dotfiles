@@ -1,0 +1,189 @@
+{
+  nixpkgs,
+  pkgs,
+  self,
+  sopsModule,
+}:
+let
+  inherit (nixpkgs) lib;
+  system = pkgs.stdenv.hostPlatform.system;
+
+  dummyCa = pkgs.writeText "dummy-junix-ca.pem" "TEST-CA\n";
+  dummyCert = pkgs.writeText "dummy-portal-cert.pem" "TEST-CERT\n";
+  dummyKey = pkgs.writeText "dummy-portal-key.pem" "TEST-KEY\n";
+
+  evalPortal =
+    extraConfig:
+    (lib.nixosSystem {
+      inherit system;
+      modules = [
+        sopsModule
+        {
+          options.custom.user = lib.mkOption {
+            type = lib.types.str;
+            default = "julian";
+          };
+        }
+        ../modules/nixos/pki.nix
+        ../modules/services/syncthing.nix
+        ../modules/services/navidrome.nix
+        ../modules/services/portal.nix
+        {
+          networking.hostName = "junixsrv";
+          system.stateVersion = "26.11";
+        }
+        extraConfig
+      ];
+    }).config;
+
+  disabled = evalPortal { };
+
+  httpsSops = evalPortal {
+    boot.isContainer = true;
+    custom.system.security.localCa.certificateFile = dummyCa;
+    custom.services = {
+      syncthing.enable = true;
+      navidrome.enable = true;
+      portal = {
+        enable = true;
+        projects.study-tracker = {
+          title = "Study Tracker";
+          description = "Exam & homework planner";
+          port = 18090;
+          execStart = "/bin/true";
+          environment.APP_ENV = "production";
+        };
+      };
+    };
+  };
+
+  httpOnly = evalPortal {
+    custom.system.security.localCa = {
+      enable = false;
+      certificateFile = dummyCa;
+    };
+    custom.services.portal = {
+      enable = true;
+      tls.enable = false;
+      projects.raw-uri = {
+        port = 18091;
+        stripPrefix = false;
+      };
+    };
+  };
+
+  customTls = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      openFirewall = false;
+      tls = {
+        enable = true;
+        certificateFile = dummyCert;
+        keyFile = dummyKey;
+      };
+    };
+  };
+
+  halfTls = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      tls.certificateFile = dummyCert;
+    };
+  };
+
+  reservedCollision = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      projects.bad = {
+        port = 18092;
+        location = "/api/status";
+      };
+    };
+  };
+
+  portCollision = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      projects.bad = {
+        port = 18080;
+      };
+    };
+  };
+
+  multiTargetService = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      services.ambiguous = {
+        title = "Ambiguous";
+        port = 9000;
+        url = "https://example.invalid";
+      };
+    };
+  };
+
+  hasFailedAssertion =
+    prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
+
+  vhost = httpsSops.services.nginx.virtualHosts.junixsrv;
+  httpVhost = httpOnly.services.nginx.virtualHosts.junixsrv;
+  serverHost = self.nixosConfigurations.junixsrv.config;
+  serverVhost = serverHost.services.nginx.virtualHosts.junixsrv;
+in
+assert !disabled.services.nginx.enable;
+assert !(builtins.hasAttr "junix-portal-status" disabled.systemd.services);
+assert !(builtins.hasAttr "portal_tls_cert" disabled.sops.secrets);
+assert httpsSops.services.nginx.enable;
+assert builtins.elem dummyCa httpsSops.security.pki.certificateFiles;
+assert builtins.elem 80 httpsSops.networking.firewall.allowedTCPPorts;
+assert builtins.elem 443 httpsSops.networking.firewall.allowedTCPPorts;
+assert vhost.default && vhost.forceSSL;
+assert builtins.elem "junixsrv.local" vhost.serverAliases;
+assert builtins.elem "junixsrv.internal" vhost.serverAliases;
+assert builtins.hasAttr "portal_tls_cert" httpsSops.sops.secrets;
+assert builtins.hasAttr "portal_tls_key" httpsSops.sops.secrets;
+assert httpsSops.sops.secrets.portal_tls_cert.mode == "0400";
+assert builtins.elem "nginx.service" httpsSops.sops.secrets.portal_tls_cert.reloadUnits;
+assert vhost.locations."= /api/status".proxyPass == "http://127.0.0.1:18080/api/status";
+assert vhost.locations."/study-tracker/".proxyPass == "http://127.0.0.1:18090/";
+assert httpsSops.custom.services.portal.services.navidrome.port == 4533;
+assert httpsSops.custom.services.portal.services.navidrome.path == "/app/";
+# Syncthing stays internal-only (unexposed on Nginx and direct ports).
+assert httpsSops.custom.services.portal.services.syncthing.port == null;
+assert httpsSops.custom.services.portal.services.syncthing.location == null;
+assert httpsSops.custom.services.portal.services.syncthing.url == null;
+assert !(builtins.hasAttr "/syncthing/" vhost.locations);
+assert !httpsSops.systemd.services.junix-portal-status.serviceConfig.PrivateUsers;
+assert !httpsSops.systemd.services.portal-project-study-tracker.serviceConfig.PrivateUsers;
+assert httpsSops.systemd.services.portal-project-study-tracker.environment.PORT == "18090";
+assert httpsSops.systemd.services.portal-project-study-tracker.environment.HOST == "127.0.0.1";
+assert httpsSops.systemd.services.portal-project-study-tracker.environment.APP_ENV == "production";
+assert !(builtins.elem dummyCa httpOnly.security.pki.certificateFiles);
+assert builtins.elem 80 httpOnly.networking.firewall.allowedTCPPorts;
+assert !(builtins.elem 443 httpOnly.networking.firewall.allowedTCPPorts);
+assert !httpVhost.forceSSL;
+assert !(builtins.hasAttr "portal_tls_cert" httpOnly.sops.secrets);
+assert httpVhost.locations."/raw-uri/".proxyPass == "http://127.0.0.1:18091";
+assert httpOnly.systemd.services.junix-portal-status.serviceConfig.PrivateUsers;
+assert !(builtins.hasAttr "portal_tls_cert" customTls.sops.secrets);
+assert !(builtins.elem 443 customTls.networking.firewall.allowedTCPPorts);
+assert customTls.services.nginx.virtualHosts.junixsrv.sslCertificate == toString dummyCert;
+assert customTls.services.nginx.virtualHosts.junixsrv.sslCertificateKey == toString dummyKey;
+assert hasFailedAssertion "custom.services.portal.tls:" halfTls;
+assert hasFailedAssertion "custom.services.portal:" reservedCollision;
+assert hasFailedAssertion "custom.services.portal.projects:" portCollision;
+assert hasFailedAssertion "custom.services.portal.services:" multiTargetService;
+assert serverHost.services.nginx.enable;
+assert serverVhost.forceSSL;
+assert builtins.elem 80 serverHost.networking.firewall.allowedTCPPorts;
+assert builtins.elem 443 serverHost.networking.firewall.allowedTCPPorts;
+assert serverHost.custom.services.portal.services.navidrome.port == 4533;
+assert serverHost.custom.services.portal.services.harmonia.port == 5000;
+assert serverHost.custom.services.portal.services.syncthing.port == null;
+assert serverHost.custom.services.portal.services.syncthing.location == null;
+pkgs.runCommand "portal-host-options" { } ''
+  test -f ${serverVhost.root}/index.html
+  test -f ${serverVhost.root}/style.css
+  test -f ${serverVhost.root}/app.js
+  test -f ${serverVhost.root}/portal-config.json
+  mkdir -p "$out"
+''

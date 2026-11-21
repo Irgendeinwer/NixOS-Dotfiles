@@ -229,31 +229,53 @@ SWITCH_STUB
 done
 
 # No nixpkgs update is a calm success only after the rest of the run succeeds.
+status_json_test="$tmpdir/status-dir/status.json"
 (
   lock_updated=0
+  hosts=(junixsrv junixbook junixos)
+  status_file="$status_json_test"
+  summary=""
+  add_summary "nixpkgs: up to date; lockfile update skipped"
   install_nightly_signal_traps
   exit 0
 )
 jq -e '.embeds[0].title == "🌙 No nixpkgs updates · test" and .embeds[0].color == 5793266' "$CURL_PAYLOAD_FILE" >/dev/null
+jq -e '
+  .schemaVersion == 1
+  and .host == "test"
+  and .state == "up_to_date"
+  and .exitCode == 0
+  and .lockUpdated == false
+  and .activationDeferred == false
+  and .hosts == ["junixsrv", "junixbook", "junixos"]
+  and (.summary | length >= 2)
+' "$status_json_test" >/dev/null
+[[ "$(stat -c '%a' "$status_json_test")" == "644" ]]
 (
   lock_updated=1
+  status_file="$status_json_test"
   install_nightly_signal_traps
   exit 0
 )
 jq -e '.embeds[0].title == "✅ Nightly update complete · test"' "$CURL_PAYLOAD_FILE" >/dev/null
+jq -e '.state == "success" and .lockUpdated == true and .exitCode == 0' "$status_json_test" >/dev/null
 (
   lock_updated=0
   activation_deferred=1
+  status_file="$status_json_test"
   install_nightly_signal_traps
   exit 0
 )
 jq -e '.embeds[0].title == "⚠️ Nightly update deferred · test"' "$CURL_PAYLOAD_FILE" >/dev/null
+jq -e '.state == "warning" and .activationDeferred == true and .exitCode == 0' "$status_json_test" >/dev/null
 
 # Even if no update was available, a failed pre-build is still a failure.
 export CURL_FAIL=1
 set +e
 (
   lock_updated=0
+  stage="pre-build junixbook"
+  status_file="$status_json_test"
   install_nightly_signal_traps
   exit 37
 ) 2>"$tmpdir/exit-error"
@@ -262,6 +284,7 @@ set -e
 [[ "$exit_status" -eq 37 ]]
 grep -Fq 'could not deliver Discord notification' "$tmpdir/exit-error"
 jq -e '.embeds[0].title == "❌ Nightly run failed · test" and (.embeds[0].description | contains("**Exit code:** 37"))' "$CURL_PAYLOAD_FILE" >/dev/null
+jq -e '.state == "failure" and .stage == "pre-build junixbook" and .exitCode == 37' "$status_json_test" >/dev/null
 
 # TERM maps to timeout status 124, runs the same EXIT reporter, and remains
 # best-effort when notification transport is unavailable.

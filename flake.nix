@@ -48,6 +48,11 @@
       url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
       flake = false;
     };
+
+    private = {
+      url = "git+ssh://git@github.com/Irgendeinwer/nix-private.git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -69,9 +74,36 @@
         else
           [ ];
 
+      inherit (nixpkgs) lib;
       myOverlays = loadOverlays ./modules/overlays;
+      hasPrivate = inputs ? private;
+      privateOverlays =
+        if hasPrivate && inputs.private ? overlays.default then
+          [ inputs.private.overlays.default ]
+        else
+          [ ];
+      privateNixosModulesFor =
+        name:
+        if hasPrivate && inputs.private ? nixosModules then
+          let
+            mods = inputs.private.nixosModules;
+          in
+          lib.optional (mods ? default) mods.default ++ lib.optional (mods ? ${name}) mods.${name}
+        else
+          [ ];
+      privateHomeModulesFor =
+        name:
+        if hasPrivate && inputs.private ? homeManagerModules then
+          let
+            mods = inputs.private.homeManagerModules;
+          in
+          lib.optional (mods ? default) mods.default ++ lib.optional (mods ? ${name}) mods.${name}
+        else
+          [ ];
+
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      customScripts = import ./pkgs/scripts { inherit pkgs; };
 
       # Keep host-specific modules explicit, while sharing the integrations
       # and Home Manager setup that every host needs.
@@ -80,9 +112,10 @@
         nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
           modules = [
-            { nixpkgs.overlays = myOverlays; }
+            { nixpkgs.overlays = myOverlays ++ privateOverlays; }
           ]
           ++ hostModules
+          ++ privateNixosModulesFor name
           ++ [
             inputs.sops-nix.nixosModules.sops
             inputs.lanzaboote.nixosModules.lanzaboote
@@ -95,6 +128,7 @@
                   useUserPackages = true;
                   backupFileExtension = "backup";
                   extraSpecialArgs = { inherit inputs; };
+                  sharedModules = privateHomeModulesFor name;
                   users.${config.custom.user} = import (./hosts + "/${name}/home.nix");
                 };
               }
@@ -107,7 +141,25 @@
       # `nix fmt` formats every .nix file in the repo with nixfmt
       formatter.${system} = pkgs.nixfmt-tree;
 
+      packages.${system} =
+        customScripts
+        // {
+          without-userns = pkgs.callPackage ./pkgs/without-userns.nix { };
+        }
+        // (
+          if hasPrivate && inputs.private ? packages.${system} then
+            inputs.private.packages.${system}
+          else
+            { }
+        );
+
       checks.${system} = {
+        custom-scripts =
+          let
+            entries = lib.mapAttrsToList (name: path: { inherit name path; }) customScripts;
+          in
+          pkgs.linkFarm "custom-scripts-check" entries;
+
         nightly-runtime =
           pkgs.runCommand "nightly-runtime-tests"
             {
@@ -142,6 +194,14 @@
               mkdir -p "$out"
             '';
 
+        portal-status =
+          pkgs.runCommand "portal-status-tests" { nativeBuildInputs = [ pkgs.python3 ]; }
+            ''
+              export PORTAL_STATUS_HELPER=${./modules/services/scripts/portal-status.py}
+              python3 -B ${./tests/portal-status.py}
+              mkdir -p "$out"
+            '';
+
         container-options = import ./tests/container-options.nix {
           inherit nixpkgs pkgs system;
         };
@@ -163,6 +223,10 @@
         tailscale-options = import ./tests/tailscale-options.nix { inherit nixpkgs pkgs self; };
         syncthing-options = import ./tests/syncthing-options.nix { inherit nixpkgs pkgs self; };
         navidrome-options = import ./tests/navidrome-options.nix { inherit nixpkgs pkgs self; };
+        portal-options = import ./tests/portal-options.nix {
+          inherit nixpkgs pkgs self;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
         standalone-home = import ./tests/standalone-home.nix { inherit inputs pkgs; };
         theme-options = import ./tests/theme-options.nix { inherit nixpkgs pkgs self; };
         zen-options = import ./tests/zen-options.nix { inherit inputs pkgs self; };

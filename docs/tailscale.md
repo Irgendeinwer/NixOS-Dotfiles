@@ -232,6 +232,7 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
    ssh "julian@$server_ts"
    curl --fail "http://$server_ts:5000/nix-cache-info"
    curl --fail -I "http://$server_ts:4533/app/"
+   curl --fail -I "https://$server_ts/"
    ```
    The first reply may use `via DERP(...)` before NAT traversal establishes a
    direct path (`via <ip>:<port>`).

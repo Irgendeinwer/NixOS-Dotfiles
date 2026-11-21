@@ -12,9 +12,9 @@ Keep changes small, consistent with the existing structure, and verified.
   - `nix build .#nixosConfigurations.junixbook.config.system.build.toplevel --dry-run`
   - `nix build .#nixosConfigurations.junixsrv.config.system.build.toplevel --dry-run`
   - `nix flake check --no-build`
-  - `nix build .#checks.x86_64-linux.nightly-runtime .#checks.x86_64-linux.remote-builder-mdns`
+  - `nix build .#checks.x86_64-linux.custom-scripts .#checks.x86_64-linux.nightly-runtime .#checks.x86_64-linux.remote-builder-mdns .#checks.x86_64-linux.portal-status`
   - `nix build .#checks.x86_64-linux.container-options .#checks.x86_64-linux.remote-builder-options .#checks.x86_64-linux.build-server-options .#checks.x86_64-linux.without-userns-filter`
-  - `nix build .#checks.x86_64-linux.desktop-options .#checks.x86_64-linux.standalone-home .#checks.x86_64-linux.theme-options .#checks.x86_64-linux.zen-options .#checks.x86_64-linux.tailscale-options .#checks.x86_64-linux.syncthing-options .#checks.x86_64-linux.navidrome-options`
+  - `nix build .#checks.x86_64-linux.desktop-options .#checks.x86_64-linux.standalone-home .#checks.x86_64-linux.theme-options .#checks.x86_64-linux.zen-options .#checks.x86_64-linux.tailscale-options .#checks.x86_64-linux.syncthing-options .#checks.x86_64-linux.navidrome-options .#checks.x86_64-linux.portal-options`
   - The individual check targets can be built separately to reduce evaluation memory, as CI does.
 - Prefer packages from nixpkgs; do not vendor, download or version-pin upstream tools without a concrete reason.
 - Use sops-encrypted files under `secrets/` for new secrets. The existing opt-in ARK friend-server configuration is a deliberate legacy exception; leave it unchanged unless its owner requests otherwise.

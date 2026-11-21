@@ -17,7 +17,8 @@ data unless a change is explicitly requested.
   host. Put pure data, helpers, and explicitly imported profile modules outside
   scanned directories, e.g. `modules/theme/`, `modules/zen/`, or `lib/`.
 - `modules/nixvim/` configures system-wide Neovim; `modules/theme/` defines
-  the shared palette and color helpers; `pkgs/` contains local packages.
+  the shared palette and color helpers; `pkgs/` contains local packages and
+  standalone CLI tools (`pkgs/scripts/` built via `pkgs/mk-script.nix`).
   `tests/` contains Nix option evaluations and isolated runtime tests.
 - `docs/` contains feature-specific operation and recovery procedures. Keep
   the root README introductory; put detailed behavior and safety procedures
@@ -63,10 +64,11 @@ data unless a change is explicitly requested.
 
 - Git flakes see tracked files only: stage new files before testing, or use a
   temporary `path:` checkout that includes them. Do not accidentally stage
-  unrelated user work. The private wallpaper input requires the owner's SSH
-  access; if unavailable, an explicitly labeled temporary input override can
-  test evaluation only, not wallpaper content or a real build. Do not commit
-  test placeholders or change `flake.lock` just to work around missing access.
+  unrelated user work. The private `wallpaper` and `private` (`nix-private`)
+  inputs require the owner's SSH access; if unavailable, an explicitly labeled
+  temporary input override can test evaluation only, not private content or a
+  real build. Do not commit test placeholders or change `flake.lock` just to
+  work around missing access.
 - Run the formatter and the host, flake and explicit checks listed in
   [CONTRIBUTING.md](CONTRIBUTING.md). `nix flake check --no-build` evaluates
   checks but does not run their builders. If resources are limited, evaluate

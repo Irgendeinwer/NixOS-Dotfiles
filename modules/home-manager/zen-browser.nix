@@ -7,6 +7,19 @@
 let
   browsersEnabled =
     if osConfig == null then true else (osConfig.custom.desktop.browsers.enable or false);
+  defaultCaFile = ../../assets + "/junix-ca.pem";
+  localCaCert =
+    if osConfig != null then
+      (
+        if (osConfig.custom.system.security.localCa.enable or false) then
+          (osConfig.custom.system.security.localCa.certificateFile or null)
+        else
+          null
+      )
+    else if builtins.pathExists defaultCaFile then
+      defaultCaFile
+    else
+      null;
 in
 {
   imports = [ inputs.zen-browser.homeModules.default ];
@@ -19,6 +32,10 @@ in
     policies = {
       DisableAppUpdate = lib.mkDefault true;
       DisableTelemetry = lib.mkDefault true;
+      Certificates = lib.mkIf (localCaCert != null) {
+        ImportEnterpriseRoots = lib.mkDefault true;
+        Install = [ (toString localCaCert) ];
+      };
     };
   };
 }

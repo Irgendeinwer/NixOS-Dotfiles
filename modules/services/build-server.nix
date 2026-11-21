@@ -8,9 +8,20 @@ let
   cfg = config.custom.services.buildServer;
   sopsFile = ../../secrets + "/${config.networking.hostName}.yaml";
 
-  notifyEnabled = cfg.enable && cfg.nightly.enable && cfg.nightly.notify.enable;
+  nightlyEnabled = cfg.enable && cfg.nightly.enable;
+  notifyEnabled = nightlyEnabled && cfg.nightly.notify.enable;
   # `config.sops.secrets.<name>.path` only exists when the matching entry below
-  # is declared, so guard the lookup behind the same condition (Nix `if` is lazy).
+  # is declared, so guard each lookup behind the same condition (Nix `if` is lazy).
+  repoSshKeyPath =
+    if nightlyEnabled then
+      config.sops.secrets.nix_nightly_ssh_key.path
+    else
+      "/run/secrets/nix_nightly_ssh_key";
+  wallpaperSshKeyPath =
+    if nightlyEnabled then
+      config.sops.secrets.nix_nightly_flake_ssh_key.path
+    else
+      "/run/secrets/nix_nightly_flake_ssh_key";
   webhookPath =
     if notifyEnabled then
       config.sops.secrets.nix_nightly_webhook.path
@@ -18,11 +29,82 @@ let
       "/run/secrets/nix_nightly_webhook";
   notifyEnabledStr = if notifyEnabled then "1" else "0";
 
+  validGithubRepo =
+    repo:
+    builtins.match "[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+" repo != null && !(lib.hasSuffix ".git" repo);
+  sanitizeRepoName = repo: builtins.replaceStrings [ "/" "." "-" ] [ "_" "_" "_" ] repo;
+
+  extraDeployEntries = lib.imap0 (
+    i: repo:
+    let
+      secretName = "nix_nightly_deploy_${sanitizeRepoName repo}";
+    in
+    {
+      inherit repo secretName;
+      alias = "github-flake-${toString (i + 1)}";
+      secretKey = cfg.nightly.extraDeployKeys.${repo};
+      keyPath =
+        if nightlyEnabled then
+          config.sops.secrets.${secretName}.path
+        else
+          "/run/secrets/${secretName}";
+    }
+  ) (builtins.attrNames cfg.nightly.extraDeployKeys);
+
+  allFlakeDeployEntries = [
+    {
+      repo = "Irgendeinwer/wallpaper";
+      alias = "github-flake-0";
+      keyPath = wallpaperSshKeyPath;
+    }
+  ]
+  ++ extraDeployEntries;
+
+  mkSshHostBlock = host: keyPath: ''
+    Host ${host}
+      HostName github.com
+      User git
+      IdentityFile ${keyPath}
+      IdentitiesOnly yes
+      IdentityAgent none
+      BatchMode yes
+      StrictHostKeyChecking accept-new
+  '';
+
+  flakeSshConfig = pkgs.writeText "nix-nightly-flake-ssh-config" (
+    lib.concatStringsSep "\n" (
+      (map (entry: mkSshHostBlock entry.alias entry.keyPath) allFlakeDeployEntries)
+      ++ [ (mkSshHostBlock "github.com" wallpaperSshKeyPath) ]
+    )
+  );
+
+  flakeGitRewritePairs = lib.concatMap (entry: [
+    {
+      key = "url.ssh://git@${entry.alias}/${entry.repo}.insteadOf";
+      value = "ssh://git@github.com/${entry.repo}";
+    }
+    {
+      key = "url.ssh://git@${entry.alias}/${entry.repo}.insteadOf";
+      value = "git@github.com:${entry.repo}";
+    }
+  ]) allFlakeDeployEntries;
+
+  flakeGitEnvAssignments = lib.concatStringsSep " " (
+    [ "GIT_CONFIG_COUNT=${lib.escapeShellArg (toString (builtins.length flakeGitRewritePairs))}" ]
+    ++ lib.concatLists (
+      lib.imap0 (i: pair: [
+        "GIT_CONFIG_KEY_${toString i}=${lib.escapeShellArg pair.key}"
+        "GIT_CONFIG_VALUE_${toString i}=${lib.escapeShellArg pair.value}"
+      ]) flakeGitRewritePairs
+    )
+  );
+
   nixBin = lib.getExe' config.nix.package.out "nix";
   nixStoreBin = lib.getExe' config.nix.package.out "nix-store";
   nixEnvBin = lib.getExe' config.nix.package.out "nix-env";
 
   nightlyHosts = lib.unique cfg.nightly.hosts;
+  nightlyStatusFile = "/var/lib/nix-nightly-status/status.json";
 
   nightlyScript = pkgs.writeShellApplication {
     name = "nix-nightly-update";
@@ -41,6 +123,7 @@ let
       host_label=${lib.escapeShellArg config.networking.hostName}
       state_dir="/var/lib/nix-nightly"
       log_file="$state_dir/last-run.log"
+      status_file=${lib.escapeShellArg nightlyStatusFile}
       stage="startup"
       activation_deferred=0
       signal_received=0
@@ -65,10 +148,12 @@ let
       # Keep potentially sensitive command output in the root-only log, not journal.
       start_private_log
 
-      repo_ssh_key="${config.sops.secrets.nix_nightly_ssh_key.path}"
-      flake_ssh_key="${config.sops.secrets.nix_nightly_flake_ssh_key.path}"
+      repo_ssh_key=${lib.escapeShellArg repoSshKeyPath}
+      flake_ssh_keys=(
+        ${lib.escapeShellArgs (map (entry: entry.keyPath) allFlakeDeployEntries)}
+      )
 
-      for key_path in "$repo_ssh_key" "$flake_ssh_key"; do
+      for key_path in "$repo_ssh_key" "''${flake_ssh_keys[@]}"; do
         if [ ! -s "$key_path" ]; then
           echo "nix-nightly-update: error: SSH key missing or empty at $key_path (enroll host in sops first)." >&2
           exit 1
@@ -77,14 +162,17 @@ let
 
       common_ssh_opts="-o IdentitiesOnly=yes -o IdentityAgent=none -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
       repo_ssh_opts="-i $repo_ssh_key $common_ssh_opts"
-      flake_ssh_opts="-i $flake_ssh_key $common_ssh_opts"
+      flake_ssh_opts="-F ${flakeSshConfig}"
 
       repo_git() {
         GIT_SSH_COMMAND="ssh $repo_ssh_opts" run_private git "$@"
       }
 
       flake_nix() {
-        GIT_SSH_COMMAND="ssh $flake_ssh_opts" NIX_SSHOPTS="$flake_ssh_opts" run_private ${nixBin} "$@"
+        ${flakeGitEnvAssignments} \
+          GIT_SSH_COMMAND="ssh $flake_ssh_opts" \
+          NIX_SSHOPTS="$flake_ssh_opts" \
+          run_private ${nixBin} "$@"
       }
 
       repo_dir="$state_dir/repo"
@@ -215,6 +303,21 @@ in
         description = "Flake nixosConfigurations to evaluate and pre-build into Harmonia each night.";
       };
 
+      extraDeployKeys = lib.mkOption {
+        type = lib.types.attrsOf lib.types.nonEmptyStr;
+        default = { };
+        example = {
+          "Irgendeinwer/nix-private" = "nix_private_deploy_key";
+        };
+        description = ''
+          Additional private GitHub repositories (`owner/repo`) fetched during
+          `nix flake update` and pre-builds, mapped to sops secret keys in this
+          host's secrets file. Each entry generates a dedicated SSH host alias
+          and Git `insteadOf` rewrite so GitHub receives the repository-specific
+          deploy key rather than the first key offered on `github.com`.
+        '';
+      };
+
       notify.enable = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -239,6 +342,12 @@ in
       {
         assertion = cfg.nightly.enable -> cfg.nightly.hosts != [ ];
         message = "custom.services.buildServer.nightly.hosts must not be empty when nightly builds are enabled.";
+      }
+      {
+        assertion =
+          !cfg.nightly.enable
+          || lib.all validGithubRepo (builtins.attrNames cfg.nightly.extraDeployKeys);
+        message = "custom.services.buildServer.nightly.extraDeployKeys: attribute names must be GitHub 'owner/repo' slugs without a '.git' suffix.";
       }
     ];
 
@@ -284,26 +393,49 @@ in
       allowedTCPPorts = [ 5000 ];
     };
 
-    sops.secrets.nix_nightly_ssh_key = lib.mkIf cfg.nightly.enable {
-      inherit sopsFile;
-      key = "nix_nightly_ssh_key";
-      owner = "root";
-      mode = "0400";
-    };
+    sops.secrets = lib.mkMerge [
+      (lib.mkIf cfg.nightly.enable (
+        {
+          nix_nightly_ssh_key = {
+            inherit sopsFile;
+            key = "nix_nightly_ssh_key";
+            owner = "root";
+            mode = "0400";
+          };
+          nix_nightly_flake_ssh_key = {
+            inherit sopsFile;
+            key = "wallpaper_deploy_key";
+            owner = "root";
+            mode = "0400";
+          };
+        }
+        // builtins.listToAttrs (
+          map (entry: {
+            name = entry.secretName;
+            value = {
+              inherit sopsFile;
+              key = entry.secretKey;
+              owner = "root";
+              mode = "0400";
+            };
+          }) extraDeployEntries
+        )
+      ))
+      (lib.mkIf notifyEnabled {
+        nix_nightly_webhook = {
+          inherit sopsFile;
+          key = "nix_nightly_webhook";
+          owner = "root";
+          mode = "0400";
+        };
+      })
+    ];
 
-    sops.secrets.nix_nightly_flake_ssh_key = lib.mkIf cfg.nightly.enable {
-      inherit sopsFile;
-      key = "wallpaper_deploy_key";
-      owner = "root";
-      mode = "0400";
-    };
-
-    sops.secrets.nix_nightly_webhook = lib.mkIf notifyEnabled {
-      inherit sopsFile;
-      key = "nix_nightly_webhook";
-      owner = "root";
-      mode = "0400";
-    };
+    # Sanitized run summary directory readable by the unprivileged status API;
+    # `/var/lib/nix-nightly` itself remains 0700 root-only.
+    systemd.tmpfiles.rules = lib.mkIf cfg.nightly.enable [
+      "d /var/lib/nix-nightly-status 0755 root root -"
+    ];
 
     # Generate a persistent signing keypair at boot BEFORE harmonia.service evaluates LoadCredential
     systemd.services = {

@@ -45,11 +45,16 @@
       };
       syncthing.enable = true;
       navidrome.enable = true;
+      # HTTPS landing page (:443, redirecting :80); see docs/portal.md.
+      portal.enable = true;
       buildServer = {
         enable = true;
-        # Requires the `nix_nightly_webhook` key (Discord webhook URL) in
-        # secrets/junixsrv.yaml; see docs/recovery.md.
-        nightly.notify.enable = true;
+        nightly = {
+          # Requires `nix_nightly_webhook` and `nix_private_deploy_key` in
+          # secrets/junixsrv.yaml; see docs/recovery.md and docs/portal.md.
+          notify.enable = true;
+          extraDeployKeys."Irgendeinwer/nix-private" = "nix_private_deploy_key";
+        };
       };
     };
   };
