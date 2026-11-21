@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # zip2opus: import music archives into the Opus library. Wrapped as a
-# command by zip2opus.nix, which puts ffmpeg, opustags and unar on
+# command by pkgs/scripts/default.nix, which puts ffmpeg, opustags and unar on
 # PATH (shellchecked at build time by writeShellApplication).
 
 set -euo pipefail
