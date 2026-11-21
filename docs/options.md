@@ -41,7 +41,8 @@ to that value.
 | `custom.services.hotspot` | `enable`, `wifiInterface`, `ethernetInterface`, `ssid`, `password`, `passwordFile`. An enabled hotspot needs both interfaces and a password or password file; prefer a sops-backed `passwordFile`. |
 | `custom.services.immich` | `enable`, `openFirewall`, `host`, `mediaLocation`. |
 | `custom.services.jellyfin` | `enable`, `openFirewall`. |
-| `custom.services.syncthing` | `enable`, `user`, `openFirewall`. |
+| `custom.services.navidrome` | `enable`, `openFirewall` (default true), `host` (default `0.0.0.0`), `port` (default 4533), `musicFolder` (defaults to `/home/<user>/music`). |
+| `custom.services.syncthing` | `enable`, `user`, `openFirewall` (default true), `junixsrvDeviceId` (nullable), `junixsrvTailscaleHost` (defaults to `custom.system.remoteBuilder.tailscaleHost`). |
 | `custom.services.tailscale` | `enable`, `openFirewall` (default true), `shieldsUp` (default true), `acceptDns` (default false), `allowedTCPPorts`, `allowedUDPPorts`, `peers`. Opens only the WireGuard UDP port when `openFirewall` is true; `tailscale0` remains untrusted. |
 | `custom.services.archisteamfarm` | `enable`, `webUi`. |
 | `custom.services` | Independent toggles: `meilisearch.enable`, `openrgb.enable`, `playerctl.enable`, `printing.enable`, `zapret.enable`. |
