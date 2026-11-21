@@ -36,7 +36,10 @@ let
 
   laptopUnpaired = evalSyncthing {
     hostName = "junixbook";
-    extraConfig.custom.services.syncthing.enable = true;
+    extraConfig.custom.services.syncthing = {
+      enable = true;
+      junixsrvDeviceId = null;
+    };
   };
 
   laptopPaired = evalSyncthing {
@@ -99,9 +102,11 @@ let
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
+  pinnedServerId = "QAMX456-2AVIPJR-CY2WCZS-VGHETIN-WW5WFEX-BDOBA2T-MSPXG2U-VZLNPQN";
   desktopHost = self.nixosConfigurations.junixos.config;
   laptopHost = self.nixosConfigurations.junixbook.config;
   serverHost = self.nixosConfigurations.junixsrv.config;
+  laptopSync = laptopHost.services.syncthing.settings;
   unpairedFolders = laptopUnpaired.services.syncthing.settings.folders;
   pairedFolders = laptopPaired.services.syncthing.settings.folders;
   serverFolders = serverPaired.services.syncthing.settings.folders;
@@ -163,11 +168,18 @@ assert hasFailedAssertion "custom.services.syncthing.junixsrvDeviceId:" badId;
 assert desktopHost.services.syncthing.enable;
 assert laptopHost.services.syncthing.enable;
 assert serverHost.services.syncthing.enable;
+assert desktopHost.services.syncthing.settings.devices.junixsrv.id == pinnedServerId;
+assert laptopSync.devices.junixsrv.id == pinnedServerId;
+assert serverHost.services.syncthing.settings.devices.junixsrv.id == pinnedServerId;
+assert builtins.elem "tcp://junixsrv.internal:22000" laptopSync.devices.junixsrv.addresses;
+assert builtins.elem "quic://junixsrv.internal:22000" laptopSync.devices.junixsrv.addresses;
 assert !(builtins.hasAttr "#Noice" desktopHost.services.syncthing.settings.folders);
-assert !(builtins.hasAttr "#Noice" laptopHost.services.syncthing.settings.folders);
+assert !(builtins.hasAttr "#Noice" laptopSync.folders);
 assert !(builtins.hasAttr "#Noice" serverHost.services.syncthing.settings.folders);
 assert desktopHost.services.syncthing.settings.folders.Music.enable;
-assert !laptopHost.services.syncthing.settings.folders.Music.enable;
+assert desktopHost.services.syncthing.settings.folders.Music.devices == musicPairedDevices;
+assert !laptopSync.folders.Music.enable;
+assert laptopSync.folders.Documents.devices == allPairedDevices;
 assert serverHost.services.syncthing.settings.folders.Music.enable;
 assert serverHost.services.syncthing.settings.folders.Music.ignorePerms;
 assert !serverHost.systemd.services.syncthing.serviceConfig.PrivateUsers;

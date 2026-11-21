@@ -109,28 +109,25 @@ and the trusted `nixbuilder` daemon account on `junixsrv`.
    (`tailscaled-set.service` also reconciles these flags declaratively on boot
    and on future `nixos-rebuild switch` runs.)
 3. Assign `tag:junixsrv` and `tag:junixsrv-client` in the admin console,
-   verify key expiry on both nodes, and record `junixsrv`'s permanent IPv4
-   address from `tailscale ip -4` on the server.
-4. Optionally bind a stable `/etc/hosts` name and SSH host-key pin on
-   `junixbook` in `hosts/junixbook/configuration.nix` (replace `100.64.0.10`
-   with `junixsrv`'s actual `tailscale ip -4`):
+   verify key expiry on both nodes, and confirm `junixsrv`'s IPv4 address from
+   `tailscale ip -4` matches `hosts/junixbook/configuration.nix`
+   (`100.110.103.47`):
    ```nix
    custom.services.tailscale = {
      enable = true;
-     peers."junixsrv.internal" = "100.64.0.10";
+     peers."junixsrv.internal" = "100.110.103.47";
    };
 
    custom.system.remoteBuilder = {
      enable = true;
      maxJobs = 3;
      tailscaleHost = "junixsrv.internal";
-     # Optional: see "Harmonia and build server behavior" below.
-     # tailscaleSubstituter = true;
+     tailscaleSubstituter = true;
    };
    ```
    With `tailscaleHost` set, `programs.ssh.knownHosts` automatically pins
    `junixsrv`'s Ed25519 host key for `junixsrv.local`, `junixsrv.internal`, and
-   its Tailscale IP so remote `ssh` and `nh os switch` verify the server key
+   `100.110.103.47` so remote `ssh` and `nh os switch` verify the server key
    without an interactive TOFU prompt.
 
 For any future NixOS client, set `custom.services.tailscale.enable = true;`
@@ -180,25 +177,20 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
 
 ### Navidrome and Syncthing
 
-- **Syncthing (`tcp:22000`, `udp:22000`):** `junixsrv` shares `Documents`,
-  `Schule-26-27`, `Music`, and `E-Books`; `junixbook` omits `Music` and streams
-  from Navidrome on `junixsrv` instead.
-  1. After deploying `junixsrv` for the first time, read its generated device
-     ID:
-     ```sh
-     ssh julian@junixsrv.local 'syncthing device-id'
-     ```
-  2. Set that ID as the default of `junixsrvDeviceId` in
-     `modules/services/syncthing.nix`, then redeploy `junixsrv`, `junixos`, and
-     `junixbook`, and add/approve `junixsrv` on `MobileF6`.
-  3. On `junixbook`, `syncthing-init` automatically unshares `Music` (`#Noice`
+- **Syncthing (`tcp:22000`, `udp:22000`):** `junixsrv` (`QAMX456-...`) shares
+  `Documents`, `Schule-26-27`, `Music`, and `E-Books`; `junixbook` omits `Music`
+  and streams from Navidrome on `junixsrv` instead.
+  1. Deploy the updated configuration on `junixsrv`, `junixos`, and `junixbook`,
+     and add/approve `junixsrv` on `MobileF6`.
+  2. On `junixbook`, `syncthing-init` automatically unshares `Music` (`#Noice`
      is also removed everywhere). Only **after** switching `junixbook` should
      you delete `/home/julian/music` on the laptop if reclaiming disk space, so
      deletions are never propagated to `junixos`, `junixsrv`, or `MobileF6`.
-  4. When `custom.system.remoteBuilder.tailscaleHost` is set on `junixbook`,
-     Syncthing automatically dials `junixsrv.local:22000` on the LAN and
-     `<tailscaleHost>:22000` over Tailscale when remote, without public relays.
-     The web GUI stays local (`127.0.0.1:8384`); forward it on demand with
+  3. Because `custom.system.remoteBuilder.tailscaleHost` is set to
+     `junixsrv.internal` on `junixbook`, Syncthing automatically dials
+     `junixsrv.local:22000` on the LAN and `junixsrv.internal:22000` over
+     Tailscale when remote, without public relays. The web GUI stays local
+     (`127.0.0.1:8384`); forward it on demand with
      `ssh -L 8384:127.0.0.1:8384 julian@junixsrv.internal`.
 - **Navidrome (`tcp:4533`):** `junixsrv` serves `/home/julian/music` via
   `custom.services.navidrome` while `junixos` keeps Jellyfin for movies. Open
@@ -212,7 +204,7 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
 
 1. **On the same LAN as `junixsrv`:**
    ```sh
-   server_ts='TAILSCALE_IPV4_OR_HOST'
+   server_ts='junixsrv.internal'
    tailscale status
    tailscale ping -c 3 "$server_ts"
    ssh "julian@$server_ts" true
@@ -224,7 +216,7 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
    (`via <junixsrv-lan-ip>:41641`) rather than `via DERP(...)`.
 2. **Outside the LAN (for example on a phone hotspot):**
    ```sh
-   server_ts='TAILSCALE_IPV4_OR_HOST'
+   server_ts='junixsrv.internal'
    tailscale ping --until-direct=false -c 5 "$server_ts"
    ssh "julian@$server_ts"
    curl --fail "http://$server_ts:5000/nix-cache-info"

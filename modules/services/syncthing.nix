@@ -111,12 +111,10 @@ in
 
     junixsrvDeviceId = lib.mkOption {
       type = lib.types.nullOr lib.types.nonEmptyStr;
-      default = null;
-      example = "7CFNTQM-IMTJBHJ-3UWRDIU-ZGQJFR6-VCXZ3NB-XUH3KZO-N52ITXR-LAIYUAU";
+      default = "QAMX456-2AVIPJR-CY2WCZS-VGHETIN-WW5WFEX-BDOBA2T-MSPXG2U-VZLNPQN";
       description = ''
-        Syncthing device ID for junixsrv. Leave null until junixsrv generates
-        its certificate on first start, then set the output of
-        `syncthing device-id` to pair junixsrv across all hosts.
+        Syncthing device ID for junixsrv. Set to null to bootstrap a fresh
+        server identity before pairing across hosts.
       '';
     };
 

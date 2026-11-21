@@ -42,6 +42,8 @@
       remoteBuilder = {
         enable = true;
         maxJobs = 3;
+        tailscaleHost = "junixsrv.internal";
+        tailscaleSubstituter = true;
       };
     };
 
@@ -71,7 +73,10 @@
     };
 
     services = {
-      tailscale.enable = true;
+      tailscale = {
+        enable = true;
+        peers."junixsrv.internal" = "100.110.103.47";
+      };
       syncthing.enable = true;
       playerctl.enable = true;
     };

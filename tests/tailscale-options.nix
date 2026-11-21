@@ -84,6 +84,8 @@ let
   desktopHost = self.nixosConfigurations.junixos.config;
   laptopHost = self.nixosConfigurations.junixbook.config;
   serverHost = self.nixosConfigurations.junixsrv.config;
+  laptopKnownHosts = laptopHost.programs.ssh.knownHosts."junixsrv.local".extraHostNames;
+  laptopSubstituters = laptopHost.nix.settings.substituters;
   untrustedManual =
     cfg:
     let
@@ -127,6 +129,11 @@ assert laptopHost.services.tailscale.openFirewall && serverHost.services.tailsca
 assert laptopHost.services.tailscale.extraSetFlags == clientFlags;
 assert serverHost.services.tailscale.extraSetFlags == serverFlags;
 assert laptopHost.custom.system.remoteBuilder.host == "junixsrv.local";
+assert laptopHost.custom.system.remoteBuilder.tailscaleHost == "junixsrv.internal";
+assert builtins.elem "junixsrv.internal" laptopHost.networking.hosts."100.110.103.47";
+assert builtins.elem "junixsrv.internal" laptopKnownHosts;
+assert builtins.elem "100.110.103.47" laptopKnownHosts;
+assert builtins.elem "http://junixsrv.internal:5000?priority=50" laptopSubstituters;
 assert serverHost.systemd.services.tailscaled.environment.TS_DEBUG_FIREWALL_MODE == "nftables";
 assert !serverHost.systemd.network.config.networkConfig.ManageForeignRoutingPolicyRules;
 assert !serverHost.systemd.network.config.networkConfig.ManageForeignRoutes;
