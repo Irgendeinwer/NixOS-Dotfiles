@@ -30,8 +30,7 @@ let
   notifyEnabledStr = if notifyEnabled then "1" else "0";
 
   validGithubRepo =
-    repo:
-    builtins.match "[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+" repo != null && !(lib.hasSuffix ".git" repo);
+    repo: builtins.match "[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+" repo != null && !(lib.hasSuffix ".git" repo);
   sanitizeRepoName = repo: builtins.replaceStrings [ "/" "." "-" ] [ "_" "_" "_" ] repo;
 
   extraDeployEntries = lib.imap0 (
@@ -44,10 +43,7 @@ let
       alias = "github-flake-${toString (i + 1)}";
       secretKey = cfg.nightly.extraDeployKeys.${repo};
       keyPath =
-        if nightlyEnabled then
-          config.sops.secrets.${secretName}.path
-        else
-          "/run/secrets/${secretName}";
+        if nightlyEnabled then config.sops.secrets.${secretName}.path else "/run/secrets/${secretName}";
     }
   ) (builtins.attrNames cfg.nightly.extraDeployKeys);
 
@@ -345,8 +341,7 @@ in
       }
       {
         assertion =
-          !cfg.nightly.enable
-          || lib.all validGithubRepo (builtins.attrNames cfg.nightly.extraDeployKeys);
+          !cfg.nightly.enable || lib.all validGithubRepo (builtins.attrNames cfg.nightly.extraDeployKeys);
         message = "custom.services.buildServer.nightly.extraDeployKeys: attribute names must be GitHub 'owner/repo' slugs without a '.git' suffix.";
       }
     ];

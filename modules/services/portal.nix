@@ -120,9 +120,7 @@ let
 
   allProxyLocations =
     map (s: s.location) (
-      builtins.filter (s: s.proxyPass != null && s.location != null) (
-        builtins.attrValues activeServices
-      )
+      builtins.filter (s: s.proxyPass != null && s.location != null) (builtins.attrValues activeServices)
     )
     ++ lib.mapAttrsToList projectLocation activeProjects;
 
@@ -1068,8 +1066,7 @@ in
           message = "custom.services.portal: proxied service/project locations must start with '/' and not collide with reserved portal paths.";
         }
         {
-          assertion =
-            builtins.length allProxyLocations == builtins.length (lib.unique allProxyLocations);
+          assertion = builtins.length allProxyLocations == builtins.length (lib.unique allProxyLocations);
           message = "custom.services.portal: duplicate Nginx location across services/projects.";
         }
         {
@@ -1225,10 +1222,7 @@ in
             Group = "junix-projects";
             StateDirectory = "portal-projects/${name}";
             WorkingDirectory =
-              if prj.workingDirectory != null then
-                prj.workingDirectory
-              else
-                "/var/lib/portal-projects/${name}";
+              if prj.workingDirectory != null then prj.workingDirectory else "/var/lib/portal-projects/${name}";
             ExecStart = prj.execStart;
             Restart = "on-failure";
             RestartSec = "3s";

@@ -51,7 +51,10 @@
           pkgs.ruff
           pyEnv
         ];
-        meta = { mainProgram = name; } // meta;
+        meta = {
+          mainProgram = name;
+        }
+        // meta;
       }
       ''
         mkdir -p "$out/libexec" "$out/bin"

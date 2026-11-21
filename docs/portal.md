@@ -140,7 +140,8 @@ EXT
 
 openssl x509 -req -in "$ca_tmp/portal.csr" \
   -CA assets/junix-ca.pem -CAkey "$ca_tmp/junix-ca.key" \
-  -CAcreateserial -out "$ca_tmp/portal-fullchain.pem" -days 825 -sha256 \
+  -CAcreateserial -CAserial "$ca_tmp/junix-ca.srl" \
+  -out "$ca_tmp/portal-fullchain.pem" -days 825 -sha256 \
   -extfile "$ca_tmp/portal-ext.cnf"
 cat assets/junix-ca.pem >> "$ca_tmp/portal-fullchain.pem"
 

@@ -147,10 +147,7 @@
           without-userns = pkgs.callPackage ./pkgs/without-userns.nix { };
         }
         // (
-          if hasPrivate && inputs.private ? packages.${system} then
-            inputs.private.packages.${system}
-          else
-            { }
+          if hasPrivate && inputs.private ? packages.${system} then inputs.private.packages.${system} else { }
         );
 
       checks.${system} = {
@@ -194,13 +191,11 @@
               mkdir -p "$out"
             '';
 
-        portal-status =
-          pkgs.runCommand "portal-status-tests" { nativeBuildInputs = [ pkgs.python3 ]; }
-            ''
-              export PORTAL_STATUS_HELPER=${./modules/services/scripts/portal-status.py}
-              python3 -B ${./tests/portal-status.py}
-              mkdir -p "$out"
-            '';
+        portal-status = pkgs.runCommand "portal-status-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+          export PORTAL_STATUS_HELPER=${./modules/services/scripts/portal-status.py}
+          python3 -B ${./tests/portal-status.py}
+          mkdir -p "$out"
+        '';
 
         container-options = import ./tests/container-options.nix {
           inherit nixpkgs pkgs system;
