@@ -31,6 +31,7 @@ let
     custom.services.tailscale = {
       enable = true;
       shieldsUp = false;
+      mtu = 1180;
       allowedTCPPorts = [ 4533 ];
       allowedUDPPorts = [ 22000 ];
     };
@@ -40,10 +41,19 @@ let
       enable = true;
       openFirewall = false;
       acceptDns = true;
+      mtu = 1280;
       peers = {
         "junixsrv.internal" = "100.64.0.10";
         "junixsrv-ts" = "100.64.0.10";
+        "junixsrv-v6" = "fd7a:115c:a1e0::10";
       };
+    };
+  };
+  lowMtuIpv6Peer = evalTailscale {
+    custom.services.tailscale = {
+      enable = true;
+      mtu = 1180;
+      peers."junixsrv-v6" = "fd7a:115c:a1e0::10";
     };
   };
   selfPeer = evalTailscale {
@@ -104,6 +114,7 @@ assert client.services.tailscale.openFirewall;
 assert builtins.elem 41641 client.networking.firewall.allowedUDPPorts;
 assert client.services.tailscale.extraSetFlags == clientFlags;
 assert !(client.systemd.services.tailscaled.environment ? TS_DEBUG_FIREWALL_MODE);
+assert !(client.systemd.services.tailscaled.environment ? TS_DEBUG_MTU);
 assert client.systemd.services.tailscaled-set.serviceConfig.RemainAfterExit;
 assert builtins.elem "multi-user.target" client.systemd.services.tailscaled-set.wantedBy;
 assert builtins.elem "tailscaled.service" client.systemd.services.tailscaled-set.partOf;
@@ -111,6 +122,7 @@ assert untrustedManual server;
 assert server.services.tailscale.openFirewall;
 assert server.services.tailscale.extraSetFlags == serverFlags;
 assert server.systemd.services.tailscaled.environment.TS_DEBUG_FIREWALL_MODE == "nftables";
+assert server.systemd.services.tailscaled.environment.TS_DEBUG_MTU == "1180";
 assert !server.systemd.network.config.networkConfig.ManageForeignRoutingPolicyRules;
 assert !server.systemd.network.config.networkConfig.ManageForeignRoutes;
 assert server.networking.firewall.interfaces.tailscale0.allowedTCPPorts == [ 4533 ];
@@ -118,8 +130,11 @@ assert server.networking.firewall.interfaces.tailscale0.allowedUDPPorts == [ 220
 assert !customClient.services.tailscale.openFirewall;
 assert !(builtins.elem 41641 customClient.networking.firewall.allowedUDPPorts);
 assert customClient.services.tailscale.extraSetFlags == dnsClientFlags;
+assert customClient.systemd.services.tailscaled.environment.TS_DEBUG_MTU == "1280";
 assert builtins.elem "junixsrv.internal" customClient.networking.hosts."100.64.0.10";
 assert builtins.elem "junixsrv-ts" customClient.networking.hosts."100.64.0.10";
+assert builtins.elem "junixsrv-v6" customClient.networking.hosts."fd7a:115c:a1e0::10";
+assert hasFailedAssertion "custom.services.tailscale:" lowMtuIpv6Peer;
 assert hasFailedAssertion "custom.services.tailscale.peers:" selfPeer;
 assert hasFailedAssertion "custom.services.tailscale.peers:" localhostPeer;
 assert hasFailedAssertion "custom.services.tailscale.peers:" badIpPeer;
@@ -128,6 +143,8 @@ assert untrustedManual laptopHost && untrustedManual serverHost;
 assert laptopHost.services.tailscale.openFirewall && serverHost.services.tailscale.openFirewall;
 assert laptopHost.services.tailscale.extraSetFlags == clientFlags;
 assert serverHost.services.tailscale.extraSetFlags == serverFlags;
+assert laptopHost.systemd.services.tailscaled.environment.TS_DEBUG_MTU == "1180";
+assert !(laptopHost.systemd.services.tailscaled.environment ? TS_DEBUG_FIREWALL_MODE);
 assert laptopHost.custom.system.remoteBuilder.host == "junixsrv.local";
 assert laptopHost.custom.system.remoteBuilder.tailscaleHost == "junixsrv.internal";
 assert builtins.elem "junixsrv.internal" laptopHost.networking.hosts."100.110.103.47";
@@ -135,6 +152,7 @@ assert builtins.elem "junixsrv.internal" laptopKnownHosts;
 assert builtins.elem "100.110.103.47" laptopKnownHosts;
 assert builtins.elem "http://junixsrv.internal:5000?priority=50" laptopSubstituters;
 assert serverHost.systemd.services.tailscaled.environment.TS_DEBUG_FIREWALL_MODE == "nftables";
+assert serverHost.systemd.services.tailscaled.environment.TS_DEBUG_MTU == "1180";
 assert !serverHost.systemd.network.config.networkConfig.ManageForeignRoutingPolicyRules;
 assert !serverHost.systemd.network.config.networkConfig.ManageForeignRoutes;
 assert serverHost.services.openssh.enable && serverHost.services.openssh.openFirewall;

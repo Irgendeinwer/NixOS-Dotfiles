@@ -22,6 +22,14 @@ LAN as the server.
   `junixsrv`'s Tailscale address establish a direct local WireGuard path
   (`via <lan-ip>:41641`, sub-millisecond RTT, no WAN hairpin or DERP relay) and
   keep active SSH or streaming TCP sessions alive when roaming onto a hotspot.
+- **Path MTU sizing (`mtu = 1180`):** Direct peer-to-peer WireGuard over reduced
+  IPv6/DS-Lite/hotspot underlays adds 80 bytes of outer IPv6 + UDP + WireGuard
+  framing and can blackhole packets at Tailscale's default `1280` TUN MTU. Both
+  `junixbook` and `junixsrv` set `custom.services.tailscale.mtu = 1180`
+  (`TS_DEBUG_MTU=1180`), clamping both TCP and UDP/QUIC (`udp:22000` Syncthing)
+  payloads in both directions. Setting MTU below `1280` disables Tailscale's
+  internal `fd7a::` overlay IPv6 on `tailscale0` while leaving the outer ISP
+  IPv6 underlay untouched.
 - **Raw LAN priority for Nix builds and cache:** `custom.system.remoteBuilder`
   keeps `junixsrv.local` for automatic distributed builds and Priority `30`
   LAN binary substitutions, avoiding WireGuard overhead at home and avoiding
@@ -115,6 +123,7 @@ and the trusted `nixbuilder` daemon account on `junixsrv`.
    ```nix
    custom.services.tailscale = {
      enable = true;
+     mtu = 1180;
      peers."junixsrv.internal" = "100.110.103.47";
    };
 
@@ -217,9 +226,12 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
 2. **Outside the LAN (for example on a phone hotspot):**
    ```sh
    server_ts='junixsrv.internal'
+   ip -d link show dev tailscale0 | grep 'mtu 1180'
    tailscale ping --until-direct=false -c 5 "$server_ts"
+   ping -c 3 -M do -s 1152 "$server_ts"
    ssh "julian@$server_ts"
    curl --fail "http://$server_ts:5000/nix-cache-info"
+   curl --fail -I "http://$server_ts:4533/app/"
    ```
    The first reply may use `via DERP(...)` before NAT traversal establishes a
    direct path (`via <ip>:<port>`).
