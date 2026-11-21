@@ -107,8 +107,14 @@ private key off `junixsrv` (stored in `secrets/users/julian.yaml`, whose
 
 ```bash
 cd ~/dotfiles
+nix shell nixpkgs#openssl -c bash -euo pipefail <<'EOF'
 ca_tmp="$(mktemp -d)"
+trap 'shred -u "$ca_tmp"/* 2>/dev/null || rm -f "$ca_tmp"/*; rmdir "$ca_tmp"' EXIT
 chmod 0700 "$ca_tmp"
+
+json_quote() {
+  python3 -c 'import json, sys; print(json.dumps(sys.stdin.read()))' < "$1"
+}
 
 # 1. Generate 10-year ECDSA P-256 Root CA
 openssl ecparam -name prime256v1 -genkey -noout -out "$ca_tmp/junix-ca.key"
@@ -125,12 +131,12 @@ openssl req -new -key "$ca_tmp/portal.key" \
   -subj "/CN=junixsrv.internal/O=Junix" \
   -out "$ca_tmp/portal.csr"
 
-cat > "$ca_tmp/portal-ext.cnf" <<'EOF'
+cat > "$ca_tmp/portal-ext.cnf" <<'EXT'
 basicConstraints = critical, CA:FALSE
 keyUsage = critical, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
 subjectAltName = DNS:junixsrv.local, DNS:junixsrv.internal, DNS:junixsrv, IP:100.110.103.47
-EOF
+EXT
 
 openssl x509 -req -in "$ca_tmp/portal.csr" \
   -CA assets/junix-ca.pem -CAkey "$ca_tmp/junix-ca.key" \
@@ -145,12 +151,11 @@ if [ ! -f secrets/users/julian.yaml ]; then
   sops --encrypt --filename-override secrets/users/julian.yaml \
     "$ca_tmp/julian-init.yaml" > secrets/users/julian.yaml
 fi
-sops set secrets/users/julian.yaml '["junix_ca_key"]' "$(jq -Rs . < "$ca_tmp/junix-ca.key")"
-sops set secrets/junixsrv.yaml '["portal_tls_cert"]' "$(jq -Rs . < "$ca_tmp/portal-fullchain.pem")"
-sops set secrets/junixsrv.yaml '["portal_tls_key"]' "$(jq -Rs . < "$ca_tmp/portal.key")"
+sops set secrets/users/julian.yaml '["junix_ca_key"]' "$(json_quote "$ca_tmp/junix-ca.key")"
+sops set secrets/junixsrv.yaml '["portal_tls_cert"]' "$(json_quote "$ca_tmp/portal-fullchain.pem")"
+sops set secrets/junixsrv.yaml '["portal_tls_key"]' "$(json_quote "$ca_tmp/portal.key")"
+EOF
 
-shred -u "$ca_tmp"/* 2>/dev/null || rm -f "$ca_tmp"/*
-rmdir "$ca_tmp"
 git add assets/junix-ca.pem secrets/users/julian.yaml secrets/junixsrv.yaml
 ```
 

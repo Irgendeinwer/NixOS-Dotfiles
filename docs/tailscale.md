@@ -78,6 +78,8 @@ into your tailnet policy and remove or narrow any default allow-all rule
       "ip": [
         "icmp:*",
         "tcp:22",
+        "tcp:80",
+        "tcp:443",
         "tcp:5000",
         "tcp:4533",
         "tcp:22000",
@@ -89,7 +91,8 @@ into your tailnet policy and remove or narrow any default allow-all rule
 ```
 
 - `icmp:*`: IP-layer ping and Path MTU Discovery diagnostics.
-- `tcp:22`, `tcp:5000`: OpenSSH and Harmonia binary cache.
+- `tcp:22`, `tcp:80`, `tcp:443`, `tcp:5000`: OpenSSH, HTTPS overview portal
+  (plus `:80` redirect), and Harmonia binary cache.
 - `tcp:4533`, `tcp:22000`, `udp:22000`: Navidrome and Syncthing (TCP + QUIC)
   on `junixsrv`.
 
