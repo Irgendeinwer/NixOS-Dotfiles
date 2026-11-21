@@ -22,10 +22,10 @@ covers, and how to reinstall junixbook on a new disk.
   re-approving the device on the others.
 - **`~/.ssh/id_ed25519`** needs no backup: sops materializes it from
   `secrets/`, and with it the SSH access to the private repositories.
-- **Local Root CA key** (`junix_ca_key` in `secrets/users/julian.yaml`):
-  signs internal TLS leaf certificates (`portal_tls_cert` / `portal_tls_key`
-  in `secrets/junixsrv.yaml`) trusted via `assets/junix-ca.pem`; see
-  [Server portal & PKI](portal.md).
+- **Local Root CA key** (`junix_ca_key` in `secrets/pki.yaml`):
+  encrypted strictly to `&user_julian`; signs internal TLS leaf certificates
+  (`portal_tls_cert` / `portal_tls_key` in `secrets/junixsrv.yaml`) trusted
+  via `assets/junix-ca.pem`; see [Server portal & PKI](portal.md).
 
 ## What the backup covers
 

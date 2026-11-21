@@ -102,8 +102,9 @@ accepts the first matching deploy key offered on `github.com`:
 `modules/nixos/pki.nix` trusts `assets/junix-ca.pem` system-wide on every NixOS
 host (`security.pki.certificateFiles`), and `modules/home-manager/zen-browser.nix`
 installs it into Zen Browser via `policies.Certificates`. Keep the Root CA
-private key off `junixsrv` (stored in `secrets/users/julian.yaml`, whose
-`.sops.yaml` rule excludes `host_junixsrv`).
+private key in `secrets/pki.yaml` (encrypted strictly to `*user_julian` in
+`.sops.yaml`, so no host key can decrypt it and `secrets/users/julian.yaml`
+stays reserved for `user_ssh_key`).
 
 ```bash
 cd ~/dotfiles
@@ -145,19 +146,18 @@ openssl x509 -req -in "$ca_tmp/portal.csr" \
   -extfile "$ca_tmp/portal-ext.cnf"
 cat assets/junix-ca.pem >> "$ca_tmp/portal-fullchain.pem"
 
-# 3. Store Root CA key in user-only sops and leaf cert/key in junixsrv sops
-mkdir -p secrets/users
-if [ ! -f secrets/users/julian.yaml ]; then
-  printf 'junix_ca_key: ""\n' > "$ca_tmp/julian-init.yaml"
-  sops --encrypt --filename-override secrets/users/julian.yaml \
-    "$ca_tmp/julian-init.yaml" > secrets/users/julian.yaml
+# 3. Store Root CA key in user-only sops (secrets/pki.yaml) and leaf cert/key in junixsrv sops
+if [ ! -f secrets/pki.yaml ]; then
+  printf 'junix_ca_key: ""\n' > "$ca_tmp/pki-init.yaml"
+  sops --encrypt --filename-override secrets/pki.yaml \
+    "$ca_tmp/pki-init.yaml" > secrets/pki.yaml
 fi
-sops set secrets/users/julian.yaml '["junix_ca_key"]' "$(json_quote "$ca_tmp/junix-ca.key")"
+sops set secrets/pki.yaml '["junix_ca_key"]' "$(json_quote "$ca_tmp/junix-ca.key")"
 sops set secrets/junixsrv.yaml '["portal_tls_cert"]' "$(json_quote "$ca_tmp/portal-fullchain.pem")"
 sops set secrets/junixsrv.yaml '["portal_tls_key"]' "$(json_quote "$ca_tmp/portal.key")"
 EOF
 
-git add assets/junix-ca.pem secrets/users/julian.yaml secrets/junixsrv.yaml
+git add assets/junix-ca.pem secrets/pki.yaml secrets/junixsrv.yaml
 ```
 
 To trust HTTPS on `MobileF6` (Android): copy `assets/junix-ca.pem` to the phone
