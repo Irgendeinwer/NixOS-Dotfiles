@@ -61,16 +61,24 @@ def main() -> int:
         sys_link = profiles / "system"
         sys_link.symlink_to("system-42-link")
 
+        systemctl_mode = tmp / "systemctl_mode"
+        systemctl_mode.write_text("normal\n", encoding="utf-8")
         systemctl_stub = tmp / "systemctl"
         systemctl_stub.write_text(
             "#!/bin/sh\n"
+            f'mode="$(cat {systemctl_mode})"\n'
+            'if [ "$mode" = "hang" ]; then sleep 2; exit 0; fi\n'
+            'case " $* " in\n'
+            '  *" --timestamp=unix "*) ;;\n'
+            '  *) echo "missing --timestamp=unix" >&2; exit 2 ;;\n'
+            "esac\n"
             "cat <<'EOF'\n"
             "Id=navidrome.service\n"
             "LoadState=loaded\n"
             "ActiveState=active\n"
             "SubState=running\n"
             "Result=success\n"
-            "ActiveEnterTimestamp=Sat 2026-11-21 02:18:00 CET\n"
+            "ActiveEnterTimestamp=@1795223880\n"
             "NextElapseUSecRealtime=n/a\n"
             "\n"
             "Id=syncthing.service\n"
@@ -78,7 +86,7 @@ def main() -> int:
             "ActiveState=active\n"
             "SubState=running\n"
             "Result=success\n"
-            "ActiveEnterTimestamp=Sat 2026-11-21 02:18:01 CET\n"
+            "ActiveEnterTimestamp=@1795223881\n"
             "NextElapseUSecRealtime=\n"
             "\n"
             "Id=nix-nightly-update.service\n"
@@ -86,7 +94,7 @@ def main() -> int:
             "ActiveState=inactive\n"
             "SubState=dead\n"
             "Result=success\n"
-            "ActiveEnterTimestamp=Sat 2026-11-21 02:29:10 CET\n"
+            "ActiveEnterTimestamp=\n"
             "NextElapseUSecRealtime=\n"
             "\n"
             "Id=nix-nightly-update.timer\n"
@@ -94,8 +102,8 @@ def main() -> int:
             "ActiveState=active\n"
             "SubState=waiting\n"
             "Result=success\n"
-            "ActiveEnterTimestamp=Sat 2026-11-21 01:00:00 CET\n"
-            "NextElapseUSecRealtime=Sun 2026-11-22 02:15:00 CET\n"
+            "ActiveEnterTimestamp=@1795219200\n"
+            "NextElapseUSecRealtime=@1795310100\n"
             "EOF\n",
             encoding="utf-8",
         )
@@ -191,11 +199,13 @@ def main() -> int:
             assert payload["disk"]["totalBytes"] > 0
             assert payload["units"]["navidrome.service"]["activeState"] == "active"
             assert payload["units"]["navidrome.service"]["subState"] == "running"
-            assert payload["units"]["syncthing.service"]["since"] is not None
+            assert payload["units"]["navidrome.service"]["since"] == "2026-11-21T01:18:00Z"
+            assert payload["units"]["syncthing.service"]["since"] == "2026-11-21T01:18:01Z"
+            assert payload["units"]["nix-nightly-update.service"]["since"] is None
 
             assert payload["nightly"]["enabled"] is True
             assert payload["nightly"]["running"] is False
-            assert payload["nightly"]["nextRun"] == "Sun 2026-11-22 02:15:00 CET"
+            assert payload["nightly"]["nextRun"] == "2026-11-22T01:15:00Z"
             assert payload["nightly"]["lastRun"]["state"] == "success"
 
             # Verify fallback to /proc/meminfo when cgroup memory.max is "max"
@@ -205,6 +215,15 @@ def main() -> int:
             payload2 = json.loads(body2.decode("utf-8"))
             assert payload2["memory"]["source"] == "system"
             assert payload2["memory"]["percent"] == 25.0
+
+            # Verify hung systemctl degrades gracefully to empty units rather than HTTP 502
+            systemctl_mode.write_text("hang\n", encoding="utf-8")
+            code3, _, body3 = http_request(f"{base_url}/api/status")
+            assert code3 == 200
+            payload3 = json.loads(body3.decode("utf-8"))
+            assert payload3["units"] == {}
+            assert payload3["nightly"]["nextRun"] is None
+            systemctl_mode.write_text("normal\n", encoding="utf-8")
 
             # HEAD returns empty body with matching content-length
             head_code, head_headers, head_body = http_request(f"{base_url}/api/status", "HEAD")

@@ -34,7 +34,7 @@ in
       DisableTelemetry = lib.mkDefault true;
       Certificates = lib.mkIf (localCaCert != null) {
         ImportEnterpriseRoots = lib.mkDefault true;
-        Install = [ (toString localCaCert) ];
+        Install = [ "${localCaCert}" ];
       };
     };
   };

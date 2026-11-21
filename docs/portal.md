@@ -88,10 +88,11 @@ optional:
 Because GitHub forbids reusing one SSH deploy key across two repositories and
 accepts the first matching deploy key offered on `github.com`:
 
-- **GitHub Actions** (`webfactory/ssh-agent`) routes keys by matching the key
-  comment `git@github.com:Irgendeinwer/nix-private.git`. Always generate the CI
-  deploy key with `-C "git@github.com:Irgendeinwer/nix-private.git"` and store
-  it in the `NIX_PRIVATE_DEPLOY_KEY` repository secret on `NixOS-Dotfiles`.
+- **GitHub Actions** (`.github/workflows/nix-{test,update}.yml`) writes
+  `WALLPAPER_DEPLOY_KEY` and `NIX_PRIVATE_DEPLOY_KEY` to isolated SSH host
+  aliases (`github-wallpaper`, `github-nix-private`) with `IdentitiesOnly yes`
+  and Git `insteadOf` rules for both `ssh://git@github.com/...` and
+  `git@github.com:...`.
 - **`junixsrv` (`nix-nightly-update`)** uses
   `custom.services.buildServer.nightly.extraDeployKeys` to generate per-repo SSH
   host aliases and Git `insteadOf` rules from `nix_private_deploy_key` in
@@ -134,7 +135,7 @@ openssl req -new -key "$ca_tmp/portal.key" \
 
 cat > "$ca_tmp/portal-ext.cnf" <<'EXT'
 basicConstraints = critical, CA:FALSE
-keyUsage = critical, digitalSignature, keyEncipherment
+keyUsage = critical, digitalSignature
 extendedKeyUsage = serverAuth
 subjectAltName = DNS:junixsrv.local, DNS:junixsrv.internal, DNS:junixsrv, IP:100.110.103.47
 EXT

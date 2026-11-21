@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  utils,
   ...
 }:
 let
@@ -14,14 +15,14 @@ let
   useSopsTls = cfg.enable && cfg.tls.enable && cfg.tls.certificateFile == null;
   tlsCertPath =
     if cfg.tls.certificateFile != null then
-      toString cfg.tls.certificateFile
+      "${cfg.tls.certificateFile}"
     else if useSopsTls then
       config.sops.secrets.portal_tls_cert.path
     else
       "/run/secrets/portal_tls_cert";
   tlsKeyPath =
     if cfg.tls.keyFile != null then
-      toString cfg.tls.keyFile
+      "${cfg.tls.keyFile}"
     else if useSopsTls then
       config.sops.secrets.portal_tls_key.path
     else
@@ -41,7 +42,7 @@ let
     "/api/status"
   ];
 
-  validProjectName = name: builtins.match "[a-zA-Z0-9][a-zA-Z0-9_-]*" name != null;
+  validProjectName = name: builtins.match "[a-z0-9][a-z0-9_-]{0,22}" name != null;
 
   activeServices = lib.filterAttrs (_: s: s.enable) cfg.services;
   activeProjects = lib.filterAttrs (_: prj: prj.enable) cfg.projects;
@@ -125,7 +126,6 @@ let
     ++ lib.mapAttrsToList projectLocation activeProjects;
 
   managedProjects = lib.filterAttrs (_: prj: prj.execStart != null) activeProjects;
-  managedProjectPorts = map (prj: prj.port) (builtins.attrValues managedProjects);
 
   cardUnits = builtins.filter (u: u != null) (map (c: c.systemdUnit) allCards);
   trackedUnits = lib.unique (cardUnits ++ cfg.monitoredUnits);
@@ -885,7 +885,7 @@ let
       workingDirectory = lib.mkOption {
         type = lib.types.nullOr lib.types.nonEmptyStr;
         default = null;
-        description = "Working directory for the managed service (defaults to `/var/lib/portal-projects/<name>`).";
+        description = "Working directory for the managed service (defaults to `/var/lib/portal-project-<name>`).";
       };
 
       environment = lib.mkOption {
@@ -1044,7 +1044,7 @@ in
         }
         {
           assertion = lib.all validProjectName (builtins.attrNames cfg.projects);
-          message = "custom.services.portal.projects: names must match [a-zA-Z0-9][a-zA-Z0-9_-]*.";
+          message = "custom.services.portal.projects: names must match [a-z0-9][a-z0-9_-]{0,22}.";
         }
         {
           assertion = lib.all (
@@ -1066,6 +1066,16 @@ in
           message = "custom.services.portal: proxied service/project locations must start with '/' and not collide with reserved portal paths.";
         }
         {
+          assertion = lib.all (
+            name:
+            let
+              prj = activeProjects.${name};
+            in
+            prj.stripPrefix -> lib.hasSuffix "/" (projectLocation name prj)
+          ) (builtins.attrNames activeProjects);
+          message = "custom.services.portal.projects: location must end with '/' when stripPrefix is true.";
+        }
+        {
           assertion = builtins.length allProxyLocations == builtins.length (lib.unique allProxyLocations);
           message = "custom.services.portal: duplicate Nginx location across services/projects.";
         }
@@ -1073,10 +1083,9 @@ in
           assertion =
             let
               projectPorts = map (prj: prj.port) (builtins.attrValues activeProjects);
-              uniqueManaged = builtins.length (lib.unique managedProjectPorts);
             in
             !(builtins.elem cfg.statusPort projectPorts)
-            && builtins.length managedProjectPorts == uniqueManaged;
+            && builtins.length projectPorts == builtins.length (lib.unique projectPorts);
           message = "custom.services.portal.projects: project ports must be unique and must not collide with statusPort.";
         }
       ];
@@ -1084,9 +1093,7 @@ in
       users.groups = {
         junix-portal = { };
       }
-      // lib.optionalAttrs (managedProjects != { }) {
-        junix-projects = { };
-      };
+      // lib.mapAttrs' (name: _: lib.nameValuePair "portal-${name}" { }) managedProjects;
 
       users.users = {
         junix-portal = {
@@ -1094,12 +1101,13 @@ in
           group = "junix-portal";
         };
       }
-      // lib.optionalAttrs (managedProjects != { }) {
-        junix-projects = {
+      // lib.mapAttrs' (
+        name: _:
+        lib.nameValuePair "portal-${name}" {
           isSystemUser = true;
-          group = "junix-projects";
-        };
-      };
+          group = "portal-${name}";
+        }
+      ) managedProjects;
 
       sops.secrets = lib.mkIf useSopsTls {
         portal_tls_cert = {
@@ -1138,20 +1146,25 @@ in
           sslCertificate = lib.mkIf cfg.tls.enable tlsCertPath;
           sslCertificateKey = lib.mkIf cfg.tls.enable tlsKeyPath;
           root = "${webRoot}";
-          extraConfig = ''
-            ${lib.optionalString cfg.tls.enable "ssl_stapling off;"}
-            add_header X-Content-Type-Options "nosniff" always;
-            add_header X-Frame-Options "DENY" always;
-            add_header Referrer-Policy "no-referrer" always;
-            add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self';" always;
+          extraConfig = lib.optionalString cfg.tls.enable ''
+            ssl_stapling off;
           '';
           locations = {
             "/" = {
               index = "index.html";
               tryFiles = "$uri $uri/ =404";
+              extraConfig = ''
+                add_header X-Content-Type-Options "nosniff" always;
+                add_header X-Frame-Options "DENY" always;
+                add_header Referrer-Policy "no-referrer" always;
+                add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self';" always;
+              '';
             };
             "= /api/status" = {
               proxyPass = "http://127.0.0.1:${toString cfg.statusPort}/api/status";
+              extraConfig = ''
+                add_header X-Content-Type-Options "nosniff" always;
+              '';
             };
           }
           // proxiedServiceLocations
@@ -1167,23 +1180,24 @@ in
           serviceConfig = {
             User = "junix-portal";
             Group = "junix-portal";
-            ExecStart =
-              "${lib.getExe pkgs.python3} -B ${./scripts/portal-status.py} "
-              + lib.escapeShellArgs (
-                [
-                  "--bind"
-                  "127.0.0.1"
-                  "--port"
-                  (toString cfg.statusPort)
-                  "--hostname"
-                  config.networking.hostName
-                  "--nightly-enabled"
-                  (if nightlyEnabled then "1" else "0")
-                  "--systemctl"
-                  "${config.systemd.package}/bin/systemctl"
-                ]
-                ++ statusUnitFlags
-              );
+            ExecStart = utils.escapeSystemdExecArgs (
+              [
+                (lib.getExe pkgs.python3)
+                "-B"
+                "${./scripts/portal-status.py}"
+                "--bind"
+                "127.0.0.1"
+                "--port"
+                (toString cfg.statusPort)
+                "--hostname"
+                config.networking.hostName
+                "--nightly-enabled"
+                (if nightlyEnabled then "1" else "0")
+                "--systemctl"
+                "${config.systemd.package}/bin/systemctl"
+              ]
+              ++ statusUnitFlags
+            );
             Restart = "on-failure";
             RestartSec = "2s";
             NoNewPrivileges = true;
@@ -1218,11 +1232,12 @@ in
           }
           // prj.environment;
           serviceConfig = {
-            User = "junix-projects";
-            Group = "junix-projects";
-            StateDirectory = "portal-projects/${name}";
+            User = "portal-${name}";
+            Group = "portal-${name}";
+            StateDirectory = "portal-project-${name}";
+            StateDirectoryMode = "0700";
             WorkingDirectory =
-              if prj.workingDirectory != null then prj.workingDirectory else "/var/lib/portal-projects/${name}";
+              if prj.workingDirectory != null then prj.workingDirectory else "/var/lib/portal-project-${name}";
             ExecStart = prj.execStart;
             Restart = "on-failure";
             RestartSec = "3s";

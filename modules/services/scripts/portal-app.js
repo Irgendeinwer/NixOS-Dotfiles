@@ -331,9 +331,25 @@
     }
   }
 
+  async function loadConfig() {
+    if (state.config) return;
+    const cfgRes = await fetch("/portal-config.json", { cache: "no-cache" });
+    if (cfgRes.ok) {
+      state.config = await cfgRes.json();
+      const titleEl = document.getElementById("host-title");
+      if (titleEl && state.config.hostName) {
+        titleEl.textContent = state.config.hostName;
+      }
+      renderServices();
+    }
+  }
+
   async function refreshStatus() {
     const statusIndicator = document.getElementById("refresh-state");
     try {
+      if (!state.config) {
+        await loadConfig().catch(() => {});
+      }
       const res = await fetch("/api/status", { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       state.status = await res.json();
@@ -358,19 +374,7 @@
       refreshBtn.addEventListener("click", () => { refreshStatus(); });
     }
 
-    try {
-      const cfgRes = await fetch("/portal-config.json", { cache: "no-cache" });
-      if (cfgRes.ok) {
-        state.config = await cfgRes.json();
-        const titleEl = document.getElementById("host-title");
-        if (titleEl && state.config.hostName) {
-          titleEl.textContent = state.config.hostName;
-        }
-        renderServices();
-      }
-    } catch {
-      // Static config load failed; status poll still runs.
-    }
+    await loadConfig().catch(() => {});
 
     await refreshStatus();
     state.timerId = window.setInterval(() => {

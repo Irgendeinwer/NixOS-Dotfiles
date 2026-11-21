@@ -158,14 +158,49 @@ def read_disk(disk_path: Path) -> dict[str, Any]:
     }
 
 
-def query_systemd_units(systemctl_bin: str, units: list[str]) -> dict[str, dict[str, Any]]:
+def _normalize_systemd_timestamp(raw_val: str | None) -> str | None:
+    if not raw_val:
+        return None
+    val = raw_val.strip()
+    if val in ("", "n/a", "0", "@0"):
+        return None
+    if val.startswith("@"):
+        try:
+            epoch = float(val[1:])
+            if epoch > 0:
+                return datetime.fromtimestamp(epoch, UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+        except (ValueError, OverflowError, OSError):
+            return None
+        return None
+    return val
+
+
+def query_systemd_units(
+    systemctl_bin: str,
+    units: list[str],
+    timeout_sec: float = 5.0,
+) -> dict[str, dict[str, Any]]:
     if not units:
         return {}
     props = "Id,LoadState,ActiveState,SubState,Result,ActiveEnterTimestamp,NextElapseUSecRealtime"
-    cmd = [systemctl_bin, "show", "--no-pager", f"--property={props}", "--", *units]
+    cmd = [
+        systemctl_bin,
+        "show",
+        "--no-pager",
+        "--timestamp=unix",
+        f"--property={props}",
+        "--",
+        *units,
+    ]
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, check=False, timeout=5)
-    except OSError:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout_sec,
+        )
+    except (OSError, subprocess.SubprocessError):
         return {}
     if proc.returncode != 0 and not proc.stdout:
         return {}
@@ -183,12 +218,8 @@ def query_systemd_units(systemctl_bin: str, units: list[str]) -> dict[str, dict[
         unit_id = raw.get("Id")
         if not unit_id:
             continue
-        since = raw.get("ActiveEnterTimestamp") or None
-        if since in ("", "n/a"):
-            since = None
-        next_elapse = raw.get("NextElapseUSecRealtime") or None
-        if next_elapse in ("", "n/a"):
-            next_elapse = None
+        since = _normalize_systemd_timestamp(raw.get("ActiveEnterTimestamp"))
+        next_elapse = _normalize_systemd_timestamp(raw.get("NextElapseUSecRealtime"))
         result[unit_id] = {
             "loadState": raw.get("LoadState", "unknown"),
             "activeState": raw.get("ActiveState", "unknown"),
@@ -217,6 +248,7 @@ class StatusCollector:
         self.nightly_enabled: bool = args.nightly_enabled == "1"
         self.nightly_status_file = Path(args.nightly_status_file)
         self.systemctl_bin: str = args.systemctl
+        self.systemctl_timeout: float = max(0.1, args.systemctl_timeout)
         self.proc_root = Path(args.proc_root)
         self.cgroup_root = Path(args.cgroup_root)
         self.os_release = Path(args.os_release)
@@ -240,9 +272,13 @@ class StatusCollector:
         self._cached_payload: bytes = b"{}"
 
     def snapshot_bytes(self) -> bytes:
-        now_mono = time.monotonic()
         with self._lock:
-            if self._cached_payload != b"{}" and (now_mono - self._cached_at) < self.cache_ttl:
+            now_mono = time.monotonic()
+            if (
+                self.cache_ttl > 0
+                and self._cached_payload != b"{}"
+                and (now_mono - self._cached_at) < self.cache_ttl
+            ):
                 return self._cached_payload
             payload = json.dumps(self._collect(), separators=(",", ":")).encode("utf-8")
             self._cached_payload = payload
@@ -257,7 +293,7 @@ class StatusCollector:
         except OSError:
             load_avg = [0.0, 0.0, 0.0]
 
-        units_map = query_systemd_units(self.systemctl_bin, self.units)
+        units_map = query_systemd_units(self.systemctl_bin, self.units, self.systemctl_timeout)
         nightly_svc = units_map.get("nix-nightly-update.service", {})
         nightly_timer = units_map.get("nix-nightly-update.timer", {})
         nightly_running = nightly_svc.get("activeState") in ("activating", "active")
@@ -288,9 +324,14 @@ class StatusCollector:
         }
 
 
+class DaemonThreadingHTTPServer(ThreadingHTTPServer):
+    daemon_threads = True
+
+
 def make_handler(collector: StatusCollector) -> type[BaseHTTPRequestHandler]:
     class PortalStatusHandler(BaseHTTPRequestHandler):
         server_version = "junix-portal-status/1.0"
+        timeout = 5
 
         def log_message(self, format: str, *args: object) -> None:
             return
@@ -355,6 +396,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--nightly-enabled", choices=["0", "1"], default="0")
     parser.add_argument("--nightly-status-file", default="/var/lib/nix-nightly-status/status.json")
     parser.add_argument("--systemctl", default="systemctl")
+    parser.add_argument("--systemctl-timeout", type=float, default=5.0)
     parser.add_argument("--proc-root", default="/proc")
     parser.add_argument("--cgroup-root", default="/sys/fs/cgroup")
     parser.add_argument("--os-release", default="/etc/os-release")
@@ -368,7 +410,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     collector = StatusCollector(args)
-    server = ThreadingHTTPServer((args.bind, args.port), make_handler(collector))
+    server = DaemonThreadingHTTPServer((args.bind, args.port), make_handler(collector))
     if args.ready_file:
         bound_host, bound_port = server.server_address[:2]
         Path(args.ready_file).write_text(f"{bound_host}:{bound_port}\n", encoding="utf-8")

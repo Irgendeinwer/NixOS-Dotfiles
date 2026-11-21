@@ -121,10 +121,32 @@ let
     };
   };
 
+  stripPrefixNoSlash = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      projects.noslash = {
+        port = 18093;
+        location = "/noslash";
+        stripPrefix = true;
+      };
+    };
+  };
+
+  unmanagedPortDup = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      projects = {
+        first.port = 18094;
+        second.port = 18094;
+      };
+    };
+  };
+
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
   vhost = httpsSops.services.nginx.virtualHosts.junixsrv;
+  studySvc = httpsSops.systemd.services.portal-project-study-tracker;
   httpVhost = httpOnly.services.nginx.virtualHosts.junixsrv;
   serverHost = self.nixosConfigurations.junixsrv.config;
   serverVhost = serverHost.services.nginx.virtualHosts.junixsrv;
@@ -145,6 +167,8 @@ assert httpsSops.sops.secrets.portal_tls_cert.mode == "0400";
 assert builtins.elem "nginx.service" httpsSops.sops.secrets.portal_tls_cert.reloadUnits;
 assert vhost.locations."= /api/status".proxyPass == "http://127.0.0.1:18080/api/status";
 assert vhost.locations."/study-tracker/".proxyPass == "http://127.0.0.1:18090/";
+assert lib.hasInfix "Content-Security-Policy" vhost.locations."/".extraConfig;
+assert !(lib.hasInfix "Content-Security-Policy" vhost.extraConfig);
 assert httpsSops.custom.services.portal.services.navidrome.port == 4533;
 assert httpsSops.custom.services.portal.services.navidrome.path == "/app/";
 # Syncthing stays internal-only (unexposed on Nginx and direct ports).
@@ -153,10 +177,12 @@ assert httpsSops.custom.services.portal.services.syncthing.location == null;
 assert httpsSops.custom.services.portal.services.syncthing.url == null;
 assert !(builtins.hasAttr "/syncthing/" vhost.locations);
 assert !httpsSops.systemd.services.junix-portal-status.serviceConfig.PrivateUsers;
-assert !httpsSops.systemd.services.portal-project-study-tracker.serviceConfig.PrivateUsers;
-assert httpsSops.systemd.services.portal-project-study-tracker.environment.PORT == "18090";
-assert httpsSops.systemd.services.portal-project-study-tracker.environment.HOST == "127.0.0.1";
-assert httpsSops.systemd.services.portal-project-study-tracker.environment.APP_ENV == "production";
+assert !studySvc.serviceConfig.PrivateUsers;
+assert studySvc.serviceConfig.User == "portal-study-tracker";
+assert studySvc.serviceConfig.StateDirectoryMode == "0700";
+assert studySvc.environment.PORT == "18090";
+assert studySvc.environment.HOST == "127.0.0.1";
+assert studySvc.environment.APP_ENV == "production";
 assert !(builtins.elem dummyCa httpOnly.security.pki.certificateFiles);
 assert builtins.elem 80 httpOnly.networking.firewall.allowedTCPPorts;
 assert !(builtins.elem 443 httpOnly.networking.firewall.allowedTCPPorts);
@@ -166,11 +192,15 @@ assert httpVhost.locations."/raw-uri/".proxyPass == "http://127.0.0.1:18091";
 assert httpOnly.systemd.services.junix-portal-status.serviceConfig.PrivateUsers;
 assert !(builtins.hasAttr "portal_tls_cert" customTls.sops.secrets);
 assert !(builtins.elem 443 customTls.networking.firewall.allowedTCPPorts);
-assert customTls.services.nginx.virtualHosts.junixsrv.sslCertificate == toString dummyCert;
-assert customTls.services.nginx.virtualHosts.junixsrv.sslCertificateKey == toString dummyKey;
+assert customTls.services.nginx.virtualHosts.junixsrv.sslCertificate == "${dummyCert}";
+assert customTls.services.nginx.virtualHosts.junixsrv.sslCertificateKey == "${dummyKey}";
+assert builtins.hasContext customTls.services.nginx.virtualHosts.junixsrv.sslCertificate;
+assert builtins.hasContext customTls.services.nginx.virtualHosts.junixsrv.sslCertificateKey;
 assert hasFailedAssertion "custom.services.portal.tls:" halfTls;
 assert hasFailedAssertion "custom.services.portal:" reservedCollision;
 assert hasFailedAssertion "custom.services.portal.projects:" portCollision;
+assert hasFailedAssertion "custom.services.portal.projects:" stripPrefixNoSlash;
+assert hasFailedAssertion "custom.services.portal.projects:" unmanagedPortDup;
 assert hasFailedAssertion "custom.services.portal.services:" multiTargetService;
 assert serverHost.services.nginx.enable;
 assert serverVhost.forceSSL;

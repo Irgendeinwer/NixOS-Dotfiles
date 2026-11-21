@@ -13,12 +13,33 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
-      - name: Setup SSH Agent
-        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387 # v0.9.0
-        with:
-          ssh-private-key: |
-            ${{ secrets.WALLPAPER_DEPLOY_KEY }}
-            ${{ secrets.NIX_PRIVATE_DEPLOY_KEY }}
+      - name: Configure private flake deploy keys
+        env:
+          WALLPAPER_DEPLOY_KEY: ${{ secrets.WALLPAPER_DEPLOY_KEY }}
+          NIX_PRIVATE_DEPLOY_KEY: ${{ secrets.NIX_PRIVATE_DEPLOY_KEY }}
+        run: |
+          install -d -m 0700 "$HOME/.ssh"
+          umask 077
+          add_deploy_key() {
+            local alias="$1" repo="$2" key_content="$3"
+            local key_file="$HOME/.ssh/id_${alias}"
+            [ -n "$key_content" ] || return 0
+            printf '%s\n' "$key_content" > "$key_file"
+            cat >> "$HOME/.ssh/config" <<EOF
+          Host ${alias}
+            HostName github.com
+            User git
+            IdentityFile ${key_file}
+            IdentitiesOnly yes
+            IdentityAgent none
+            BatchMode yes
+            StrictHostKeyChecking accept-new
+          EOF
+            git config --global --replace-all "url.ssh://git@${alias}/${repo}.insteadOf" "ssh://git@github.com/${repo}"
+            git config --global --add "url.ssh://git@${alias}/${repo}.insteadOf" "git@github.com:${repo}"
+          }
+          add_deploy_key github-wallpaper Irgendeinwer/wallpaper "$WALLPAPER_DEPLOY_KEY"
+          add_deploy_key github-nix-private Irgendeinwer/nix-private "$NIX_PRIVATE_DEPLOY_KEY"
 
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@e50d5f73bfe71c2dd0aa4218de8f4afa59f8f81d # v16
