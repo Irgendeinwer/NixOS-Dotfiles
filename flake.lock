@@ -281,6 +281,26 @@
         "type": "github"
       }
     },
+    "private": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795301514,
+        "narHash": "sha256-2zpNPHVCusdyUThx7iSS3l2Zj6NPXrYxF5vhSsYoNwc=",
+        "ref": "refs/heads/main",
+        "rev": "853360e36f5328ca813a629fe56074dc2ce2e66f",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/Irgendeinwer/nix-private.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/Irgendeinwer/nix-private.git"
+      }
+    },
     "root": {
       "inputs": {
         "disko": "disko",
@@ -290,6 +310,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "nixvim": "nixvim",
+        "private": "private",
         "sops-nix": "sops-nix",
         "wallpaper": "wallpaper",
         "zen-browser": "zen-browser"
