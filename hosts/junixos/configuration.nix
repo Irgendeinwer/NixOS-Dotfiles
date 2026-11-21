@@ -163,6 +163,7 @@
         passwordFile = config.sops.secrets.hotspot_password.path;
       };
       syncthing.enable = true;
+      # Serves movies; music moved to Navidrome on junixsrv.
       jellyfin.enable = true;
       immich.enable = true;
       meilisearch.enable = true;

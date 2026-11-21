@@ -34,8 +34,9 @@ Not covered:
 - **junixbook has no backup job.** Its age key, `/etc/ssh`, Syncthing
   identity and browser profile exist only on the laptop unless copied
   somewhere safe by hand. Firefox Sync is not a full profile backup.
-- Service state under `/var/lib` (Immich and Jellyfin databases). Their
-  media files are covered, the databases are not.
+- Service state under `/var/lib` (Immich and Jellyfin databases on `junixos`,
+  and Navidrome's `/var/lib/navidrome` database on `junixsrv`). The underlying
+  media files on `junixos` are covered, the databases are not.
 - The Nix store and everything else reproducible from this flake.
 
 ## Reinstalling junixbook
@@ -183,6 +184,9 @@ If `/var/lib/tailscale` was not preserved across a reinstall of `junixbook` or
 `junixsrv`, [enroll the node again](tailscale.md#enroll-the-nodes), remove the
 retired device entry from the Tailscale admin console, and update any static
 `custom.services.tailscale.peers` IP if `junixsrv`'s Tailscale address changed.
+Likewise, if `/home/julian/.config/syncthing` on `junixsrv` was not preserved,
+update `junixsrvDeviceId` in `modules/services/syncthing.nix` with the new
+`syncthing device-id` and re-approve `junixsrv` on `MobileF6`.
 
 Keys in `custom.services.buildServer.authorizedKeys` authenticate the trusted
 Nix user `nixbuilder`. Treat these as root-equivalent keys, even if adding SSH

@@ -82,11 +82,8 @@ into your tailnet policy and remove or narrow any default allow-all rule
 
 - `icmp:*`: IP-layer ping and Path MTU Discovery diagnostics.
 - `tcp:22`, `tcp:5000`: OpenSSH and Harmonia binary cache.
-- `tcp:4533`, `tcp:22000`, `udp:22000`: future Navidrome and Syncthing (TCP +
-  QUIC) ports. Because `tailscale0` is not trusted in `junixsrv`'s NixOS
-  firewall, those ports remain closed on the host until the corresponding
-  services are enabled. If you prefer stricter tailnet policy staging, omit
-  `4533` and `22000` from the grant until enabling those services.
+- `tcp:4533`, `tcp:22000`, `udp:22000`: Navidrome and Syncthing (TCP + QUIC)
+  on `junixsrv`.
 
 Apply `tag:junixsrv` only to `junixsrv` and `tag:junixsrv-client` only to
 approved clients (`junixbook`). Tagging an existing device changes its ACL
@@ -181,24 +178,35 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
   --builders 'ssh-ng://nixbuilder@junixsrv.internal x86_64-linux - 3 2 big-parallel,benchmark'
 ```
 
-### Future Navidrome and Syncthing services
+### Navidrome and Syncthing
 
-- **Navidrome (`tcp:4533`):** Upstream `services.navidrome.settings.Address`
-  defaults to `"127.0.0.1"`. Set `Address = "0.0.0.0"` (and inside the nspawn
-  container, `systemd.services.navidrome.serviceConfig.PrivateUsers = lib.mkForce false`),
-  then open `4533` either on LAN + Tailscale (`services.navidrome.openFirewall = true`)
-  or on Tailscale only (`custom.services.tailscale.allowedTCPPorts = [ 4533 ]`).
-  Configure Feishin on `junixbook` with the single URL
-  `http://junixsrv.internal:4533` — it uses direct LAN WireGuard at home and
-  roams seamlessly when remote.
-- **Syncthing (`tcp:22000`, `udp:22000`):** Configure `junixsrv`'s device entry
-  on `junixbook` with explicit addresses
-  `[ "tcp://junixsrv.local:22000" "quic://junixsrv.local:22000" "tcp://junixsrv.internal:22000" "quic://junixsrv.internal:22000" "dynamic" ]`.
-  Syncthing will prefer raw LAN at home and direct Tailscale (`junixbook`
-  initiates outbound to `junixsrv`, compatible with `shieldsUp = true`) when
-  away, without falling back to public relays. Keep the web GUI bound to
-  `127.0.0.1:8384` and forward it on demand with
-  `ssh -L 8384:127.0.0.1:8384 julian@junixsrv.internal`.
+- **Syncthing (`tcp:22000`, `udp:22000`):** `junixsrv` shares `Documents`,
+  `Schule-26-27`, `Music`, and `E-Books`; `junixbook` omits `Music` and streams
+  from Navidrome on `junixsrv` instead.
+  1. After deploying `junixsrv` for the first time, read its generated device
+     ID:
+     ```sh
+     ssh julian@junixsrv.local 'syncthing device-id'
+     ```
+  2. Set that ID as the default of `junixsrvDeviceId` in
+     `modules/services/syncthing.nix`, then redeploy `junixsrv`, `junixos`, and
+     `junixbook`, and add/approve `junixsrv` on `MobileF6`.
+  3. On `junixbook`, `syncthing-init` automatically unshares `Music` (`#Noice`
+     is also removed everywhere). Only **after** switching `junixbook` should
+     you delete `/home/julian/music` on the laptop if reclaiming disk space, so
+     deletions are never propagated to `junixos`, `junixsrv`, or `MobileF6`.
+  4. When `custom.system.remoteBuilder.tailscaleHost` is set on `junixbook`,
+     Syncthing automatically dials `junixsrv.local:22000` on the LAN and
+     `<tailscaleHost>:22000` over Tailscale when remote, without public relays.
+     The web GUI stays local (`127.0.0.1:8384`); forward it on demand with
+     `ssh -L 8384:127.0.0.1:8384 julian@junixsrv.internal`.
+- **Navidrome (`tcp:4533`):** `junixsrv` serves `/home/julian/music` via
+  `custom.services.navidrome` while `junixos` keeps Jellyfin for movies. Open
+  `http://junixsrv.local:4533` once on the LAN to create the Navidrome admin
+  account, then point Feishin to `http://junixsrv.local:4533` on `junixos` and
+  `http://junixsrv.internal:4533` (or `junixsrv`'s Tailscale IP) on `junixbook`
+  so the laptop uses direct LAN WireGuard at home and roams seamlessly away
+  from home.
 
 ## Verify on the same LAN and from outside
 

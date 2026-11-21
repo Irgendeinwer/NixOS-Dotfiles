@@ -161,6 +161,8 @@
           sopsModule = inputs.sops-nix.nixosModules.sops;
         };
         tailscale-options = import ./tests/tailscale-options.nix { inherit nixpkgs pkgs self; };
+        syncthing-options = import ./tests/syncthing-options.nix { inherit nixpkgs pkgs self; };
+        navidrome-options = import ./tests/navidrome-options.nix { inherit nixpkgs pkgs self; };
         standalone-home = import ./tests/standalone-home.nix { inherit inputs pkgs; };
         theme-options = import ./tests/theme-options.nix { inherit nixpkgs pkgs self; };
         zen-options = import ./tests/zen-options.nix { inherit inputs pkgs self; };

@@ -42,6 +42,8 @@
         enable = true;
         shieldsUp = false;
       };
+      syncthing.enable = true;
+      navidrome.enable = true;
       buildServer = {
         enable = true;
         # Requires the `nix_nightly_webhook` key (Discord webhook URL) in
