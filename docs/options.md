@@ -43,7 +43,7 @@ to that value.
 | `custom.services.jellyfin` | `enable`, `openFirewall`. |
 | `custom.services.navidrome` | `enable`, `openFirewall` (default true), `host` (default `0.0.0.0`), `port` (default 4533), `musicFolder` (defaults to `/home/<user>/music`). |
 | `custom.services.syncthing` | `enable`, `user`, `openFirewall` (default true), `junixsrvDeviceId` (nullable), `junixsrvTailscaleHost` (defaults to `custom.system.remoteBuilder.tailscaleHost`). |
-| `custom.services.tailscale` | `enable`, `openFirewall` (default true), `shieldsUp` (default true), `acceptDns` (default false), `allowedTCPPorts`, `allowedUDPPorts`, `peers`. Opens only the WireGuard UDP port when `openFirewall` is true; `tailscale0` remains untrusted. |
+| `custom.services.tailscale` | `enable`, `openFirewall` (default true), `shieldsUp` (default true), `acceptDns` (default false), `mtu` (nullable `576..1500`), `allowedTCPPorts`, `allowedUDPPorts`, `peers`. Opens only the WireGuard UDP port when `openFirewall` is true; `tailscale0` remains untrusted. |
 | `custom.services.archisteamfarm` | `enable`, `webUi`. |
 | `custom.services` | Independent toggles: `meilisearch.enable`, `openrgb.enable`, `playerctl.enable`, `printing.enable`, `zapret.enable`. |
 | `custom.theme` | `palette`, shared with system console, Nixvim and Home Manager by default. See [Palette](#palette). |

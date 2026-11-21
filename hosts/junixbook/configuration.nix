@@ -75,6 +75,7 @@
     services = {
       tailscale = {
         enable = true;
+        mtu = 1180;
         peers."junixsrv.internal" = "100.110.103.47";
       };
       syncthing.enable = true;

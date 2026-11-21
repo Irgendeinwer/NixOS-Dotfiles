@@ -46,6 +46,18 @@ in
       '';
     };
 
+    mtu = lib.mkOption {
+      type = lib.types.nullOr (lib.types.ints.between 576 1500);
+      default = null;
+      example = 1180;
+      description = ''
+        Override the Tailscale TUN interface MTU (via TS_DEBUG_MTU). Useful
+        when Tailscale runs over an IPv6/DS-Lite/PPPoE path with a lower outer
+        MTU. Setting this below 1280 disables Tailscale's internal IPv6
+        (fd7a::) on the interface.
+      '';
+    };
+
     allowedTCPPorts = lib.mkOption {
       type = lib.types.listOf lib.types.port;
       default = [ ];
@@ -85,6 +97,13 @@ in
         assertion = lib.all validIp (builtins.attrValues cfg.peers);
         message = "custom.services.tailscale.peers: values must be literal IPv4 or IPv6 addresses.";
       }
+      {
+        assertion =
+          cfg.mtu == null
+          || cfg.mtu >= 1280
+          || lib.all (ip: !(lib.hasInfix ":" ip)) (builtins.attrValues cfg.peers);
+        message = "custom.services.tailscale: mtu below 1280 disables IPv6 on the Tailscale interface, so peers must use IPv4 addresses.";
+      }
     ];
 
     services.tailscale = {
@@ -116,10 +135,16 @@ in
 
     systemd.services = {
       # Use native nf_tables netlink on nftables hosts (including nspawn guests
-      # without CAP_SYS_MODULE for xtables/nft_compat).
-      tailscaled.environment = lib.mkIf config.networking.nftables.enable {
-        TS_DEBUG_FIREWALL_MODE = lib.mkDefault "nftables";
-      };
+      # without CAP_SYS_MODULE for xtables/nft_compat), and apply any TUN MTU
+      # override at interface creation.
+      tailscaled.environment = lib.mkMerge [
+        (lib.mkIf config.networking.nftables.enable {
+          TS_DEBUG_FIREWALL_MODE = lib.mkDefault "nftables";
+        })
+        (lib.mkIf (cfg.mtu != null) {
+          TS_DEBUG_MTU = toString cfg.mtu;
+        })
+      ];
 
       # Upstream only sets wantedBy = [ "tailscaled.service" ] without
       # RemainAfterExit, so live nixos-rebuild switches that change

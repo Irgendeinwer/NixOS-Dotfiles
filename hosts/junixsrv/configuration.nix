@@ -41,6 +41,7 @@
       tailscale = {
         enable = true;
         shieldsUp = false;
+        mtu = 1180;
       };
       syncthing.enable = true;
       navidrome.enable = true;
