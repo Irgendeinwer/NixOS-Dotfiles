@@ -134,25 +134,27 @@ assert unpairedFolders."E-Books".enable;
 assert !unpairedFolders.Music.enable;
 assert !unpairedFolders.Music.ignorePerms;
 assert laptopPaired.services.syncthing.settings.devices.junixsrv.id == sampleServerId;
-assert laptopPaired.services.syncthing.settings.devices.junixsrv.addresses == [
-  "tcp://junixsrv.local:22000"
-  "quic://junixsrv.local:22000"
-  "tcp://junixsrv.internal:22000"
-  "quic://junixsrv.internal:22000"
-  "dynamic"
-];
+assert
+  laptopPaired.services.syncthing.settings.devices.junixsrv.addresses == [
+    "tcp://junixsrv.local:22000"
+    "quic://junixsrv.local:22000"
+    "tcp://junixsrv.internal:22000"
+    "quic://junixsrv.internal:22000"
+    "dynamic"
+  ];
 assert pairedFolders.Documents.devices == allPairedDevices;
 assert pairedFolders."Schule-26-27".devices == allPairedDevices;
 assert pairedFolders."E-Books".devices == allPairedDevices;
 assert pairedFolders.Music.devices == musicPairedDevices;
 assert !pairedFolders.Music.enable;
-assert desktopPaired.services.syncthing.settings.devices.junixsrv.addresses == [
-  "tcp://junixsrv.local:22000"
-  "quic://junixsrv.local:22000"
-  "tcp://[fd7a:115c:a1e0::10]:22000"
-  "quic://[fd7a:115c:a1e0::10]:22000"
-  "dynamic"
-];
+assert
+  desktopPaired.services.syncthing.settings.devices.junixsrv.addresses == [
+    "tcp://junixsrv.local:22000"
+    "quic://junixsrv.local:22000"
+    "tcp://[fd7a:115c:a1e0::10]:22000"
+    "quic://[fd7a:115c:a1e0::10]:22000"
+    "dynamic"
+  ];
 assert desktopPaired.services.syncthing.settings.folders.Music.enable;
 assert serverPaired.services.syncthing.settings.devices.junixsrv.addresses == [ "dynamic" ];
 assert !serverPaired.systemd.services.syncthing.serviceConfig.PrivateUsers;

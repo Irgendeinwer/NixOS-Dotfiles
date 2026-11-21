@@ -9,11 +9,7 @@ let
   musicUnderHome = cfg.musicFolder == "/home" || lib.hasPrefix "/home/" cfg.musicFolder;
   underSyncUserHome = lib.hasPrefix "/home/${musicOwner}/" cfg.musicFolder;
   formatBindHost =
-    h:
-    if lib.hasInfix ":" h && !lib.hasPrefix "[" h && !lib.hasPrefix "unix:" h then
-      "[${h}]"
-    else
-      h;
+    h: if lib.hasInfix ":" h && !lib.hasPrefix "[" h && !lib.hasPrefix "unix:" h then "[${h}]" else h;
 in
 {
   options.custom.services.navidrome = {
