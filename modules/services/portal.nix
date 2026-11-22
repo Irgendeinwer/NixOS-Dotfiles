@@ -146,20 +146,20 @@ let
   bgVisualBlue = optColor (p.bg_visual_blue or null) (rgba p.aqua "0.18");
   bgVisualPurple = optColor (p.bg_visual_purple or null) (rgba p.purple "0.18");
 
+  nixSnowflakePaths = ''
+    <path d="M7.352 1.592l-1.364.002L5.32 2.75l1.557 2.713-3.137-.008-1.32 2.34H14.11l-1.353-2.332-3.192-.006-2.214-3.865z" fill="${p.blue}" />
+    <path d="M13.527 1.592l-2.687.025 5.846 10.127 1.341-2.34-1.59-2.765 2.24-3.85-.683-1.182h-1.336l-1.57 2.705-1.56-2.72z" fill="${p.green}" />
+    <path d="M20.414 5.787l-5.846 10.125 2.696-.008 1.601-2.76 4.453.016.682-1.183-.666-1.157-3.13-.008L21.778 8.1l-1.365-2.313z" fill="${p.yellow}" />
+    <path d="M9.432 8.086l-2.696.008-1.601 2.76-4.453-.016L0 12.02l.666 1.157 3.13.008-1.575 2.71 1.365 2.315L9.432 8.086z" fill="${p.orange}" />
+    <path d="M7.33 12.25l-.006.01-.002-.004-1.342 2.34 1.59 2.765-2.24 3.85.684 1.182H7.35l.004-.006h.001l1.567-2.698 1.558 2.72 2.688-.026-.004-.006h.01L7.33 12.25z" fill="${p.red}" />
+    <path d="M9.882 16.18l1.354 2.332 3.192.006 2.215 3.865 1.363-.002.668-1.156-1.557-2.713 3.137.008 1.32-2.34H9.881Z" fill="${p.purple}" />
+  '';
+
   faviconSvg = pkgs.writeText "portal-favicon.svg" ''
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
       <rect width="32" height="32" rx="7" fill="${p.bg1}" stroke="${p.bg5}" stroke-width="1.5"/>
-      <g transform="translate(16 16)" stroke-linecap="round" stroke-linejoin="round" fill="none">
-        <g stroke="${p.blue}" stroke-width="2.2">
-          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2"/>
-          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(120)"/>
-          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(240)"/>
-        </g>
-        <g stroke="${p.accent}" stroke-width="2.2">
-          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(60)"/>
-          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(180)"/>
-          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(300)"/>
-        </g>
+      <g transform="translate(4 4)">
+        ${nixSnowflakePaths}
       </g>
     </svg>
   '';
@@ -189,19 +189,8 @@ let
       </svg>
     '';
     package = pkgs.writeText "portal-icon-package.svg" ''
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-        <g transform="translate(12 12)" stroke-linecap="round" stroke-linejoin="round">
-          <g stroke="${p.blue}" stroke-width="1.85">
-            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1"/>
-            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(120)"/>
-            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(240)"/>
-          </g>
-          <g stroke="${p.aqua}" stroke-width="1.85">
-            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(60)"/>
-            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(180)"/>
-            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(300)"/>
-          </g>
-        </g>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        ${nixSnowflakePaths}
       </svg>
     '';
     code = pkgs.writeText "portal-icon-code.svg" ''
