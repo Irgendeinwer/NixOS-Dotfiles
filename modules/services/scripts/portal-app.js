@@ -1,13 +1,7 @@
 "use strict";
 
 (() => {
-  const ICONS = {
-    music: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-    sync: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-15.5-6.36L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15.5 6.36L21 16"/><path d="M16 16h5v5"/></svg>',
-    package: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>',
-    code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
-    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
-  };
+  const BUILTIN_ICONS = new Set(["music", "sync", "package", "code", "globe"]);
 
   const state = {
     config: null,
@@ -22,9 +16,31 @@
     return node;
   }
 
+  function resolveIconSrc(icon) {
+    if (typeof icon === "string" && (icon.startsWith("/") || icon.startsWith("data:image/"))) {
+      return icon;
+    }
+    const key = BUILTIN_ICONS.has(icon) ? icon : "globe";
+    return `/icons/${key}.svg`;
+  }
+
+  function formatGiBNumber(bytes) {
+    if (!Number.isFinite(bytes) || bytes <= 0) return "0.0";
+    return (bytes / (1024 ** 3)).toFixed(1);
+  }
+
   function formatGiB(bytes) {
-    if (!Number.isFinite(bytes) || bytes <= 0) return "0.0 GiB";
-    return (bytes / (1024 ** 3)).toFixed(1) + " GiB";
+    return `${formatGiBNumber(bytes)} GiB`;
+  }
+
+  function setVitalValue(id, mainText, denomText) {
+    const node = document.getElementById(id);
+    if (!node) return;
+    node.replaceChildren();
+    node.appendChild(el("span", "vital-num", mainText));
+    if (denomText) {
+      node.appendChild(el("span", "vital-denom", ` ${denomText}`));
+    }
   }
 
   function formatUptime(seconds) {
@@ -139,21 +155,21 @@
     const loads = Array.isArray(hostInfo.loadAvg) ? hostInfo.loadAvg : [0, 0, 0];
     const cores = hostInfo.cpuCount || 1;
     const loadPct = Math.min(100, ((loads[0] || 0) / cores) * 100);
-    document.getElementById("cpu-primary").textContent = `${Number(loads[0] || 0).toFixed(2)}`;
-    document.getElementById("cpu-secondary").textContent = `5m ${Number(loads[1] || 0).toFixed(2)} · 15m ${Number(loads[2] || 0).toFixed(2)} · ${cores} threads`;
+    setVitalValue("cpu-primary", Number(loads[0] || 0).toFixed(2), `/ ${cores} threads`);
+    document.getElementById("cpu-secondary").textContent = `5m ${Number(loads[1] || 0).toFixed(2)} · 15m ${Number(loads[2] || 0).toFixed(2)}`;
     setBar("cpu-bar", loadPct, barTone(loadPct));
 
     const mem = data.memory || {};
     const memPct = Number(mem.percent || 0);
-    document.getElementById("mem-primary").textContent = `${formatGiB(mem.usedBytes)} / ${formatGiB(mem.totalBytes)}`;
+    setVitalValue("mem-primary", formatGiBNumber(mem.usedBytes), `/ ${formatGiB(mem.totalBytes)}`);
     const memTag = mem.source === "cgroup" ? "cgroup v2 limit" : "system RAM";
     document.getElementById("mem-secondary").textContent = `${memPct.toFixed(1)}% used · ${memTag}`;
     setBar("mem-bar", memPct, barTone(memPct));
 
     const disk = data.disk || {};
     const diskPct = Number(disk.percent || 0);
-    document.getElementById("disk-primary").textContent = `${formatGiB(disk.usedBytes)} / ${formatGiB(disk.totalBytes)}`;
-    document.getElementById("disk-secondary").textContent = `${formatGiB(disk.freeBytes)} free (${diskPct.toFixed(1)}% used)`;
+    setVitalValue("disk-primary", formatGiBNumber(disk.usedBytes), `/ ${formatGiB(disk.totalBytes)}`);
+    document.getElementById("disk-secondary").textContent = `${formatGiB(disk.freeBytes)} free · ${diskPct.toFixed(1)}% used`;
     setBar("disk-bar", diskPct, barTone(diskPct));
 
     renderNightly(data.nightly);
@@ -183,7 +199,7 @@
       primary.textContent = "Update in progress";
     } else if (!last) {
       badge.textContent = "Scheduled";
-      badge.dataset.tone = "muted";
+      badge.dataset.tone = "scheduled";
       primary.textContent = "Awaiting first run";
     } else if (last.state === "success") {
       badge.textContent = "Updated";
@@ -253,9 +269,11 @@
 
         const top = el("div", "card-top");
         const iconWrap = el("span", "card-icon");
-        const svgMarkup = ICONS[svc.icon] || ICONS.globe;
-        const parsedSvg = new DOMParser().parseFromString(svgMarkup, "image/svg+xml").documentElement;
-        iconWrap.appendChild(document.importNode(parsedSvg, true));
+        const iconImg = el("img", "card-icon-img");
+        iconImg.src = resolveIconSrc(svc.icon);
+        iconImg.alt = "";
+        iconImg.decoding = "async";
+        iconWrap.appendChild(iconImg);
         top.appendChild(iconWrap);
 
         const badges = el("div", "card-badges");
@@ -266,9 +284,10 @@
           const st = unitTone(units[svc.systemdUnit]);
           const unitPill = el("span", "pill pill--unit");
           unitPill.dataset.tone = st.tone;
+          unitPill.dataset.unit = svc.systemdUnit;
           unitPill.title = svc.systemdUnit;
           unitPill.appendChild(el("span", "dot"));
-          unitPill.appendChild(el("span", null, st.label));
+          unitPill.appendChild(el("span", "unit-label", st.label));
           badges.appendChild(unitPill);
         }
         top.appendChild(badges);
@@ -331,6 +350,16 @@
     }
   }
 
+  function updateServiceUnitPills(units) {
+    const pills = document.querySelectorAll(".pill--unit[data-unit]");
+    for (const pill of pills) {
+      const st = unitTone(units[pill.dataset.unit]);
+      pill.dataset.tone = st.tone;
+      const labelEl = pill.querySelector(".unit-label");
+      if (labelEl) labelEl.textContent = st.label;
+    }
+  }
+
   async function loadConfig() {
     if (state.config) return;
     const cfgRes = await fetch("/portal-config.json", { cache: "no-cache" });
@@ -354,7 +383,12 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       state.status = await res.json();
       renderVitals();
-      renderServices();
+      const container = document.getElementById("services-root");
+      if (container && container.children.length > 0) {
+        updateServiceUnitPills(state.status.units || {});
+      } else {
+        renderServices();
+      }
       if (statusIndicator) {
         statusIndicator.textContent = "Live";
         statusIndicator.dataset.tone = "ok";

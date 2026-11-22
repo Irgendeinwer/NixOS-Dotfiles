@@ -39,6 +39,7 @@ let
     "/app.js"
     "/portal-config.json"
     "/icon.svg"
+    "/favicon.svg"
     "/api/status"
   ];
 
@@ -139,14 +140,96 @@ let
     }
   );
 
+  optColor = c: fb: if c != null then c else fb;
+  bg2Color = optColor (p.bg2 or null) p.bg1;
+  bgVisualGreen = optColor (p.bg_visual_green or null) (rgba p.green "0.18");
+  bgVisualBlue = optColor (p.bg_visual_blue or null) (rgba p.aqua "0.18");
+  bgVisualPurple = optColor (p.bg_visual_purple or null) (rgba p.purple "0.18");
+
+  faviconSvg = pkgs.writeText "portal-favicon.svg" ''
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+      <rect width="32" height="32" rx="7" fill="${p.bg1}" stroke="${p.bg5}" stroke-width="1.5"/>
+      <g transform="translate(16 16)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <g stroke="${p.blue}" stroke-width="2.2">
+          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2"/>
+          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(120)"/>
+          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(240)"/>
+        </g>
+        <g stroke="${p.accent}" stroke-width="2.2">
+          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(60)"/>
+          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(180)"/>
+          <path d="M-3 -8.5 L5.5 6 M1.2 -1.2 L6.5 -1.2" transform="rotate(300)"/>
+        </g>
+      </g>
+    </svg>
+  '';
+
+  iconSvgs = {
+    music = pkgs.writeText "portal-icon-music.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.5" fill="${p.bg0}" stroke="${p.orange}" stroke-width="1.6"/>
+        <path d="M6.8 8.5A6.3 6.3 0 0 1 15.5 6.8" stroke="${p.grey0}" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M8.5 17.2A6.3 6.3 0 0 0 17.2 15.5" stroke="${p.grey0}" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="12" cy="12" r="3.6" fill="${p.orange}"/>
+        <circle cx="12" cy="12" r="1.3" fill="${p.bg0}"/>
+        <circle cx="18.5" cy="5.5" r="2" fill="${p.yellow}"/>
+        <path d="M18.5 7.5 L15.6 11.2" stroke="${p.fg0}" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    '';
+    sync = pkgs.writeText "portal-icon-sync.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="8.6" stroke="${p.blue}" stroke-width="1.6"/>
+        <line x1="13.6" y1="12.8" x2="18.6" y2="7.2" stroke="${p.aqua}" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="13.6" y1="12.8" x2="18.2" y2="17.8" stroke="${p.aqua}" stroke-width="1.6" stroke-linecap="round"/>
+        <line x1="13.6" y1="12.8" x2="4.2" y2="13.6" stroke="${p.aqua}" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="13.6" cy="12.8" r="2.2" fill="${p.fg0}"/>
+        <circle cx="18.6" cy="7.2" r="2.1" fill="${p.aqua}" stroke="${p.bg0}" stroke-width="0.9"/>
+        <circle cx="18.2" cy="17.8" r="2.1" fill="${p.blue}" stroke="${p.bg0}" stroke-width="0.9"/>
+        <circle cx="4.2" cy="13.6" r="2.1" fill="${p.aqua}" stroke="${p.bg0}" stroke-width="0.9"/>
+      </svg>
+    '';
+    package = pkgs.writeText "portal-icon-package.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+        <g transform="translate(12 12)" stroke-linecap="round" stroke-linejoin="round">
+          <g stroke="${p.blue}" stroke-width="1.85">
+            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1"/>
+            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(120)"/>
+            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(240)"/>
+          </g>
+          <g stroke="${p.aqua}" stroke-width="1.85">
+            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(60)"/>
+            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(180)"/>
+            <path d="M-2.4 -7.2 L4.4 4.8 M1 -1 L5.4 -1" transform="rotate(300)"/>
+          </g>
+        </g>
+      </svg>
+    '';
+    code = pkgs.writeText "portal-icon-code.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="8 7 3 12 8 17" stroke="${p.yellow}" stroke-width="1.9"/>
+        <polyline points="16 7 21 12 16 17" stroke="${p.yellow}" stroke-width="1.9"/>
+        <line x1="13.8" y1="5.5" x2="10.2" y2="18.5" stroke="${p.orange}" stroke-width="1.8"/>
+      </svg>
+    '';
+    globe = pkgs.writeText "portal-icon-globe.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9" stroke="${p.purple}" stroke-width="1.7"/>
+        <line x1="3.4" y1="12" x2="20.6" y2="12" stroke="${p.purple}" stroke-width="1.5"/>
+        <path d="M12 3a13.8 13.8 0 0 1 3.6 9 13.8 13.8 0 0 1-3.6 9 13.8 13.8 0 0 1-3.6-9A13.8 13.8 0 0 1 12 3z" stroke="${p.fg0}" stroke-width="1.5"/>
+      </svg>
+    '';
+  };
+
   styleCss = pkgs.writeText "portal-style.css" ''
     :root {
+      color-scheme: dark;
       --bg-dim: ${p.bg_dim};
       --bg0: ${p.bg0};
       --bg1: ${p.bg1};
-      --bg2: ${p.bg2};
+      --bg2: ${bg2Color};
+      --bg-hover: ${p.bg_statusline2};
       --bg3: ${p.bg3};
-      --bg-word: ${if p.bg_current_word != null then p.bg_current_word else p.bg2};
+      --bg5: ${p.bg5};
       --fg0: ${p.fg0};
       --fg1: ${p.fg1};
       --grey0: ${p.grey0};
@@ -160,9 +243,12 @@ let
       --orange: ${p.orange};
       --red: ${p.red};
       --purple: ${p.purple};
-      --border: ${rgba p.grey0 "0.28"};
-      --border-hover: ${rgba p.accent "0.55"};
-      --card-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+      --border: ${p.bg3};
+      --border-strong: ${p.bg5};
+      --border-hover: ${p.accent};
+      --card-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+      --font-sans: "Inter", "Noto Sans", "Noto Sans CJK JP", system-ui, -apple-system, sans-serif;
+      --font-mono: "Fira Code Nerd Font Mono", "Fira Code", ui-monospace, monospace;
     }
 
     * {
@@ -173,12 +259,9 @@ let
 
     body {
       min-height: 100vh;
-      background-color: var(--bg-dim);
-      background-image:
-        radial-gradient(circle at 12% 0%, ${rgba p.aqua "0.08"}, transparent 42%),
-        radial-gradient(circle at 88% 4%, ${rgba p.accent "0.07"}, transparent 38%);
+      background-color: var(--bg0);
       color: var(--fg0);
-      font-family: ui-sans-serif, system-ui, -apple-system, "Inter", "Segoe UI", sans-serif;
+      font-family: var(--font-sans);
       line-height: 1.5;
       padding: 2rem 1.25rem 3rem;
     }
@@ -188,7 +271,7 @@ let
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 1.75rem;
+      gap: 1.65rem;
     }
 
     .topbar {
@@ -197,58 +280,57 @@ let
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      padding: 1.25rem 1.5rem;
-      background: var(--bg0);
+      padding: 1.15rem 1.45rem;
+      background: var(--bg1);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-top: 2px solid var(--accent);
+      border-radius: 13px;
       box-shadow: var(--card-shadow);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.95rem;
+      gap: 1rem;
     }
 
     .brand-logo {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      background: var(--bg1);
-      padding: 6px;
-      border: 1px solid var(--border);
+      width: 48px;
+      height: 48px;
+      display: block;
+      flex-shrink: 0;
     }
 
     .brand-title {
-      font-size: 1.35rem;
+      font-size: 1.38rem;
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--fg0);
     }
 
     .brand-subtitle {
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       color: var(--grey2);
-      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
     }
 
     .topbar-actions {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.55rem;
     }
 
     .pill {
       display: inline-flex;
       align-items: center;
       gap: 0.42rem;
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       padding: 0.28rem 0.65rem;
       border-radius: 999px;
-      background: var(--bg1);
+      background: var(--bg0);
       color: var(--grey2);
       border: 1px solid var(--border);
       white-space: nowrap;
@@ -256,37 +338,39 @@ let
 
     .pill[data-secure="true"] {
       color: var(--aqua);
-      border-color: ${rgba p.aqua "0.35"};
+      background: ${bgVisualBlue};
+      border-color: ${rgba p.aqua "0.45"};
     }
 
     .pill[data-tone="ok"] {
       color: var(--green);
-      border-color: ${rgba p.green "0.38"};
-      background: ${rgba p.green "0.10"};
+      background: ${bgVisualGreen};
+      border-color: ${rgba p.green "0.45"};
     }
 
     .pill[data-tone="info"] {
       color: var(--blue);
-      border-color: ${rgba p.blue "0.38"};
-      background: ${rgba p.blue "0.10"};
+      background: ${bgVisualBlue};
+      border-color: ${rgba p.blue "0.45"};
     }
 
     .pill[data-tone="active"] {
-      color: var(--aqua);
-      border-color: ${rgba p.aqua "0.42"};
-      background: ${rgba p.aqua "0.12"};
+      color: var(--purple);
+      background: ${bgVisualPurple};
+      border-color: ${rgba p.purple "0.45"};
     }
 
+    .pill[data-tone="scheduled"],
     .pill[data-tone="warn"] {
       color: var(--yellow);
-      border-color: ${rgba p.yellow "0.42"};
-      background: ${rgba p.yellow "0.12"};
+      background: ${p.bg_visual_yellow};
+      border-color: ${rgba p.yellow "0.45"};
     }
 
     .pill[data-tone="crit"] {
       color: var(--red);
-      border-color: ${rgba p.red "0.45"};
-      background: ${rgba p.red "0.12"};
+      background: ${p.bg_visual_red};
+      border-color: ${rgba p.red "0.50"};
     }
 
     .dot {
@@ -294,39 +378,55 @@ let
       height: 7px;
       border-radius: 50%;
       background: currentColor;
+      flex-shrink: 0;
     }
 
     .btn {
-      background: var(--bg1);
+      background: var(--bg0);
       color: var(--fg0);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-strong);
       border-radius: 8px;
-      padding: 0.34rem 0.75rem;
-      font-size: 0.8rem;
+      padding: 0.34rem 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
+      font-family: var(--font-sans);
       cursor: pointer;
-      transition: border-color 140ms ease, background 140ms ease;
+      transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
     }
 
     .btn:hover {
-      background: var(--bg2);
+      background: var(--bg-hover);
       border-color: var(--border-hover);
+      color: var(--accent);
     }
 
     .vitals-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1rem;
     }
 
+    @media (max-width: 980px) {
+      .vitals-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .vitals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .vital-card {
-      background: var(--bg0);
+      background: var(--bg1);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.05rem 1.2rem;
       display: flex;
       flex-direction: column;
       gap: 0.45rem;
+      box-shadow: var(--card-shadow);
     }
 
     .vital-head {
@@ -337,32 +437,44 @@ let
     }
 
     .vital-label {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--grey1);
+      letter-spacing: 0.07em;
+      color: var(--grey2);
       font-weight: 700;
     }
 
     .vital-primary {
-      font-size: 1.22rem;
+      font-size: 1.28rem;
       font-weight: 700;
-      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
       color: var(--fg0);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .vital-denom {
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--grey1);
     }
 
     .vital-secondary {
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       color: var(--grey2);
+      font-variant-numeric: tabular-nums;
     }
 
     .bar-track {
-      height: 6px;
+      height: 7px;
       width: 100%;
-      background: var(--bg2);
+      background: var(--bg-dim);
+      border: 1px solid var(--border);
       border-radius: 999px;
       overflow: hidden;
-      margin-top: 0.2rem;
+      margin-top: auto;
     }
 
     .bar-fill {
@@ -373,12 +485,24 @@ let
       transition: width 260ms ease;
     }
 
-    .bar-fill[data-tone="warn"] {
+    #cpu-bar {
+      background: var(--green);
+    }
+
+    #mem-bar {
+      background: var(--blue);
+    }
+
+    #disk-bar {
       background: var(--yellow);
     }
 
+    .bar-fill[data-tone="warn"] {
+      background: var(--orange) !important;
+    }
+
     .bar-fill[data-tone="crit"] {
-      background: var(--red);
+      background: var(--red) !important;
     }
 
     .nightly-details {
@@ -397,7 +521,7 @@ let
     .nightly-summary-list {
       margin-top: 0.4rem;
       padding-left: 1rem;
-      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 0.73rem;
       display: flex;
       flex-direction: column;
@@ -413,31 +537,48 @@ let
     .category-section {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.8rem;
     }
 
     .category-title {
-      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--grey2);
-      padding-left: 0.15rem;
+      letter-spacing: 0.09em;
+      color: var(--yellow);
+    }
+
+    .category-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
+    }
+
+    @media (max-width: 760px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .service-card {
       display: flex;
       flex-direction: column;
       gap: 0.65rem;
-      padding: 1.2rem 1.3rem;
-      background: var(--bg0);
+      padding: 1.2rem 1.35rem;
+      background: var(--bg1);
       border: 1px solid var(--border);
       border-radius: 13px;
+      box-shadow: var(--card-shadow);
       text-decoration: none;
       color: inherit;
       transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
@@ -445,12 +586,13 @@ let
 
     a.service-card:hover {
       transform: translateY(-2px);
-      background: var(--bg1);
+      background: var(--bg-hover);
       border-color: var(--border-hover);
     }
 
     .service-card--internal {
       border-style: dashed;
+      border-color: var(--border-strong);
     }
 
     .card-top {
@@ -461,20 +603,21 @@ let
     }
 
     .card-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
-      background: var(--bg1);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--bg0);
       border: 1px solid var(--border);
-      color: var(--accent);
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
-    .card-icon svg {
-      width: 19px;
-      height: 19px;
+    .card-icon-img {
+      width: 24px;
+      height: 24px;
+      display: block;
     }
 
     .card-badges {
@@ -485,7 +628,7 @@ let
     }
 
     .card-title {
-      font-size: 1.06rem;
+      font-size: 1.08rem;
       font-weight: 700;
       color: var(--fg0);
     }
@@ -498,55 +641,63 @@ let
 
     .card-target {
       margin-top: 0.25rem;
-      padding-top: 0.6rem;
+      padding-top: 0.65rem;
       border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-family: ui-monospace, "JetBrains Mono", monospace;
-      font-size: 0.76rem;
+      font-family: var(--font-mono);
+      font-size: 0.77rem;
       color: var(--aqua);
     }
 
+    a.service-card:hover .card-target {
+      color: var(--yellow);
+    }
+
     .card-arrow {
-      font-size: 0.9rem;
-      color: var(--accent);
+      font-size: 0.95rem;
+      color: var(--orange);
     }
 
     .card-hint {
       margin-top: 0.25rem;
-      padding: 0.45rem 0.6rem;
+      padding: 0.45rem 0.65rem;
       background: var(--bg-dim);
       border: 1px solid var(--border);
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.5rem;
+      gap: 0.6rem;
     }
 
     .card-hint-code {
-      font-family: ui-monospace, "JetBrains Mono", monospace;
-      font-size: 0.72rem;
-      color: var(--grey2);
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: var(--fg0);
       overflow-x: auto;
       white-space: nowrap;
     }
 
     .copy-btn {
-      background: var(--bg2);
+      background: var(--bg1);
       color: var(--fg0);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-strong);
       border-radius: 6px;
-      padding: 0.2rem 0.5rem;
+      padding: 0.22rem 0.55rem;
       font-size: 0.72rem;
       font-weight: 600;
+      font-family: var(--font-sans);
       cursor: pointer;
       flex-shrink: 0;
+      transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
     }
 
     .copy-btn:hover {
+      background: var(--bg-hover);
       border-color: var(--border-hover);
+      color: var(--accent);
     }
 
     .footer-bar {
@@ -555,17 +706,18 @@ let
       align-items: center;
       justify-content: space-between;
       gap: 0.8rem;
-      padding: 0.95rem 1.25rem;
-      background: var(--bg0);
+      padding: 0.95rem 1.35rem;
+      background: var(--bg1);
       border: 1px solid var(--border);
       border-radius: 12px;
+      box-shadow: var(--card-shadow);
     }
 
     .footer-label {
       font-size: 0.76rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--grey1);
+      letter-spacing: 0.08em;
+      color: var(--grey2);
       font-weight: 700;
     }
 
@@ -578,12 +730,12 @@ let
     .infra-chip {
       display: inline-flex;
       align-items: center;
-      gap: 0.38rem;
-      padding: 0.24rem 0.6rem;
+      gap: 0.4rem;
+      padding: 0.25rem 0.65rem;
       border-radius: 999px;
-      font-family: ui-monospace, "JetBrains Mono", monospace;
+      font-family: var(--font-mono);
       font-size: 0.74rem;
-      background: var(--bg1);
+      background: var(--bg0);
       border: 1px solid var(--border);
       color: var(--grey2);
     }
@@ -597,7 +749,8 @@ let
     }
 
     .infra-chip[data-tone="crit"] {
-      border-color: ${rgba p.red "0.45"};
+      background: ${p.bg_visual_red};
+      border-color: ${rgba p.red "0.50"};
       color: var(--red);
     }
 
@@ -613,8 +766,10 @@ let
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="color-scheme" content="dark">
+      <meta name="darkreader-lock">
       <title>${config.networking.hostName} · Overview</title>
-      <link rel="icon" type="image/svg+xml" href="/icon.svg">
+      <link rel="icon" type="image/svg+xml" href="/favicon.svg">
       <link rel="stylesheet" href="/style.css">
     </head>
     <body>
@@ -689,12 +844,18 @@ let
   '';
 
   webRoot = pkgs.runCommand "junix-portal-webroot" { } ''
-    mkdir -p "$out"
+    mkdir -p "$out/icons"
     ln -s ${indexHtml} "$out/index.html"
     ln -s ${styleCss} "$out/style.css"
     ln -s ${./scripts/portal-app.js} "$out/app.js"
     ln -s ${portalConfigJson} "$out/portal-config.json"
     ln -s ${../../assets/icon.svg} "$out/icon.svg"
+    ln -s ${faviconSvg} "$out/favicon.svg"
+    ln -s ${iconSvgs.music} "$out/icons/music.svg"
+    ln -s ${iconSvgs.sync} "$out/icons/sync.svg"
+    ln -s ${iconSvgs.package} "$out/icons/package.svg"
+    ln -s ${iconSvgs.code} "$out/icons/code.svg"
+    ln -s ${iconSvgs.globe} "$out/icons/globe.svg"
   '';
 
   serviceSubmodule = lib.types.submodule {
@@ -1061,7 +1222,8 @@ in
         }
         {
           assertion = lib.all (
-            loc: lib.hasPrefix "/" loc && !(builtins.elem loc reservedLocations)
+            loc:
+            lib.hasPrefix "/" loc && !(lib.hasPrefix "/icons/" loc) && !(builtins.elem loc reservedLocations)
           ) allProxyLocations;
           message = "custom.services.portal: proxied service/project locations must start with '/' and not collide with reserved portal paths.";
         }
