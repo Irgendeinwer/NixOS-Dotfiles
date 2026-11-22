@@ -390,6 +390,8 @@ let
     }
 
     .vitals-grid {
+      position: relative;
+      z-index: 20;
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 1rem;
@@ -408,6 +410,7 @@ let
     }
 
     .vital-card {
+      position: relative;
       background: var(--bg1);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -416,6 +419,12 @@ let
       flex-direction: column;
       gap: 0.45rem;
       box-shadow: var(--card-shadow);
+      transition: border-color 140ms ease;
+    }
+
+    .vital-card:has(.nightly-details[open]) {
+      z-index: 30;
+      border-color: var(--border-strong);
     }
 
     .vital-head {
@@ -423,6 +432,7 @@ let
       align-items: center;
       justify-content: space-between;
       gap: 0.5rem;
+      min-height: 1.85rem;
     }
 
     .vital-label {
@@ -464,6 +474,7 @@ let
       border-radius: 999px;
       overflow: hidden;
       margin-top: auto;
+      margin-bottom: 0.2rem;
     }
 
     .bar-fill {
@@ -495,7 +506,8 @@ let
     }
 
     .nightly-details {
-      margin-top: 0.25rem;
+      margin-top: auto;
+      padding-top: 0.15rem;
       font-size: 0.76rem;
       color: var(--grey2);
     }
@@ -508,13 +520,34 @@ let
     }
 
     .nightly-summary-list {
-      margin-top: 0.4rem;
-      padding-left: 1rem;
+      display: none;
+    }
+
+    .nightly-details[open] .nightly-summary-list {
+      position: absolute;
+      top: calc(100% + 0.45rem);
+      left: -1px;
+      right: -1px;
+      z-index: 30;
+      margin: 0;
+      padding: 0.75rem 1rem 0.75rem 1.85rem;
+      background: var(--bg2);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.52);
+      color: var(--fg1);
       font-family: var(--font-mono);
       font-size: 0.73rem;
       display: flex;
       flex-direction: column;
-      gap: 0.18rem;
+      gap: 0.24rem;
+    }
+
+    @media (max-width: 560px) {
+      .nightly-details[open] .nightly-summary-list {
+        position: static;
+        margin-top: 0.55rem;
+      }
     }
 
     .services-root {

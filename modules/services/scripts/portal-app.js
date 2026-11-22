@@ -188,6 +188,7 @@
       badge.dataset.tone = "muted";
       primary.textContent = "Off";
       secondary.textContent = "Nightly auto-builder is disabled";
+      detailsWrap.open = false;
       detailsWrap.hidden = true;
       return;
     }
@@ -231,6 +232,7 @@
       }
       detailsWrap.hidden = false;
     } else {
+      detailsWrap.open = false;
       detailsWrap.hidden = true;
     }
   }
@@ -407,6 +409,19 @@
     if (refreshBtn) {
       refreshBtn.addEventListener("click", () => { refreshStatus(); });
     }
+
+    document.addEventListener("click", (ev) => {
+      const details = document.getElementById("nightly-details");
+      if (details && details.open && !details.contains(ev.target)) {
+        details.open = false;
+      }
+    });
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") {
+        const details = document.getElementById("nightly-details");
+        if (details && details.open) details.open = false;
+      }
+    });
 
     await loadConfig().catch(() => {});
 
