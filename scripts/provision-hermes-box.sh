@@ -3,7 +3,8 @@
 # systemd-nspawn sandbox container (`hermes-box`) on the Debian 12 host.
 #
 # Architecture:
-#   - Sparse ext4 raw disk image at /var/lib/machines/hermes-box.raw (hard cap)
+#   - Dedicated partition/mount at /var/lib/machines/hermes-box (auto-detected)
+#     OR sparse ext4 raw disk image at /var/lib/machines/hermes-box.raw
 #   - Unprivileged user namespace isolation (`PrivateUsers=pick`)
 #   - Shared LAN/mDNS segment via `MACVLAN=<iface>` (`hermes-box.local`)
 #   - Hard cgroup v2 CPU, memory, and PID limits protecting `junixsrv`
@@ -14,6 +15,7 @@ set -euo pipefail
 MACHINE="hermes-box"
 SUITE="resolute"
 IMAGE_SIZE_GIB="32"
+STORAGE_MODE="auto"
 MACVLAN_IFACE=""
 MIRROR=""
 AUTHORIZED_KEY_ARG=""
@@ -26,13 +28,19 @@ usage() {
   cat <<'EOF'
 Usage: sudo bash scripts/provision-hermes-box.sh [options]
 
+Storage:
+  If /var/lib/machines/hermes-box is a mounted partition (or --directory is
+  passed), bootstraps directly into /var/lib/machines/hermes-box. Otherwise
+  creates a sparse ext4 loopback image at /var/lib/machines/hermes-box.raw.
+
 Options:
+  --directory               Use /var/lib/machines/hermes-box directory root
   --macvlan <iface>         Host NIC for MACVLAN= (default: read from junixsrv.nspawn)
   --size <GiB>              Sparse raw ext4 image size in GiB (default: 32)
   --suite <codename>        Ubuntu release suite (default: resolute / 26.04.1 LTS)
   --mirror <url>            Ubuntu archive mirror URL (default: auto by arch)
   --authorized-key <value>  SSH public key string or path to .pub file
-  --rebuild                 Stop and recreate /var/lib/machines/hermes-box.raw
+  --rebuild                 Stop and recreate /var/lib/machines/hermes-box(.raw)
   -h, --help                Show this help text
 EOF
 }
@@ -48,6 +56,10 @@ die() {
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --directory)
+      STORAGE_MODE="directory"
+      shift
+      ;;
     --macvlan)
       [[ $# -ge 2 ]] || die "--macvlan requires an interface name"
       MACVLAN_IFACE="$2"
@@ -135,8 +147,10 @@ apt-get install -y --no-install-recommends \
 UBUNTU_KEYRING="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
 UBUNTU_ARCHIVE_KEY_FPR="F6ECB3762474EDA9D21B7022871920D1991BC93C"
 
+DIR_PATH="/var/lib/machines/${MACHINE}"
 IMAGE_PATH="/var/lib/machines/${MACHINE}.raw"
 MNT_DIR=""
+TMP_MNT_DIR=""
 LOOP_DEV=""
 GPG_TMP=""
 
@@ -151,10 +165,12 @@ cleanup() {
         umount -lf "${MNT_DIR}/${sub}"
       fi
     done
-    if mountpoint -q "${MNT_DIR}"; then
-      umount "${MNT_DIR}"
+  fi
+  if [[ -n "${TMP_MNT_DIR}" && -d "${TMP_MNT_DIR}" ]]; then
+    if mountpoint -q "${TMP_MNT_DIR}"; then
+      umount "${TMP_MNT_DIR}"
     fi
-    rmdir "${MNT_DIR}" 2>/dev/null || true
+    rmdir "${TMP_MNT_DIR}" 2>/dev/null || true
   fi
   if [[ -n "${LOOP_DEV}" ]]; then
     losetup -d "${LOOP_DEV}" 2>/dev/null || true
@@ -190,28 +206,22 @@ ensure_ubuntu_keyring
 
 install -d -m 0755 /var/lib/machines /etc/systemd/nspawn
 
-if [[ "${REBUILD}" -eq 1 && -f "${IMAGE_PATH}" ]]; then
-  log "Stopping existing ${MACHINE} before rebuild..."
-  machinectl poweroff "${MACHINE}" 2>/dev/null || true
-  for _ in {1..30}; do
-    machinectl status "${MACHINE}" >/dev/null 2>&1 || break
-    sleep 1
-  done
-  machinectl terminate "${MACHINE}" 2>/dev/null || true
-  rm -f "${IMAGE_PATH}"
+USE_DIRECTORY=0
+if [[ "${STORAGE_MODE}" == "directory" ]]; then
+  USE_DIRECTORY=1
+elif [[ -d "${DIR_PATH}" ]] && { mountpoint -q "${DIR_PATH}" || [[ ! -f "${IMAGE_PATH}" && -e "${DIR_PATH}/etc/os-release" ]]; }; then
+  USE_DIRECTORY=1
 fi
 
-NEED_BOOTSTRAP=0
-if [[ ! -f "${IMAGE_PATH}" ]]; then
-  NEED_BOOTSTRAP=1
-  log "Creating ${IMAGE_SIZE_GIB} GiB sparse ext4 image at ${IMAGE_PATH}..."
-  truncate -s "${IMAGE_SIZE_GIB}G" "${IMAGE_PATH}"
-  chmod 0600 "${IMAGE_PATH}"
-  mkfs.ext4 -q -F -L "${MACHINE}" "${IMAGE_PATH}"
+if [[ "${USE_DIRECTORY}" -eq 1 && -f "${IMAGE_PATH}" ]]; then
+  die "both ${DIR_PATH} and ${IMAGE_PATH} exist; remove one so systemd-nspawn has an unambiguous root"
+fi
+if [[ "${USE_DIRECTORY}" -eq 0 && -d "${DIR_PATH}" && ! -f "${IMAGE_PATH}" ]]; then
+  die "${DIR_PATH} exists as an unmounted directory; mount your partition there or pass --directory"
 fi
 
 if machinectl status "${MACHINE}" >/dev/null 2>&1; then
-  log "Stopping running ${MACHINE} container to apply updates..."
+  log "Stopping running ${MACHINE} container..."
   machinectl poweroff "${MACHINE}" 2>/dev/null || true
   for _ in {1..30}; do
     machinectl status "${MACHINE}" >/dev/null 2>&1 || break
@@ -220,18 +230,44 @@ if machinectl status "${MACHINE}" >/dev/null 2>&1; then
   machinectl terminate "${MACHINE}" 2>/dev/null || true
 fi
 
-MNT_DIR="$(mktemp -d "/run/${MACHINE}-mnt.XXXXXX")"
-LOOP_DEV="$(losetup --find --show "${IMAGE_PATH}")"
-mount "${LOOP_DEV}" "${MNT_DIR}"
-
-if [[ "${NEED_BOOTSTRAP}" -eq 0 && ! -e "${MNT_DIR}/etc/os-release" ]]; then
-  log "Existing image is incomplete (missing /etc/os-release); re-bootstrapping..."
-  find "${MNT_DIR}" -mindepth 1 -maxdepth 1 ! -name 'lost+found' -exec rm -rf {} +
-  NEED_BOOTSTRAP=1
+NEED_BOOTSTRAP=0
+if [[ "${USE_DIRECTORY}" -eq 1 ]]; then
+  install -d -m 0755 "${DIR_PATH}"
+  MNT_DIR="${DIR_PATH}"
+  STORAGE_DESC="${DIR_PATH}"
+  if [[ "${REBUILD}" -eq 1 ]]; then
+    log "Clearing ${DIR_PATH} for rebuild..."
+    find "${DIR_PATH}" -mindepth 1 -maxdepth 1 ! -name 'lost+found' -exec rm -rf {} +
+    NEED_BOOTSTRAP=1
+  elif [[ ! -e "${DIR_PATH}/etc/os-release" ]]; then
+    find "${DIR_PATH}" -mindepth 1 -maxdepth 1 ! -name 'lost+found' -exec rm -rf {} +
+    NEED_BOOTSTRAP=1
+  fi
+else
+  STORAGE_DESC="${IMAGE_PATH}"
+  if [[ "${REBUILD}" -eq 1 && -f "${IMAGE_PATH}" ]]; then
+    rm -f "${IMAGE_PATH}"
+  fi
+  if [[ ! -f "${IMAGE_PATH}" ]]; then
+    NEED_BOOTSTRAP=1
+    log "Creating ${IMAGE_SIZE_GIB} GiB sparse ext4 image at ${IMAGE_PATH}..."
+    truncate -s "${IMAGE_SIZE_GIB}G" "${IMAGE_PATH}"
+    chmod 0600 "${IMAGE_PATH}"
+    mkfs.ext4 -q -F -L "${MACHINE}" "${IMAGE_PATH}"
+  fi
+  TMP_MNT_DIR="$(mktemp -d "/run/${MACHINE}-mnt.XXXXXX")"
+  MNT_DIR="${TMP_MNT_DIR}"
+  LOOP_DEV="$(losetup --find --show "${IMAGE_PATH}")"
+  mount "${LOOP_DEV}" "${TMP_MNT_DIR}"
+  if [[ "${NEED_BOOTSTRAP}" -eq 0 && ! -e "${MNT_DIR}/etc/os-release" ]]; then
+    log "Existing image is incomplete (missing /etc/os-release); re-bootstrapping..."
+    find "${MNT_DIR}" -mindepth 1 -maxdepth 1 ! -name 'lost+found' -exec rm -rf {} +
+    NEED_BOOTSTRAP=1
+  fi
 fi
 
 if [[ "${NEED_BOOTSTRAP}" -eq 0 && "$(stat -c '%u' "${MNT_DIR}/etc")" != "0" ]]; then
-  die "${IMAGE_PATH} has UID-shifted ownership (no kernel idmapped mount support); re-run with --rebuild"
+  die "${STORAGE_DESC} has UID-shifted ownership (no kernel idmapped mount support); re-run with --rebuild"
 fi
 
 if [[ "${NEED_BOOTSTRAP}" -eq 1 ]]; then
@@ -421,11 +457,16 @@ sync
 for sub in dev/pts dev proc sys; do
   umount -lf "${MNT_DIR}/${sub}"
 done
-umount "${MNT_DIR}"
-rmdir "${MNT_DIR}"
 MNT_DIR=""
-losetup -d "${LOOP_DEV}"
-LOOP_DEV=""
+if [[ -n "${TMP_MNT_DIR}" ]]; then
+  umount "${TMP_MNT_DIR}"
+  rmdir "${TMP_MNT_DIR}"
+  TMP_MNT_DIR=""
+fi
+if [[ -n "${LOOP_DEV}" ]]; then
+  losetup -d "${LOOP_DEV}"
+  LOOP_DEV=""
+fi
 
 cat > "/etc/systemd/nspawn/${MACHINE}.nspawn" <<EOF
 [Exec]
@@ -444,13 +485,18 @@ chmod 0644 "/etc/systemd/nspawn/${MACHINE}.nspawn"
 
 OVERRIDE_DIR="/etc/systemd/system/systemd-nspawn@${MACHINE}.service.d"
 install -d -m 0755 "${OVERRIDE_DIR}"
-cat > "${OVERRIDE_DIR}/override.conf" <<'EOF'
+{
+  if [[ "${USE_DIRECTORY}" -eq 1 ]] && mountpoint -q "${DIR_PATH}"; then
+    printf '[Unit]\nRequiresMountsFor=%s\n\n' "${DIR_PATH}"
+  fi
+  cat <<'EOF'
 [Service]
 CPUQuota=200%
 MemoryHigh=4G
 MemoryMax=6G
 TasksMax=2048
 EOF
+} > "${OVERRIDE_DIR}/override.conf"
 
 systemctl daemon-reload
 systemctl enable --now machines.target

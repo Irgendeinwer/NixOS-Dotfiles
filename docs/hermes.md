@@ -41,9 +41,10 @@ Debian 12 host.
 - **Sibling Ubuntu 26.04.1 LTS (`resolute`) sandbox (`hermes-box`):**
   Hermes's `terminal` and file tools run over persistent multiplexed SSH
   (`hermes@hermes-box.local`, `/home/hermes/workspace`) inside a dedicated
-  sibling `systemd-nspawn` container backed by a sparse 32 GiB ext4 loopback
-  image (`/var/lib/machines/hermes-box.raw`), unprivileged user namespaces
-  (`PrivateUsers=pick`), and hard cgroup v2 limits (`CPUQuota=200%`,
+  sibling `systemd-nspawn` container backed by either a dedicated ext4
+  partition mounted at `/var/lib/machines/hermes-box` or a sparse 32 GiB ext4
+  loopback image (`/var/lib/machines/hermes-box.raw`), unprivileged user
+  namespaces (`PrivateUsers=pick`), and hard cgroup v2 limits (`CPUQuota=200%`,
   `MemoryHigh=4G`, `MemoryMax=6G`, `TasksMax=2048`). `hermes-box` holds zero
   SOPS keys, zero host mounts, and zero `junixsrv` service credentials while
   giving Hermes standard FHS glibc compatibility (`sudo apt`, `uv`, `pip`, `npm`,
@@ -122,6 +123,12 @@ ssh -t root@junixsrv.local 'exec bash -euo pipefail -c '\''
 ```
 
 ### 4. Provision `hermes-box` on the Debian 12 `nspawn` host
+
+If `/var/lib/machines` itself sits on Debian's OS drive while a dedicated data
+disk holds `/var/lib/machines/junixsrv`, mount a dedicated `ext4` partition (e.g.
+32 GiB) at `/var/lib/machines/hermes-box` first — `provision-hermes-box.sh`
+auto-detects the mountpoint and bootstraps directly into it (otherwise it falls
+back to a 32 GiB sparse image at `/var/lib/machines/hermes-box.raw`).
 
 Copy `scripts/provision-hermes-box.sh` to the Debian 12 host that runs
 `junixsrv` and execute it as `root` (it verifies Ubuntu's archive GPG key,
