@@ -9,7 +9,7 @@ let
   cfg = config.custom.services.hermes;
   isContainer = config.boot.isContainer or false;
   hasUpstreamModule = inputs ? hermes-agent;
-  primaryUser = config.custom.user or "julian";
+  primaryUser = config.custom.user or "irgendeinwer";
 
   aiCfg = config.custom.services.ai or { };
   litellmCfg = aiCfg.litellm or { };

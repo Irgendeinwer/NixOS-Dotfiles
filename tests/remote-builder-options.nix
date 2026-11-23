@@ -23,7 +23,7 @@ let
         ../modules/nixos/remote-builder.nix
         {
           networking.hostName = "remote-builder-test";
-          custom.user = "julian";
+          custom.user = "irgendeinwer";
           system.stateVersion = "26.11";
           nix.package = if lix then pkgs.lixPackageSets.stable.lix else pkgs.nix;
           services.resolved.enable = resolved;
@@ -151,8 +151,8 @@ assert (builtins.head offloading.config.nix.buildMachines).sshUser == "nixbuilde
 assert builtins.hasAttr "nix_builder_ssh_key" offloading.config.sops.secrets;
 assert
   offloading.config.sops.secrets.nix_builder_ssh_key.sopsFile == (
-    if builtins.pathExists (../secrets + "/users/julian.yaml") then
-      ../secrets + "/users/julian.yaml"
+    if builtins.pathExists (../secrets + "/users/irgendeinwer.yaml") then
+      ../secrets + "/users/irgendeinwer.yaml"
     else
       ../secrets/common.yaml
   );
@@ -189,7 +189,7 @@ pkgs.runCommand "remote-builder-option-combinations"
     grep -Fx 'identityagent none' builder
     grep -Fx 'identitiesonly yes' builder
     grep -Fx 'connecttimeout 3' builder
-    for user in julian root; do
+    for user in irgendeinwer root; do
       ssh -G -F ${sshConfig} "$user@junixsrv.local" > admin
       if grep -Ex 'identityagent none|identitiesonly yes|connecttimeout 3' admin; then
         echo "builder-only SSH options applied to $user" >&2
@@ -207,9 +207,9 @@ pkgs.runCommand "remote-builder-option-combinations"
       grep -Fx 'identitiesonly yes' ts-builder
       grep -Fx 'connecttimeout 3' ts-builder
     done
-    ssh -G -F ${tsSshConfig} julian@junixsrv.internal > ts-admin
+    ssh -G -F ${tsSshConfig} irgendeinwer@junixsrv.internal > ts-admin
     if grep -Ex 'identityagent none|identitiesonly yes|connecttimeout 3' ts-admin; then
-      echo 'builder-only SSH options applied to julian over Tailscale' >&2
+      echo 'builder-only SSH options applied to irgendeinwer over Tailscale' >&2
       exit 1
     fi
     mkdir -p "$out"

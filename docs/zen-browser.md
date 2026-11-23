@@ -264,7 +264,7 @@ this configuration: their activation would separately mutate the same files.
    nix build .#checks.x86_64-linux.zen-options
    nix build ".#nixosConfigurations.${host}.config.system.build.toplevel" --no-link
    sudo nixos-rebuild switch --flake ".#${host}"
-   systemctl status home-manager-julian.service
+   systemctl status home-manager-irgendeinwer.service
    ```
 
    Git flakes need new files staged or committed before evaluation. A build or
@@ -277,7 +277,7 @@ this configuration: their activation would separately mutate the same files.
    inspect the profile on every machine that can use it rather than assuming the
    recorded PID is stale. The fcntl lock covers reconciliation, not the entire
    Home Manager activation, so do not reopen Zen during the switch.
-5. If activation fails, read `journalctl -u home-manager-julian.service -b`.
+5. If activation fails, read `journalctl -u home-manager-irgendeinwer.service -b`.
    The helper reports its backup directory and attempts to roll back completed
    writes, but a crash or failed rollback can leave a partial update. Keep Zen
    closed, inspect the backup manifest and current files, and restore from a

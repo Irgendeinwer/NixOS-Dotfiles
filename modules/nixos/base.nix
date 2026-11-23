@@ -13,7 +13,7 @@ in
 {
   options.custom.user = lib.mkOption {
     type = lib.types.str;
-    default = "julian";
+    default = "irgendeinwer";
     description = "Primary user account for the system.";
   };
 
@@ -50,9 +50,11 @@ in
       neededForUsers = true;
     };
 
-    # User account configuration
+    # User account configuration (pinned to UID 1000 so renaming custom.user
+    # preserves numeric ownership across existing /home trees)
     users.users.${user} = {
       isNormalUser = true;
+      uid = lib.mkDefault 1000;
       hashedPasswordFile = config.sops.secrets.user_password.path;
       extraGroups = [
         "wheel"

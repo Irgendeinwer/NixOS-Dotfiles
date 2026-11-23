@@ -111,7 +111,7 @@ class MockPlannerHandler(BaseHTTPRequestHandler):
         self._notify_request()
         parsed_path = urllib.parse.urlsplit(self.path).path
         if parsed_path == "/api/v1/user":
-            self._json(200, {"id": 1, "username": "julian"})
+            self._json(200, {"id": 1, "username": "irgendeinwer"})
             return
         if parsed_path == "/api/v1/projects":
             batch, hdrs = self._paginate(list(self.state.projects.values()))
@@ -435,7 +435,7 @@ class PlanEngineTests(unittest.TestCase):
         self.cfg.vikunja_url = base_url
         self.cfg.vikunja_token = "tk_test_123"
         self.cfg.radicale_url = base_url
-        self.cfg.radicale_user = "julian"
+        self.cfg.radicale_user = "irgendeinwer"
         self.cfg.radicale_password = "secret"
 
         # Capture offline first
@@ -466,7 +466,7 @@ class PlanEngineTests(unittest.TestCase):
             vikunja_url=base_url,
             vikunja_token="tk_test_123",
             radicale_url=base_url,
-            radicale_user="julian",
+            radicale_user="irgendeinwer",
             radicale_password="secret",
             timezone="Europe/Berlin",
             config_dir=root2 / "cfg",
@@ -697,7 +697,7 @@ class PlanEngineTests(unittest.TestCase):
                 "--vikunja-token",
                 "tk_interactive",
                 "--radicale-user",
-                "julian",
+                "irgendeinwer",
                 "--radicale-password",
                 "",
             ]
@@ -722,7 +722,7 @@ class PlanEngineTests(unittest.TestCase):
                 "--vikunja-token",
                 "",
                 "--radicale-user",
-                "julian",
+                "irgendeinwer",
                 "--radicale-password",
                 "new_rad_pw",
             ]
@@ -774,7 +774,7 @@ class PlanEngineTests(unittest.TestCase):
         self.cfg.vikunja_url = base_url
         self.cfg.vikunja_token = "tk_paginated"
         self.cfg.radicale_url = base_url
-        self.cfg.radicale_user = "julian"
+        self.cfg.radicale_user = "irgendeinwer"
         self.cfg.radicale_password = "secret"
 
         # First sync pulls all 65 tasks across page 1 (50) + page 2 (15)
@@ -1095,7 +1095,7 @@ class PlanEngineTests(unittest.TestCase):
             runtime_dir=self.cfg.runtime_dir,
         )
         args = plan_mod.build_parser().parse_args(
-            ["auth", "--vikunja-token", "tk_bad", "--radicale-user", "julian", "--radicale-password", ""]
+            ["auth", "--vikunja-token", "tk_bad", "--radicale-user", "irgendeinwer", "--radicale-password", ""]
         )
         err_buf = io.StringIO()
         with (

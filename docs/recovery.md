@@ -6,7 +6,7 @@ covers, and how to reinstall junixbook on a new disk.
 ## The keys that matter
 
 - **User age key** (`~/.config/sops/age/keys.txt`): decrypts every file
-  in `secrets/`, because `user_julian` is a recipient of all of them
+  in `secrets/`, because `user_irgendeinwer` is a recipient of all of them
   (see `.sops.yaml`). Losing it means recreating all secrets, including
   the borg passphrase. Keep a copy off the machines, mode `600`.
 - **Host SSH keys** (`/etc/ssh`): each host decrypts sops with the age
@@ -23,7 +23,7 @@ covers, and how to reinstall junixbook on a new disk.
 - **`~/.ssh/id_ed25519`** needs no backup: sops materializes it from
   `secrets/`, and with it the SSH access to the private repositories.
 - **Local Root CA key** (`junix_ca_key` in `secrets/pki.yaml`):
-  encrypted strictly to `&user_julian`; signs internal TLS leaf certificates
+  encrypted strictly to `&user_irgendeinwer`; signs internal TLS leaf certificates
   (`portal_tls_cert` / `portal_tls_key` in `secrets/junixsrv.yaml`) trusted
   via `assets/junix-ca.pem`; see [Server portal & PKI](portal.md).
 
@@ -125,7 +125,7 @@ is gone for good.
    personal `user_ssh_key` for its own Git operations. However, `junixsrv` is
    currently a recipient of `secrets/common.yaml`, so its root can decrypt every
    secret in that file, including `user_ssh_key`. Before relying on that boundary,
-   move `user_ssh_key` to `secrets/users/julian.yaml` with SOPS and re-encrypt
+   move `user_ssh_key` to `secrets/users/irgendeinwer.yaml` with SOPS and re-encrypt
    `secrets/common.yaml`; the user-specific recipient rule excludes `junixsrv`,
    and the remote-builder module prefers that file when present. Because earlier
    ciphertext remains in Git history, rotate the SSH key and update the server's
@@ -183,7 +183,7 @@ is gone for good.
    `nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.local`
 7. Provision the isolated sibling Ubuntu 26.04.1 LTS (`resolute`) sandbox
    container (`hermes-box`) on the Debian 12 host with
-   `sudo bash scripts/provision-hermes-box.sh` and create the `@julian` and
+   `sudo bash scripts/provision-hermes-box.sh` and create the `@irgendeinwer` and
    `@hermes` Continuwuity Matrix accounts (see [Hermes Agent & Matrix](hermes.md)).
 
 The default Lix configuration keeps its normal namespace probing and
@@ -199,7 +199,7 @@ If `/var/lib/tailscale` was not preserved across a reinstall of `junixbook` or
 `junixsrv`, [enroll the node again](tailscale.md#enroll-the-nodes), remove the
 retired device entry from the Tailscale admin console, and update any static
 `custom.services.tailscale.peers` IP if `junixsrv`'s Tailscale address changed.
-Likewise, if `/home/julian/.config/syncthing` on `junixsrv` was not preserved,
+Likewise, if `/home/irgendeinwer/.config/syncthing` on `junixsrv` was not preserved,
 update `junixsrvDeviceId` in `modules/services/syncthing.nix` with the new
 `syncthing device-id` and re-approve `junixsrv` on `MobileF6`.
 

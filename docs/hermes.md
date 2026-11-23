@@ -21,7 +21,7 @@ Debian 12 host.
   `/var/lib/hermes/.hermes/platforms/matrix/store/` and saving any bootstrapped
   recovery key once at `/var/lib/hermes/.hermes/platforms/matrix/recovery-key.txt`).
   Connects over loopback (`http://127.0.0.1:6167`) as `@hermes:junixsrv.internal`
-  and responds exclusively to `MATRIX_ALLOWED_USERS=@julian:junixsrv.internal`.
+  and responds exclusively to `MATRIX_ALLOWED_USERS=@irgendeinwer:junixsrv.internal`.
 - **Quota-aware LiteLLM routing (`http://127.0.0.1:4000/v1`):**
   - **Primary agent turns:** `gemini-4-hydrogen` (`x-litellm-session-id` sticky
     prompt-cache affinity across the 10 pooled Google AI Studio keys = 200 RPD).
@@ -93,7 +93,7 @@ Rebuild `junixsrv` so `continuwuity.service`, `searx.service`, and
 nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.local
 ```
 
-### 3. Create `@julian` and `@hermes` accounts in Continuwuity
+### 3. Create `@irgendeinwer` and `@hermes` accounts in Continuwuity
 
 Open registration remains disabled at all times. NixOS's `conduwuit` wrapper
 already passes `--config <continuwuity.toml>`; run all account commands in one
@@ -103,17 +103,17 @@ shot ending with `--execute "server shutdown"`:
 ssh -t root@junixsrv.local '
   set -euo pipefail
   bot_pw="$(sed -n "s/^MATRIX_PASSWORD=//p" /run/secrets/hermes_env)"
-  read -rsp "Choose Matrix password for @julian:junixsrv.internal (no spaces/quotes): " julian_pw
+  read -rsp "Choose Matrix password for @irgendeinwer:junixsrv.internal (no spaces/quotes): " user_pw
   echo
-  if [[ -z "$julian_pw" || "$julian_pw" =~ [[:space:]\"\\] || "$julian_pw" == *"'\''"* ]]; then
+  if [[ -z "$user_pw" || "$user_pw" =~ [[:space:]\"\\] || "$user_pw" == *"'\''"* ]]; then
     echo "error: password must be non-empty and contain no whitespace, quotes, or backslashes" >&2
     exit 1
   fi
   trap "systemctl start continuwuity.service" EXIT
   systemctl stop continuwuity.service
   sudo -Hu continuwuity conduwuit \
-    --execute "users create julian $julian_pw" \
-    --execute "users make_user_admin julian" \
+    --execute "users create irgendeinwer $user_pw" \
+    --execute "users make_user_admin irgendeinwer" \
     --execute "users create hermes $bot_pw" \
     --execute "server shutdown"
   trap - EXIT
@@ -147,7 +147,7 @@ ssh root@junixsrv.local \
 - **`junixos` & `junixbook` (`Element Desktop`):**
   `element-desktop` is installed via `custom.desktop.messaging.enable = true` and
   automatically trusts `junix-local-root-ca.pem`. Choose **Sign in → Edit
-  homeserver**, enter `https://matrix.junixsrv.internal`, sign in as `julian`,
+  homeserver**, enter `https://matrix.junixsrv.internal`, sign in as `irgendeinwer`,
   and start a direct chat with `@hermes:junixsrv.internal`.
 - **Android (`MobileF6` over Tailscale):**
   Install `assets/junix-ca.pem` in Android *Settings → Security → Encryption &
@@ -155,18 +155,18 @@ ssh root@junixsrv.local \
   homeserver URL to `https://100.110.103.47` (`/.well-known/matrix/client`
   returns `https://100.110.103.47` when queried by IP and `/_matrix/` proxies
   directly to Continuwuity, requiring zero mobile DNS setup) and sign in as
-  `julian`. *(Prefer **Element Classic** on Android if **Element X**'s bundled
+  `irgendeinwer`. *(Prefer **Element Classic** on Android if **Element X**'s bundled
   `rustls` verifier ignores user-installed Android CA certificates.)*
 
 ## Host CLI & diagnostics (`junixsrv`)
 
-Your `julian` account on `junixsrv` is in the `hermes` group with
+Your `irgendeinwer` account on `junixsrv` is in the `hermes` group with
 `HERMES_HOME=/var/lib/hermes/.hermes` pre-exported (`UMask=0007`), so read-only
-inspection works directly as `julian`, while interactive TUI turns run as
+inspection works directly as `irgendeinwer`, while interactive TUI turns run as
 `hermes` so OpenSSH can read `/var/lib/hermes/.ssh/id_hermes_box` (`0600`):
 
 ```bash
-# Gateway health & active sessions (as julian):
+# Gateway health & active sessions (as irgendeinwer):
 hermes status
 hermes sessions list
 

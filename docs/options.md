@@ -15,7 +15,7 @@ the table says so.
 ## NixOS scope
 
 Set these in a host's `configuration.nix`. The primary user defaults to
-`custom.user = "julian"`; feature-specific `user` options generally default
+`custom.user = "irgendeinwer"`; feature-specific `user` options generally default
 to that value.
 
 | Prefix | Options and behavior |

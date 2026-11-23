@@ -10,7 +10,7 @@ let
 
   dummyCa = pkgs.writeText "dummy-junix-ca.pem" "TEST-CA\n";
   dummyEnv = pkgs.writeText "dummy-vikunja.env" "VIKUNJA_SERVICE_SECRET=test\n";
-  dummyHtpasswd = pkgs.writeText "dummy-radicale.htpasswd" "julian:$2y$05$test\n";
+  dummyHtpasswd = pkgs.writeText "dummy-radicale.htpasswd" "irgendeinwer:$2y$05$test\n";
 
   evalPlanner =
     extraConfig:
@@ -21,7 +21,7 @@ let
         {
           options.custom.user = lib.mkOption {
             type = lib.types.str;
-            default = "julian";
+            default = "irgendeinwer";
           };
         }
         ../modules/nixos/pki.nix
@@ -149,7 +149,7 @@ assert laptopHome.systemd.user.services ? junix-plan-daemon;
 assert desktopDaemonUnit.X-Restart-Triggers == [ desktopPlanSource ];
 assert desktopPlanJson.vikunja_url == "https://tasks.junixsrv.internal";
 assert desktopPlanJson.radicale_url == "https://cal.junixsrv.internal";
-assert desktopPlanJson.calendar_path == "/julian/personal/";
+assert desktopPlanJson.calendar_path == "/irgendeinwer/personal/";
 assert desktopPlanJson.default_project == "Inbox";
 assert laptopPlanJson.vikunja_url == "https://tasks.junixsrv.internal";
 assert laptopPlanJson.radicale_url == "https://cal.junixsrv.internal";

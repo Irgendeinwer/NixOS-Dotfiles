@@ -15,7 +15,7 @@ let
         {
           options.custom.user = lib.mkOption {
             type = lib.types.str;
-            default = "julian";
+            default = "irgendeinwer";
           };
         }
         ../modules/services/syncthing.nix
@@ -69,7 +69,7 @@ let
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
-  musicDirRule = bareMetal.systemd.tmpfiles.settings.navidromeDirs."/home/julian/music".d;
+  musicDirRule = bareMetal.systemd.tmpfiles.settings.navidromeDirs."/home/irgendeinwer/music".d;
   desktopHost = self.nixosConfigurations.junixos.config;
   laptopHost = self.nixosConfigurations.junixbook.config;
   serverHost = self.nixosConfigurations.junixsrv.config;
@@ -80,11 +80,11 @@ assert bareMetal.services.navidrome.openFirewall;
 assert builtins.elem 4533 bareMetal.networking.firewall.allowedTCPPorts;
 assert bareMetal.services.navidrome.settings.Address == "0.0.0.0";
 assert bareMetal.services.navidrome.settings.Port == 4533;
-assert bareMetal.services.navidrome.settings.MusicFolder == "/home/julian/music";
+assert bareMetal.services.navidrome.settings.MusicFolder == "/home/irgendeinwer/music";
 assert bareMetal.services.navidrome.settings.Scanner.PurgeMissing == "always";
 assert builtins.elem "users" bareMetal.users.users.navidrome.extraGroups;
 assert musicDirRule.mode == ":0750";
-assert musicDirRule.user == ":julian";
+assert musicDirRule.user == ":irgendeinwer";
 assert musicDirRule.group == ":users";
 assert bareMetal.systemd.services.navidrome.serviceConfig.PrivateUsers;
 assert bareMetal.systemd.services.navidrome.serviceConfig.ProtectHome == "tmpfs";
@@ -108,7 +108,7 @@ assert !serverHost.services.jellyfin.enable;
 assert serverHost.services.navidrome.enable;
 assert serverHost.custom.services.navidrome.reverseProxy.enable;
 assert serverHost.services.navidrome.settings.Address == "127.0.0.1";
-assert serverHost.services.navidrome.settings.MusicFolder == "/home/julian/music";
+assert serverHost.services.navidrome.settings.MusicFolder == "/home/irgendeinwer/music";
 assert !(builtins.elem 4533 serverHost.networking.firewall.allowedTCPPorts);
 assert !serverHost.systemd.services.navidrome.serviceConfig.PrivateUsers;
 assert serverHost.systemd.services.navidrome.serviceConfig.ProtectHome == "tmpfs";

@@ -21,7 +21,7 @@ let
         {
           options.custom.user = lib.mkOption {
             type = lib.types.str;
-            default = "julian";
+            default = "irgendeinwer";
           };
         }
         ../modules/nixos/pki.nix

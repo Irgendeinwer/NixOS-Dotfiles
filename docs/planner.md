@@ -42,7 +42,7 @@ json_quote() {
 
 printf 'VIKUNJA_SERVICE_SECRET=%s\n' "$(openssl rand -hex 32)" > "$tmp/vikunja.env"
 # Prompts interactively for your Radicale CalDAV password (bcrypt cost 12):
-htpasswd -nbBC 12 julian > "$tmp/radicale.htpasswd"
+htpasswd -nbBC 12 irgendeinwer > "$tmp/radicale.htpasswd"
 
 sops set secrets/junixsrv.yaml '["vikunja_env"]' "$(json_quote "$tmp/vikunja.env")"
 sops set secrets/junixsrv.yaml '["radicale_htpasswd"]' "$(json_quote "$tmp/radicale.htpasswd")"
@@ -54,7 +54,7 @@ EOF
 
 ```bash
 ssh -t root@junixsrv.local \
-  'set -a && . /run/secrets/vikunja_env && set +a && cd /var/lib/vikunja && exec sudo -E -Hu vikunja vikunja user create --username julian --email julian@junix.internal'
+  'set -a && . /run/secrets/vikunja_env && set +a && cd /var/lib/vikunja && exec sudo -E -Hu vikunja vikunja user create --username irgendeinwer --email irgendeinwer@junix.internal'
 ```
 
 4. Sign in at `https://tasks.junixsrv.internal`, open *Settings → API Tokens*,
@@ -112,7 +112,7 @@ plan sync
 ## Mobile setup (`MobileF6`)
 
 - **Calendar (`DAVx5`):** Add account with *Base URL and user name* →
-  `https://100.110.103.47/cal/`, username `julian`, and your Radicale password.
+  `https://100.110.103.47/cal/`, username `irgendeinwer`, and your Radicale password.
   All appointments sync bidirectionally with Android's native Calendar app.
 - **Music (`Symfonium` / `Tempo`):** Server URL `https://100.110.103.47/music`
   (Subsonic `/music/rest/` HTTPS proxy).

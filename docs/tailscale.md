@@ -107,7 +107,7 @@ authenticating with a tag disables key expiry by default:
   admin console.
 
 OpenSSH still requires an authorized public key. Note that
-`custom.system.container.authorizedKeys` currently authorizes `julian`, `root`,
+`custom.system.container.authorizedKeys` currently authorizes `irgendeinwer`, `root`,
 and the trusted `nixbuilder` daemon account on `junixsrv`.
 
 ## Enroll the nodes
@@ -149,7 +149,7 @@ For any future NixOS client, set `custom.services.tailscale.enable = true;`
 
 ### SSH and remote deployments
 
-Once `peers` and `tailscaleHost` are set, `ssh julian@junixsrv.internal` and
+Once `peers` and `tailscaleHost` are set, `ssh irgendeinwer@junixsrv.internal` and
 `nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.internal` work
 both remotely and on the home LAN. Active SSH/`tmux` sessions to
 `junixsrv.internal` survive switching between home Wi-Fi and a mobile hotspot;
@@ -196,15 +196,15 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
      and add/approve `junixsrv` on `MobileF6`.
   2. On `junixbook`, `syncthing-init` automatically unshares `Music` (`#Noice`
      is also removed everywhere). Only **after** switching `junixbook` should
-     you delete `/home/julian/music` on the laptop if reclaiming disk space, so
+     you delete `/home/irgendeinwer/music` on the laptop if reclaiming disk space, so
      deletions are never propagated to `junixos`, `junixsrv`, or `MobileF6`.
   3. Because `custom.system.remoteBuilder.tailscaleHost` is set to
      `junixsrv.internal` on `junixbook`, Syncthing automatically dials
      `junixsrv.local:22000` on the LAN and `junixsrv.internal:22000` over
      Tailscale when remote, without public relays. The web GUI stays local
      (`127.0.0.1:8384`); forward it on demand with
-     `ssh -L 8384:127.0.0.1:8384 julian@junixsrv.internal`.
-- **Navidrome (`tcp:4533`):** `junixsrv` serves `/home/julian/music` via
+     `ssh -L 8384:127.0.0.1:8384 irgendeinwer@junixsrv.internal`.
+- **Navidrome (`tcp:4533`):** `junixsrv` serves `/home/irgendeinwer/music` via
   `custom.services.navidrome` while `junixos` keeps Jellyfin for movies. Open
   `http://junixsrv.local:4533` once on the LAN to create the Navidrome admin
   account, then point Feishin to `http://junixsrv.local:4533` on `junixos` and
@@ -219,8 +219,8 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
    server_ts='junixsrv.internal'
    tailscale status
    tailscale ping -c 3 "$server_ts"
-   ssh "julian@$server_ts" true
-   ssh julian@junixsrv.local true
+   ssh "irgendeinwer@$server_ts" true
+   ssh irgendeinwer@junixsrv.local true
    curl --fail "http://junixsrv.local:5000/nix-cache-info"
    curl --fail "http://$server_ts:5000/nix-cache-info"
    ```
@@ -232,7 +232,7 @@ sudo nix build .#nixosConfigurations.junixbook.config.system.build.toplevel \
    ip -d link show dev tailscale0 | grep 'mtu 1180'
    tailscale ping --until-direct=false -c 5 "$server_ts"
    ping -c 3 -M do -s 1152 "$server_ts"
-   ssh "julian@$server_ts"
+   ssh "irgendeinwer@$server_ts"
    curl --fail "http://$server_ts:5000/nix-cache-info"
    curl --fail -I "http://$server_ts:4533/app/"
    curl --fail -I "https://$server_ts/"

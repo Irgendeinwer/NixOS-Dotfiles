@@ -7,7 +7,7 @@
 }:
 let
   cfg = config.custom.services.portal;
-  user = config.custom.user or "julian";
+  user = config.custom.user or "irgendeinwer";
   p = config.custom.theme.palette or (import ../theme/gruvbox-material-mix-dark-medium.nix);
   inherit (import ../theme/lib.nix { inherit lib; }) rgba;
 

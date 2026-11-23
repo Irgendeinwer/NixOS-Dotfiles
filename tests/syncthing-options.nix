@@ -19,7 +19,7 @@ let
         {
           options.custom.user = lib.mkOption {
             type = lib.types.str;
-            default = "julian";
+            default = "irgendeinwer";
           };
         }
         ../modules/services/syncthing.nix
@@ -117,8 +117,8 @@ assert laptopUnpaired.services.syncthing.openDefaultPorts;
 assert builtins.elem 22000 laptopUnpaired.networking.firewall.allowedTCPPorts;
 assert builtins.elem 21027 laptopUnpaired.networking.firewall.allowedUDPPorts;
 assert builtins.elem 22000 laptopUnpaired.networking.firewall.allowedUDPPorts;
-assert laptopUnpaired.services.syncthing.dataDir == "/home/julian";
-assert laptopUnpaired.services.syncthing.configDir == "/home/julian/.config/syncthing";
+assert laptopUnpaired.services.syncthing.dataDir == "/home/irgendeinwer";
+assert laptopUnpaired.services.syncthing.configDir == "/home/irgendeinwer/.config/syncthing";
 assert laptopUnpaired.services.syncthing.guiAddress == "127.0.0.1:8384";
 assert laptopUnpaired.services.syncthing.overrideDevices;
 assert laptopUnpaired.services.syncthing.overrideFolders;

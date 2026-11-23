@@ -122,8 +122,8 @@ installs it into Zen Browser via `policies.Certificates`, and
 `modules/home-manager/pki.nix` seeds `~/.pki/nssdb` via `certutil` so
 Chromium/Electron apps (such as Feishin pointed at
 `https://music.junixsrv.internal`) trust HTTPS automatically. Keep the Root CA
-private key in `secrets/pki.yaml` (encrypted strictly to `*user_julian` in
-`.sops.yaml`, so no host key can decrypt it and `secrets/users/julian.yaml`
+private key in `secrets/pki.yaml` (encrypted strictly to `*user_irgendeinwer` in
+`.sops.yaml`, so no host key can decrypt it and `secrets/users/irgendeinwer.yaml`
 stays reserved for `user_ssh_key`).
 
 ```bash

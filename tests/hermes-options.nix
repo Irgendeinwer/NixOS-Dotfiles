@@ -22,11 +22,11 @@ let
         {
           options.custom.user = lib.mkOption {
             type = lib.types.str;
-            default = "julian";
+            default = "irgendeinwer";
           };
-          config.users.users.julian = {
+          config.users.users.irgendeinwer = {
             isNormalUser = true;
-            home = "/home/julian";
+            home = "/home/irgendeinwer";
           };
         }
         ../modules/nixos/pki.nix
@@ -76,7 +76,7 @@ let
         searx.enable = false;
         matrix = {
           enable = true;
-          allowedUsers = [ "@julian:example.internal" ];
+          allowedUsers = [ "@irgendeinwer:example.internal" ];
         };
       };
     };
@@ -166,7 +166,7 @@ assert !enabledContainer.systemd.services.searx.serviceConfig.PrivateUsers;
 assert enabledContainer.systemd.services.searx.serviceConfig.ProtectProc == "default";
 # Enabled container stack: Hermes Agent + LiteLLM + Quota Aux + SSH Sandbox + SOPS
 assert enabledContainer.services.hermes-agent.enable;
-assert builtins.elem "hermes" enabledContainer.users.users.julian.extraGroups;
+assert builtins.elem "hermes" enabledContainer.users.users.irgendeinwer.extraGroups;
 assert enabledContainer.services.avahi.enable;
 assert enabledContainer.services.avahi.nssmdns4;
 assert enabledContainer.sops.secrets ? hermes_env;
@@ -179,7 +179,7 @@ assert
   enabledContainer.services.hermes-agent.environment.MATRIX_USER_ID == "@hermes:junixsrv.internal";
 assert
   enabledContainer.services.hermes-agent.environment.MATRIX_ALLOWED_USERS
-  == "@julian:junixsrv.internal";
+  == "@irgendeinwer:junixsrv.internal";
 assert enabledContainer.services.hermes-agent.environment.MATRIX_E2EE_MODE == "required";
 assert
   enabledContainer.services.hermes-agent.environment.MATRIX_RECOVERY_KEY_OUTPUT_FILE
