@@ -230,6 +230,19 @@ let
   # In addition to the isolated module checks above, verify that the actual
   # Hyprland Home Manager configuration consumes the shared renderer.
   desktopHost = self.nixosConfigurations.junixos.config;
+  desktopLitellm = desktopHost.services.litellm.settings;
+  desktopAiModels = lib.unique (map (m: m.model_name) desktopLitellm.model_list);
+  desktopAiTargets = lib.unique (map (m: m.litellm_params.model) desktopLitellm.model_list);
+  expectedAiModels = [
+    "gemini-4-hydrogen"
+    "gemini-3.8-flash"
+    "gemini-flash-lite"
+  ];
+  expectedAiTargets = [
+    "gemini/gemini-4-hydrogen"
+    "gemini/gemini-3.8-flash"
+    "gemini/gemini-3.5-flash-lite"
+  ];
   hostHyprland =
     desktopHost.home-manager.users.${desktopHost.custom.user}.wayland.windowManager.hyprland.extraConfig;
 in
@@ -241,6 +254,13 @@ assert lib.all (path: builtins.baseNameOf path != "default.nix") (systemModules 
 assert !headless.custom.desktop.enable && !headless.custom.desktop.wayland.enable;
 assert headless.custom.system.power.suspendThenHibernate.hibernateDelaySec == 3600;
 assert headless.custom.services.ai.geminiKeyCount == 10;
+assert !headless.custom.services.ai.litellm.enable && !headless.custom.services.ai.mcp.enable;
+assert desktopHost.services.litellm.enable;
+assert builtins.elem pkgs.playwright-mcp desktopHost.environment.systemPackages;
+assert desktopAiModels == expectedAiModels;
+assert desktopAiTargets == expectedAiTargets;
+assert desktopLitellm.litellm_settings.drop_params;
+assert desktopLitellm.router_settings.model_group_alias."gemini-flash" == "gemini-4-hydrogen";
 assert validHibernateZero == 0 && !(isValid invalidHibernate) && !(isValid invalidGeminiCount);
 assert
   hypr.custom.desktop.enable

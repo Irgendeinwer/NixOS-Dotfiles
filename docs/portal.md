@@ -27,10 +27,11 @@ Root CA (`assets/junix-ca.pem`) and a single private flake input
   `/music/share/` to Navidrome (configure Symfonium/Tempo server URL as
   `https://100.110.103.47/music`) and `/cal/` (`X-Script-Name: /cal`) to
   Radicale (configure DAVx5 base URL as `https://100.110.103.47/cal/`).
-- **Internal-only Syncthing card:**
-  Syncthing's GUI stays bound to `127.0.0.1:8384` and is not reverse-proxied.
-  Its card displays live `syncthing.service` health and a one-click SSH tunnel
-  snippet (`ssh -N -L 8384:127.0.0.1:8384 julian@<host>`).
+- **Internal-only Syncthing and LiteLLM cards:**
+  Syncthing's GUI (`127.0.0.1:8384`) and the LiteLLM OpenAI-compatible gateway
+  (`127.0.0.1:4000`) stay bound strictly to loopback and are not reverse-proxied.
+  Their cards display live unit health and one-click SSH tunnel snippets
+  (`ssh -N -L <port>:127.0.0.1:<port> julian@<host>`).
 - **Read-only status daemon (`modules/services/scripts/portal-status.py`):**
   `junix-portal-status.service` runs as the unprivileged `junix-portal` user on
   `127.0.0.1:18080` and exposes `GET /api/status` (proxied at `= /api/status`).

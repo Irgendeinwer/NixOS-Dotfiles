@@ -45,6 +45,8 @@
       };
       syncthing.enable = true;
       navidrome.enable = true;
+      # Requires `secrets/ai.yaml` rekeyed for `&host_junixsrv` (`sops updatekeys secrets/ai.yaml`).
+      ai.enable = true;
       # Requires `vikunja_env` and `radicale_htpasswd` in secrets/junixsrv.yaml;
       # see docs/planner.md.
       planner.enable = true;

@@ -38,6 +38,7 @@ creation_rules:
       - age:
           - *user_julian
           - *host_junixos
+          - *host_junixsrv
   - path_regex: secrets/pki\.yaml$
     key_groups:
       - age:

@@ -3052,8 +3052,8 @@ ROFI_THEME_SUB = (
 )
 
 ROFI_THEME_INPUT = (
-    "window { width: 780px; height: 185px; } "
-    "listview { lines: 0; padding: 0px; border: 0px; } "
+    "window { width: 820px; height: 0px; } "
+    "listview { enabled: false; } "
     "message { color: @fg1; padding: 10px 14px; border: 0px 4px 4px 4px; "
     "border-color: @fg1; border-radius: 0px 0px 20px 20px; background-color: transparent; } "
     "textbox { text-color: @fg1; background-color: transparent; }"
@@ -3138,7 +3138,7 @@ def run_rofi_capture_only(store: PlanStore) -> int:
         "Quick Add",
         [],
         mesg=(
-            "<b>Tasks:</b> <tt>+ title tomorrow 16:00 ~45m !high #uni &gt;&gt; step 1 ~20m &gt;&gt; step 2 ~25m</tt>\n"
+            "<b>Tasks:</b> <tt>+ title tomorrow 16:00 ~45m !high #uni &gt;&gt; step 1 ~20m</tt>\n"
             "<span alpha='80%'><b>Events:</b> <tt>@ Dentist 24.11. 14:30-15:15 @Clinic weekly</tt></span>"
         ),
         theme_str=ROFI_THEME_INPUT,

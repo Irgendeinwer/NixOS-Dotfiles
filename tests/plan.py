@@ -626,6 +626,8 @@ class PlanEngineTests(unittest.TestCase):
             plan_mod.ROFI_THEME_INPUT,
         ):
             self.assertIn("text-color: @fg1", theme)
+        self.assertIn("height: 0px;", plan_mod.ROFI_THEME_INPUT)
+        self.assertIn("listview { enabled: false; }", plan_mod.ROFI_THEME_INPUT)
         rofi_layout = Path(
             os.environ.get(
                 "JUNIX_ROFI_LAYOUT",

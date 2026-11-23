@@ -250,6 +250,15 @@ assert serverHost.custom.services.portal.services.radicale.subdomain == "cal";
 assert serverHost.custom.services.portal.services.harmonia.port == 5000;
 assert serverHost.custom.services.portal.services.syncthing.port == null;
 assert serverHost.custom.services.portal.services.syncthing.location == null;
+assert serverHost.services.litellm.enable;
+assert serverHost.services.litellm.host == "127.0.0.1";
+assert serverHost.services.litellm.port == 4000;
+assert !serverHost.systemd.services.litellm.serviceConfig.DynamicUser;
+assert !serverHost.systemd.services.litellm.serviceConfig.PrivateUsers;
+assert !(builtins.elem pkgs.playwright-mcp serverHost.environment.systemPackages);
+assert !(builtins.elem 4000 serverHost.networking.firewall.allowedTCPPorts);
+assert serverHost.custom.services.portal.services.litellm.port == null;
+assert serverHost.custom.services.portal.services.litellm.location == null;
 pkgs.runCommand "portal-host-options" { } ''
   test -f ${serverVhost.root}/index.html
   test -f ${serverVhost.root}/style.css

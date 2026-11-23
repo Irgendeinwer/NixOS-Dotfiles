@@ -106,12 +106,12 @@ is gone for good.
 2. On an existing NixOS machine, pre-generate or restore the container's SSH
    host key (`ssh-keygen -t ed25519 -N "" -f ssh_host_ed25519_key`), add its
    `ssh-to-age < ssh_host_ed25519_key.pub` recipient as `&host_junixsrv` in
-   `.sops.yaml` (include `*host_junixsrv` under `secrets/common\.yaml$` and add
-   a `secrets/junixsrv\.yaml$` rule **above** the catch-all
-   `secrets/[^/]+\.yaml$` rule), run `sops updatekeys secrets/common.yaml` **and**
-   `sops updatekeys secrets/junixsrv.yaml`, then provision the three
-   repository-scoped GitHub deploy keys and the portal TLS pair in
-   `secrets/junixsrv.yaml`
+   `.sops.yaml` (include `*host_junixsrv` under `secrets/common\.yaml$` and
+   `secrets/ai\.yaml$`, and add a `secrets/junixsrv\.yaml$` rule **above** the
+   catch-all `secrets/[^/]+\.yaml$` rule), run `sops updatekeys secrets/common.yaml`,
+   `sops updatekeys secrets/ai.yaml`, **and** `sops updatekeys secrets/junixsrv.yaml`,
+   then provision the three repository-scoped GitHub deploy keys and the portal
+   TLS pair in `secrets/junixsrv.yaml`
    (GitHub forbids reusing one deploy key across two repositories):
    - `nix_nightly_ssh_key`: read/write deploy key on `Irgendeinwer/NixOS-Dotfiles`
    - `wallpaper_deploy_key`: read-only deploy key on `Irgendeinwer/wallpaper`

@@ -1315,6 +1315,23 @@ in
             systemdUnit = lib.mkDefault "harmonia.service";
             order = lib.mkDefault 30;
           };
+
+          litellm =
+            let
+              aiCfg = config.custom.services.ai or { };
+              litellmCfg = aiCfg.litellm or { };
+              pStr = toString (litellmCfg.port or 4000);
+            in
+            lib.mkIf (litellmCfg.enable or false) {
+              title = lib.mkDefault "LiteLLM Gateway";
+              description = lib.mkDefault "Rotated Gemini 4 Hydrogen proxy bound to loopback";
+              category = lib.mkDefault "Infrastructure";
+              badge = lib.mkDefault "127.0.0.1:${pStr}";
+              icon = lib.mkDefault "code";
+              systemdUnit = lib.mkDefault "litellm.service";
+              hintCommand = lib.mkDefault "ssh -N -L ${pStr}:127.0.0.1:${pStr} ${user}@{host}";
+              order = lib.mkDefault 35;
+            };
         };
 
         extraLocations =
