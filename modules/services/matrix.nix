@@ -18,12 +18,15 @@ let
     "m.homeserver".base_url = publicBaseUrl;
   };
 
+  wellKnownDynamicJson = ''{"m.homeserver":{"base_url":"$junix_matrix_base_url"}}'';
+  wellKnownBody = if cfg.mobileMatrixPath then wellKnownDynamicJson else wellKnownClientJson;
+
   matrixExtraLocations = {
     "= /.well-known/matrix/client".extraConfig = ''
       default_type application/json;
       add_header Access-Control-Allow-Origin "*" always;
       add_header Cache-Control "public, max-age=3600" always;
-      return 200 '${wellKnownClientJson}';
+      return 200 '${wellKnownBody}';
     '';
   }
   // lib.optionalAttrs cfg.mobileMatrixPath {
@@ -126,6 +129,20 @@ in
     }
 
     (lib.mkIf cfg.enable {
+      services.nginx.appendHttpConfig =
+        let
+          domainPattern = lib.replaceStrings [ "." ] [ "[.]" ] portalDomainSuffix;
+          subPattern = lib.replaceStrings [ "." ] [ "[.]" ] "${cfg.subdomain}.${portalDomainSuffix}";
+        in
+        lib.mkIf (portalEnabled && cfg.mobileMatrixPath) ''
+          map $http_host $junix_matrix_base_url {
+            default "${publicBaseUrl}";
+            "~*^${domainPattern}(?::[0-9]+)?$" "${publicBaseUrl}";
+            "~*^${subPattern}(?::[0-9]+)?$" "${publicBaseUrl}";
+            "~^(?<junix_matrix_req_host>[A-Za-z0-9._:-]+)$" "${portalScheme}://$junix_matrix_req_host";
+          }
+        '';
+
       services.matrix-continuwuity = {
         enable = true;
         settings.global = {

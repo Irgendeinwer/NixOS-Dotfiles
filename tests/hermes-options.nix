@@ -143,6 +143,10 @@ assert enabledContainer.systemd.services.continuwuity.serviceConfig.ProtectProc 
 assert matrixVhost.forceSSL;
 assert matrixVhost.locations."/".proxyPass == "http://127.0.0.1:6167";
 assert defaultVhost.locations ? "= /.well-known/matrix/client";
+assert lib.hasInfix "$junix_matrix_base_url"
+  defaultVhost.locations."= /.well-known/matrix/client".extraConfig;
+assert lib.hasInfix "map $http_host $junix_matrix_base_url"
+  enabledContainer.services.nginx.appendHttpConfig;
 assert defaultVhost.locations ? "/_matrix/";
 assert defaultVhost.locations."/_matrix/".proxyPass == "http://127.0.0.1:6167/_matrix/";
 # Enabled container stack: SearXNG loopback JSON search
