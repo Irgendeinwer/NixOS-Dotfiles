@@ -8,13 +8,14 @@ Debian 12 host.
 
 ## Architecture
 
-- **`Continuwuity` (`https://matrix.junixsrv.internal`, `127.0.0.1:6167`):**
+- **`Continuwuity` + self-hosted `Cinny` (`https://matrix.junixsrv.internal`, `127.0.0.1:6167`):**
   Lightweight Rust + RocksDB Matrix homeserver (~30–50 MB RAM) behind `junixsrv`'s
-  TLS reverse proxy. Federation, open registration, and external key-server
-  lookups are disabled (`allow_federation = false`, `allow_registration = false`,
-  `trusted_servers = []`). Also serves host-aware `/.well-known/matrix/client`
-  and `https://100.110.103.47/_matrix/` so mobile Element clients over Tailscale
-  stay on `https://100.110.103.47` without split-DNS or `/etc/hosts`.
+  TLS reverse proxy, with the static **Cinny** web client served same-origin at
+  `/` (plus `:8448` HTTPS `default_server` for mobile PWAs over raw Tailscale IP)
+  and CORS + `Access-Control-Allow-Private-Network: true` headers on
+  `/.well-known/matrix/client` and `/_matrix/`. Federation, open registration,
+  and external key-server lookups remain disabled (`allow_federation = false`,
+  `allow_registration = false`, `trusted_servers = []`).
 - **`Hermes Agent` (`services.hermes-agent`, `/var/lib/hermes/.hermes`):**
   Upstream `NousResearch/hermes-agent` (`minimal` + `matrix` E2EE extras) running
   on `junixsrv` with `MATRIX_E2EE_MODE=required` (storing Olm/Megolm keys under
@@ -148,21 +149,31 @@ ssh root@junixsrv.local \
   'sudo -Hu hermes ssh -i /var/lib/hermes/.ssh/id_hermes_box hermes@hermes-box.local "uname -a && pwd && uv --version"'
 ```
 
-## Connecting Element clients
+## Connecting Matrix clients (Cinny Web, Element, Mobile)
 
-- **`junixos` & `junixbook` (`Element Desktop`):**
+- **Self-hosted Cinny web client (`https://matrix.junixsrv.internal/`):**
+  Served directly by Nginx on the Matrix virtual host alongside `/_matrix/` and
+  `/.well-known/matrix/client` (same-origin, zero extra daemon RAM, pre-configured
+  for `matrix.junixsrv.internal`). Open `https://matrix.junixsrv.internal/` (or
+  click the **Matrix** card on the `junixsrv` portal), sign in as `irgendeinwer`,
+  and start a direct chat with `@hermes:junixsrv.internal`.
+- **Desktop native clients (`Element Desktop` / `FluffyChat`):**
   `element-desktop` is installed via `custom.desktop.messaging.enable = true` and
   automatically trusts `junix-local-root-ca.pem`. Choose **Sign in → Edit
-  homeserver**, enter `https://matrix.junixsrv.internal`, sign in as `irgendeinwer`,
-  and start a direct chat with `@hermes:junixsrv.internal`.
+  homeserver** and enter `https://matrix.junixsrv.internal`. External web clients
+  are also supported via CORS + `Access-Control-Allow-Private-Network: true`
+  headers on `/.well-known/matrix/client` and `/_matrix/`.
 - **Android (`MobileF6` over Tailscale):**
   Install `assets/junix-ca.pem` in Android *Settings → Security → Encryption &
-  credentials → Install a certificate → CA certificate*. Set the custom
-  homeserver URL to `https://100.110.103.47` (`/.well-known/matrix/client`
-  returns `https://100.110.103.47` when queried by IP and `/_matrix/` proxies
-  directly to Continuwuity, requiring zero mobile DNS setup) and sign in as
-  `irgendeinwer`. *(Prefer **Element Classic** on Android if **Element X**'s bundled
-  `rustls` verifier ignores user-installed Android CA certificates.)*
+  credentials → Install a certificate → CA certificate*:
+  - **Cinny mobile PWA (no split-DNS needed):** Open `https://100.110.103.47:8448/`
+    in Chrome or Firefox (in Firefox Android: enable *Secret Settings → Use third
+    party CA certificates*) and tap **Add to Home screen / Install app**.
+  - **Native Element Classic:** Set the custom homeserver URL to
+    `https://100.110.103.47` (`/.well-known/matrix/client` and `/_matrix/` are
+    also served directly on `:443`). *(Prefer **Element Classic** or the Cinny
+    PWA on Android if **Element X**/`rustls` or Flutter/`BoringSSL` ignores
+    user-installed Android CA certificates.)*
 
 ## Host CLI & diagnostics (`junixsrv`)
 

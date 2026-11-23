@@ -170,6 +170,18 @@ let
     };
   };
 
+  subdomainBothProxyAndRoot = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      services.bothsub = {
+        title = "BothSub";
+        subdomain = "both";
+        proxyPass = "http://127.0.0.1:19003";
+        webRoot = dummyCa;
+      };
+    };
+  };
+
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
@@ -239,6 +251,7 @@ assert hasFailedAssertion "custom.services.portal.projects:" unmanagedPortDup;
 assert hasFailedAssertion "custom.services.portal.services:" multiTargetService;
 assert hasFailedAssertion "custom.services.portal.services:" duplicateSubdomain;
 assert hasFailedAssertion "custom.services.portal.services:" subdomainWithoutProxy;
+assert hasFailedAssertion "custom.services.portal.services:" subdomainBothProxyAndRoot;
 assert serverHost.services.nginx.enable;
 assert serverVhost.forceSSL;
 assert builtins.elem 80 serverHost.networking.firewall.allowedTCPPorts;

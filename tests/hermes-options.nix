@@ -103,6 +103,28 @@ let
     };
   };
 
+  badMobileHttpsPort = evalHermes {
+    custom.services = {
+      portal.enable = true;
+      matrix = {
+        enable = true;
+        webClient.mobileHttpsPort = 443;
+      };
+    };
+  };
+
+  webClientDisabled = evalHermes {
+    boot.isContainer = true;
+    custom.system.security.localCa.certificateFile = dummyCa;
+    custom.services = {
+      portal.enable = true;
+      matrix = {
+        enable = true;
+        webClient.enable = false;
+      };
+    };
+  };
+
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
@@ -141,17 +163,40 @@ assert !enabledContainer.systemd.services.continuwuity.serviceConfig.DynamicUser
 assert !enabledContainer.systemd.services.continuwuity.serviceConfig.PrivateUsers;
 assert enabledContainer.systemd.services.continuwuity.serviceConfig.ProtectProc == "default";
 assert matrixVhost.forceSSL;
-assert matrixVhost.locations."/".proxyPass == "http://127.0.0.1:6167";
+assert matrixVhost.root == "${enabledContainer.custom.services.matrix.webClient.package}";
+assert matrixVhost.locations."/".tryFiles == "$uri /index.html";
+assert matrixVhost.locations."/_matrix/".proxyPass == "http://127.0.0.1:6167";
+assert lib.hasInfix ''Access-Control-Allow-Private-Network "true"''
+  matrixVhost.locations."/_matrix/".extraConfig;
+assert matrixVhost.locations ? "= /.well-known/matrix/client";
+assert lib.hasInfix ''Access-Control-Allow-Private-Network "true"''
+  matrixVhost.locations."= /.well-known/matrix/client".extraConfig;
+assert matrixVhost.locations ? "= /config.json";
+assert lib.hasInfix "$junix_cinny_homeserver_list"
+  matrixVhost.locations."= /config.json".extraConfig;
+assert lib.hasInfix "map $http_host $junix_cinny_homeserver_list"
+  enabledContainer.services.nginx.appendHttpConfig;
+assert builtins.elem 8448 enabledContainer.networking.firewall.allowedTCPPorts;
 assert defaultVhost.locations ? "= /.well-known/matrix/client";
 assert lib.hasInfix "$junix_matrix_base_url"
   defaultVhost.locations."= /.well-known/matrix/client".extraConfig;
 assert lib.hasInfix ''Vary "Host"''
+  defaultVhost.locations."= /.well-known/matrix/client".extraConfig;
+assert lib.hasInfix ''Access-Control-Allow-Private-Network "true"''
   defaultVhost.locations."= /.well-known/matrix/client".extraConfig;
 assert lib.hasInfix "map $http_host $junix_matrix_base_url"
   enabledContainer.services.nginx.appendHttpConfig;
 assert defaultVhost.locations ? "/_matrix/";
 assert defaultVhost.locations."/_matrix/".proxyPass == "http://127.0.0.1:6167";
 assert lib.hasInfix "client_max_body_size 67108864;" defaultVhost.locations."/_matrix/".extraConfig;
+assert lib.hasInfix ''Access-Control-Allow-Private-Network "true"''
+  defaultVhost.locations."/_matrix/".extraConfig;
+# Matrix API-only fallback when webClient.enable = false
+assert noModuleFailures webClientDisabled;
+assert
+  webClientDisabled.services.nginx.virtualHosts."matrix.junixsrv.internal".locations."/".proxyPass
+  == "http://127.0.0.1:6167";
+assert !(builtins.elem 8448 webClientDisabled.networking.firewall.allowedTCPPorts);
 # Enabled container stack: SearXNG loopback JSON search
 assert enabledContainer.services.searx.enable;
 assert !enabledContainer.services.searx.configureUwsgi;
@@ -216,6 +261,7 @@ assert
 assert hasFailedAssertion "custom.services.hermes:" missingUpstream;
 assert hasFailedAssertion "custom.services.hermes.matrix:" emptyAllowedUsers;
 assert hasFailedAssertion "custom.services.matrix:" openRegistrationNoToken;
+assert hasFailedAssertion "custom.services.matrix.webClient:" badMobileHttpsPort;
 # Real host wiring across junixsrv, junixos, and junixbook
 assert serverHost.custom.services.matrix.enable;
 assert serverHost.custom.services.hermes.enable;

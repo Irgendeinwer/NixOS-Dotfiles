@@ -131,21 +131,34 @@ let
 
   subdomainVirtualHosts = lib.mapAttrs' (
     _: s:
-    lib.nameValuePair "${s.subdomain}.${cfg.domainSuffix}" {
-      forceSSL = cfg.tls.enable;
-      sslCertificate = lib.mkIf cfg.tls.enable tlsCertPath;
-      sslCertificateKey = lib.mkIf cfg.tls.enable tlsKeyPath;
-      extraConfig = lib.optionalString cfg.tls.enable ''
-        ssl_stapling off;
-      '';
-      locations."/" = {
-        proxyPass = s.proxyPass;
-        proxyWebsockets = s.proxyWebsockets;
+    lib.nameValuePair "${s.subdomain}.${cfg.domainSuffix}" (
+      {
+        forceSSL = cfg.tls.enable;
+        sslCertificate = lib.mkIf cfg.tls.enable tlsCertPath;
+        sslCertificateKey = lib.mkIf cfg.tls.enable tlsKeyPath;
+        extraConfig = lib.optionalString cfg.tls.enable ''
+          ssl_stapling off;
+        '';
       }
-      // lib.optionalAttrs (s.extraProxyConfig != "") {
-        extraConfig = s.extraProxyConfig;
-      };
-    }
+      // lib.optionalAttrs (s.webRoot != null) {
+        root = "${s.webRoot}";
+        locations."/" = {
+          tryFiles = "$uri /index.html";
+        }
+        // lib.optionalAttrs (s.extraProxyConfig != "") {
+          extraConfig = s.extraProxyConfig;
+        };
+      }
+      // lib.optionalAttrs (s.proxyPass != null) {
+        locations."/" = {
+          proxyPass = s.proxyPass;
+          proxyWebsockets = s.proxyWebsockets;
+        }
+        // lib.optionalAttrs (s.extraProxyConfig != "") {
+          extraConfig = s.extraProxyConfig;
+        };
+      }
+    )
   ) subdomainServices;
 
   allProxyLocations =
@@ -1038,6 +1051,15 @@ let
         description = "Optional upstream URL for Nginx `proxy_pass` at `location` or `subdomain`.";
       };
 
+      webRoot = lib.mkOption {
+        type = lib.types.nullOr lib.types.path;
+        default = null;
+        description = ''
+          Optional static directory root served on a `subdomain` virtual host
+          when `proxyPass` is null (for static SPAs such as Cinny).
+        '';
+      };
+
       proxyWebsockets = lib.mkOption {
         type = lib.types.bool;
         default = true;
@@ -1405,10 +1427,14 @@ in
                 ++ lib.optional (s.url != null) "url";
             in
             (s.proxyPass != null -> (s.location != null || s.subdomain != null))
-            && (s.subdomain != null -> (s.proxyPass != null && validSubdomain s.subdomain))
+            && (s.webRoot != null -> s.subdomain != null)
+            && (
+              s.subdomain != null
+              -> (((s.proxyPass != null) != (s.webRoot != null)) && validSubdomain s.subdomain)
+            )
             && builtins.length targets <= 1
           ) (builtins.attrValues activeServices);
-          message = "custom.services.portal.services: each entry may set at most one of subdomain, location, port, or url; subdomain must be a valid DNS label with proxyPass set.";
+          message = "custom.services.portal.services: each entry may set at most one of subdomain, location, port, or url; subdomain must be a valid DNS label with either proxyPass or webRoot set.";
         }
         {
           assertion = builtins.length allSubdomains == builtins.length (lib.unique allSubdomains);
