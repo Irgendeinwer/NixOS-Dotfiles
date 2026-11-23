@@ -113,7 +113,6 @@ ssh -t root@junixsrv.local 'exec bash -euo pipefail -c '\''
   systemctl stop continuwuity.service
   sudo -Hu continuwuity conduwuit \
     --execute "users create irgendeinwer $user_pw" \
-    --execute "users make_user_admin irgendeinwer" \
     --execute "users create hermes $bot_pw" \
     --execute "server shutdown"
   trap - EXIT
