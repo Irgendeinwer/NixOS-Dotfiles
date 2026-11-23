@@ -272,5 +272,7 @@ pkgs.runCommand "portal-host-options" { } ''
   test -f ${serverVhost.root}/icons/package.svg
   test -f ${serverVhost.root}/icons/code.svg
   test -f ${serverVhost.root}/icons/globe.svg
+  test -f ${serverVhost.root}/icons/chat.svg
+  test -f ${serverVhost.root}/icons/bot.svg
   mkdir -p "$out"
 ''

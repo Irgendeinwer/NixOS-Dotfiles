@@ -260,6 +260,24 @@ let
         <circle cx="12" cy="17" r="1.3" fill="${p.green}"/>
       </svg>
     '';
+    chat = pkgs.writeText "portal-icon-chat.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H9.8L5.2 19.8A.7.7 0 0 1 4 19.3V5.5z" fill="${p.bg0}" stroke="${p.aqua}" stroke-width="1.6"/>
+        <circle cx="8.6" cy="9.6" r="1.2" fill="${p.aqua}"/>
+        <circle cx="12" cy="9.6" r="1.2" fill="${p.fg0}"/>
+        <circle cx="15.4" cy="9.6" r="1.2" fill="${p.green}"/>
+      </svg>
+    '';
+    bot = pkgs.writeText "portal-icon-bot.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="3.2" x2="12" y2="6.2" stroke="${p.yellow}" stroke-width="1.7"/>
+        <circle cx="12" cy="2.7" r="1.2" fill="${p.yellow}"/>
+        <rect x="4.5" y="6.2" width="15" height="13.3" rx="3.5" fill="${p.bg0}" stroke="${p.purple}" stroke-width="1.6"/>
+        <circle cx="9.3" cy="11.8" r="1.4" fill="${p.aqua}"/>
+        <circle cx="14.7" cy="11.8" r="1.4" fill="${p.aqua}"/>
+        <line x1="9" y1="15.8" x2="15" y2="15.8" stroke="${p.fg0}" stroke-width="1.6"/>
+      </svg>
+    '';
   };
 
   styleCss = pkgs.writeText "portal-style.css" ''
@@ -933,6 +951,8 @@ let
     ln -s ${iconSvgs.globe} "$out/icons/globe.svg"
     ln -s ${iconSvgs.tasks} "$out/icons/tasks.svg"
     ln -s ${iconSvgs.calendar} "$out/icons/calendar.svg"
+    ln -s ${iconSvgs.chat} "$out/icons/chat.svg"
+    ln -s ${iconSvgs.bot} "$out/icons/bot.svg"
   '';
 
   serviceSubmodule = lib.types.submodule {
@@ -969,7 +989,10 @@ let
       icon = lib.mkOption {
         type = lib.types.nonEmptyStr;
         default = "globe";
-        description = "Built-in icon identifier (`music`, `sync`, `package`, `code`, `globe`, `tasks`, `calendar`).";
+        description = ''
+          Built-in icon identifier (`music`, `sync`, `package`, `code`, `globe`,
+          `tasks`, `calendar`, `chat`, `bot`).
+        '';
       };
 
       order = lib.mkOption {
