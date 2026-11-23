@@ -626,11 +626,19 @@ class PlanEngineTests(unittest.TestCase):
             plan_mod.ROFI_THEME_INPUT,
         ):
             self.assertIn("text-color: @fg1", theme)
-        rasi = (
-            Path(__file__).resolve().parents[1]
-            / "modules/home-manager/rofi/layout.rasi"
-        ).read_text(encoding="utf-8")
-        self.assertIn("textbox {\n    text-color: @fg1;", rasi)
+        rofi_layout = Path(
+            os.environ.get(
+                "JUNIX_ROFI_LAYOUT",
+                str(
+                    Path(__file__).resolve().parents[1]
+                    / "modules/home-manager/rofi/layout.rasi"
+                ),
+            )
+        )
+        self.assertIn(
+            "textbox {\n    text-color: @fg1;",
+            rofi_layout.read_text(encoding="utf-8"),
+        )
 
         t_key = self.store.add_captured_task(
             plan_mod.parse_quick_capture("+ Existing task ~25m", self.ref),

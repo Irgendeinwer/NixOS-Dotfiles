@@ -2038,11 +2038,15 @@ class VikunjaClient:
         if body is not None:
             headers["Content-Type"] = "application/json"
         req = urllib.request.Request(url, data=body, headers=headers, method=method)
-        with urllib.request.urlopen(req, timeout=8, context=self.ssl_ctx) as resp:
-            resp_headers = {k.lower(): v for k, v in resp.headers.items()}
-            raw = resp.read().decode("utf-8")
-            data = json.loads(raw) if raw.strip() else None
-            return data, resp_headers
+        try:
+            with urllib.request.urlopen(req, timeout=8, context=self.ssl_ctx) as resp:
+                resp_headers = {k.lower(): v for k, v in resp.headers.items()}
+                raw = resp.read().decode("utf-8")
+                data = json.loads(raw) if raw.strip() else None
+                return data, resp_headers
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            raise
 
     def _request(
         self, method: str, path: str, payload: dict[str, Any] | None = None
@@ -2148,9 +2152,13 @@ class RadicaleClient:
         if headers:
             req_headers.update(headers)
         req = urllib.request.Request(url, data=body, headers=req_headers, method=method)
-        with urllib.request.urlopen(req, timeout=8, context=self.ssl_ctx) as resp:
-            resp_headers = {k.lower(): v for k, v in resp.headers.items()}
-            return resp.status, resp_headers, resp.read()
+        try:
+            with urllib.request.urlopen(req, timeout=8, context=self.ssl_ctx) as resp:
+                resp_headers = {k.lower(): v for k, v in resp.headers.items()}
+                return resp.status, resp_headers, resp.read()
+        except urllib.error.HTTPError as exc:
+            exc.close()
+            raise
 
     def ensure_calendar_collection(self) -> str:
         col = self.collection_path

@@ -199,6 +199,7 @@
 
         plan-engine = pkgs.runCommand "plan-engine-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
           export JUNIX_PLAN_HELPER=${./pkgs/scripts/plan.py}
+          export JUNIX_ROFI_LAYOUT=${./modules/home-manager/rofi/layout.rasi}
           python3 -B ${./tests/plan.py}
           mkdir -p "$out"
         '';
