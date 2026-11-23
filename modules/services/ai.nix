@@ -7,6 +7,12 @@
 let
   cfg = config.custom.services.ai;
   isContainer = config.boot.isContainer or false;
+  isLoopbackHost = builtins.elem cfg.litellm.host [
+    "127.0.0.1"
+    "::1"
+    "[::1]"
+    "localhost"
+  ];
 
   # Environment variable names: GEMINI_KEY_1 ... GEMINI_KEY_N
   keyIndices = lib.range 1 cfg.geminiKeyCount;
@@ -132,7 +138,16 @@ in
         enable = true;
         inherit (cfg.litellm) host port;
         environmentFile = config.sops.templates."litellm-env".path;
+        environment = lib.optionalAttrs isLoopbackHost {
+          LITELLM_DANGEROUSLY_PERMIT_WEAK_OR_UNSET_MASTER_KEY = "true";
+        };
         settings = {
+          general_settings = lib.optionalAttrs isLoopbackHost {
+            # LiteLLM >= 1.108 refuses to start without a master_key unless
+            # explicitly permitted. Safe when bound strictly to loopback for
+            # local callers (Hermes, desktop CLI tools).
+            dangerously_permit_weak_or_unset_master_key = true;
+          };
           model_list = modelList;
           litellm_settings = {
             # Gemini 4 Hydrogen ignores/rejects unsupported OpenAI sampling params

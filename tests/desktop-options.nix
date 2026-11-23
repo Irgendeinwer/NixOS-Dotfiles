@@ -259,6 +259,7 @@ assert desktopHost.services.litellm.enable;
 assert builtins.elem pkgs.playwright-mcp desktopHost.environment.systemPackages;
 assert desktopAiModels == expectedAiModels;
 assert desktopAiTargets == expectedAiTargets;
+assert desktopLitellm.general_settings.dangerously_permit_weak_or_unset_master_key;
 assert desktopLitellm.litellm_settings.drop_params;
 assert desktopLitellm.router_settings.model_group_alias."gemini-flash" == "gemini-4-hydrogen";
 assert validHibernateZero == 0 && !(isValid invalidHibernate) && !(isValid invalidGeminiCount);

@@ -266,6 +266,11 @@ assert serverHost.custom.services.portal.services.syncthing.location == null;
 assert serverHost.services.litellm.enable;
 assert serverHost.services.litellm.host == "127.0.0.1";
 assert serverHost.services.litellm.port == 4000;
+assert
+  serverHost.services.litellm.settings.general_settings.dangerously_permit_weak_or_unset_master_key;
+assert
+  serverHost.services.litellm.environment.LITELLM_DANGEROUSLY_PERMIT_WEAK_OR_UNSET_MASTER_KEY
+  == "true";
 assert !serverHost.systemd.services.litellm.serviceConfig.DynamicUser;
 assert !serverHost.systemd.services.litellm.serviceConfig.PrivateUsers;
 assert !(builtins.elem pkgs.playwright-mcp serverHost.environment.systemPackages);
