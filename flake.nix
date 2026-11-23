@@ -44,6 +44,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
+    };
+
     wallpaper = {
       url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
       flake = false;
@@ -231,6 +239,15 @@
         };
         planner-options = import ./tests/planner-options.nix {
           inherit nixpkgs pkgs self;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+        hermes-options = import ./tests/hermes-options.nix {
+          inherit
+            inputs
+            nixpkgs
+            pkgs
+            self
+            ;
           sopsModule = inputs.sops-nix.nixosModules.sops;
         };
         standalone-home = import ./tests/standalone-home.nix { inherit inputs pkgs; };

@@ -53,8 +53,8 @@ jobs:
           for check in custom-scripts nightly-runtime remote-builder-mdns portal-status \
             plan-engine container-options remote-builder-options build-server-options \
             desktop-options tailscale-options syncthing-options navidrome-options \
-            portal-options planner-options standalone-home theme-options zen-options \
-            without-userns-filter; do
+            portal-options planner-options hermes-options standalone-home theme-options \
+            zen-options without-userns-filter; do
             nix build ".#checks.x86_64-linux.$check" --no-link
           done
 

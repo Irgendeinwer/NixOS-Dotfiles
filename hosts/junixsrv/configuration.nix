@@ -50,6 +50,11 @@
       # Requires `vikunja_env` and `radicale_htpasswd` in secrets/junixsrv.yaml;
       # see docs/planner.md.
       planner.enable = true;
+      # Private Continuwuity Matrix homeserver (`matrix.junixsrv.internal`) +
+      # Hermes Agent (`hermes_env` in secrets/junixsrv.yaml + hermes-box nspawn);
+      # see docs/hermes.md.
+      matrix.enable = true;
+      hermes.enable = true;
       # HTTPS landing page (:443, redirecting :80); see docs/portal.md.
       portal.enable = true;
       buildServer = {

@@ -82,6 +82,7 @@
           "music.junixsrv.internal" = "100.110.103.47";
           "tasks.junixsrv.internal" = "100.110.103.47";
           "cal.junixsrv.internal" = "100.110.103.47";
+          "matrix.junixsrv.internal" = "100.110.103.47";
         };
       };
       syncthing.enable = true;

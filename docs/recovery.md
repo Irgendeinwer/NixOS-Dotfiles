@@ -118,6 +118,9 @@ is gone for good.
    - `nix_private_deploy_key`: read-only deploy key on `Irgendeinwer/nix-private`
    - `portal_tls_cert` and `portal_tls_key`: HTTPS certificate chain and private
      key signed by `assets/junix-ca.pem` (see [Server portal & PKI](portal.md))
+   - `vikunja_env`, `radicale_htpasswd`, and `hermes_env`: credentials for the
+     planning stack and Hermes Matrix bot (see [Planner](planner.md) and
+     [Hermes Agent & Matrix](hermes.md))
    The dedicated deploy keys mean the nightly job does not need to install the
    personal `user_ssh_key` for its own Git operations. However, `junixsrv` is
    currently a recipient of `secrets/common.yaml`, so its root can decrypt every
@@ -178,6 +181,10 @@ is gone for good.
    `/etc/ssh/ssh_host_ed25519_key.pub` and `/var/lib/harmonia/cache-pub-key.pem`,
    then deploy updates from a LAN client with:
    `nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.local`
+7. Provision the isolated sibling Ubuntu 26.04.1 LTS (`resolute`) sandbox
+   container (`hermes-box`) on the Debian 12 host with
+   `sudo bash scripts/provision-hermes-box.sh` and create the `@julian` and
+   `@hermes` Continuwuity Matrix accounts (see [Hermes Agent & Matrix](hermes.md)).
 
 The default Lix configuration keeps its normal namespace probing and
 socket-activated `nix-daemon@` instances; builds normally use `/nix/var/nix/b`.

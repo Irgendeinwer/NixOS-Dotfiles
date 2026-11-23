@@ -105,6 +105,7 @@
           "music.junixsrv.internal"
           "tasks.junixsrv.internal"
           "cal.junixsrv.internal"
+          "matrix.junixsrv.internal"
         ];
       };
     };
