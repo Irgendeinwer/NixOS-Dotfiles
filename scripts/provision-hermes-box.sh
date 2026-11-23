@@ -129,8 +129,38 @@ apt-get install -y --no-install-recommends \
   curl \
   debootstrap \
   e2fsprogs \
-  systemd-container \
-  ubuntu-archive-keyring
+  gnupg \
+  systemd-container
+
+UBUNTU_KEYRING="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
+UBUNTU_ARCHIVE_KEY_FPR="F6ECB3762474EDA9D21B7022871920D1991BC93C"
+
+ensure_ubuntu_keyring() {
+  if [[ -s "${UBUNTU_KEYRING}" ]] \
+    && gpg --batch --with-colons --show-keys "${UBUNTU_KEYRING}" 2>/dev/null \
+      | grep -Eq "^fpr:+${UBUNTU_ARCHIVE_KEY_FPR}:"; then
+    return 0
+  fi
+
+  log "Fetching and verifying Ubuntu Archive signing key (${UBUNTU_ARCHIVE_KEY_FPR})..."
+  local gpg_tmp
+  gpg_tmp="$(mktemp -d)"
+  chmod 0700 "${gpg_tmp}"
+  curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${UBUNTU_ARCHIVE_KEY_FPR}" \
+    | gpg --homedir "${gpg_tmp}" --batch --quiet --import
+  if ! gpg --homedir "${gpg_tmp}" --batch --with-colons --fingerprint "${UBUNTU_ARCHIVE_KEY_FPR}" \
+    | grep -Eq "^fpr:+${UBUNTU_ARCHIVE_KEY_FPR}:"; then
+    rm -rf "${gpg_tmp}"
+    die "fingerprint mismatch while verifying Ubuntu Archive signing key"
+  fi
+  install -d -m 0755 /usr/share/keyrings
+  gpg --homedir "${gpg_tmp}" --batch --export "${UBUNTU_ARCHIVE_KEY_FPR}" > "${UBUNTU_KEYRING}.tmp"
+  chmod 0644 "${UBUNTU_KEYRING}.tmp"
+  mv -f "${UBUNTU_KEYRING}.tmp" "${UBUNTU_KEYRING}"
+  rm -rf "${gpg_tmp}"
+}
+
+ensure_ubuntu_keyring
 
 IMAGE_PATH="/var/lib/machines/${MACHINE}.raw"
 MNT_DIR=""
@@ -200,7 +230,7 @@ if [[ "${NEED_BOOTSTRAP}" -eq 1 ]]; then
   log "Bootstrapping Ubuntu '${SUITE}' (${ARCH}) from ${MIRROR}..."
   debootstrap \
     --arch="${ARCH}" \
-    --keyring=/usr/share/keyrings/ubuntu-archive-keyring.gpg \
+    --keyring="${UBUNTU_KEYRING}" \
     --include=systemd,systemd-sysv,dbus,ca-certificates,ubuntu-keyring \
     "${SUITE}" \
     "${MNT_DIR}" \
@@ -241,10 +271,17 @@ Name=mv-*
 [Network]
 DHCP=yes
 IPv6AcceptRA=yes
-MulticastDNS=yes
+# avahi-daemon owns UDP 5353 mDNS; keep systemd-resolved off 5353.
+MulticastDNS=no
 
 [DHCPv4]
 UseDomains=yes
+EOF
+
+install -d -m 0755 "${MNT_DIR}/etc/systemd/resolved.conf.d"
+cat > "${MNT_DIR}/etc/systemd/resolved.conf.d/10-no-mdns.conf" <<'EOF'
+[Resolve]
+MulticastDNS=no
 EOF
 
 log "Configuring packages, SSH, Avahi mDNS, and user 'hermes' inside ${MACHINE}..."
@@ -342,6 +379,22 @@ if [[ -n "${PUBKEY_LINE}" ]]; then
   log "Installed Hermes SSH public key into /home/hermes/.ssh/authorized_keys."
 else
   log "Note: id_hermes_box.pub not found yet; re-run with --authorized-key after junixsrv starts hermes-agent."
+fi
+
+JUNIXSRV_SSH_DIR="/var/lib/machines/junixsrv/var/lib/hermes/.ssh"
+HOST_ED25519_PUB="${MNT_DIR}/etc/ssh/ssh_host_ed25519_key.pub"
+if [[ -d "${JUNIXSRV_SSH_DIR}" && -s "${HOST_ED25519_PUB}" ]]; then
+  KNOWN_HOSTS="${JUNIXSRV_SSH_DIR}/known_hosts"
+  SSH_OWNER="$(stat -c '%u:%g' "${JUNIXSRV_SSH_DIR}")"
+  HOST_KEY_FIELDS="$(awk '{print $1, $2}' "${HOST_ED25519_PUB}")"
+  if [[ -f "${KNOWN_HOSTS}" ]]; then
+    grep -vE "^(${MACHINE}\\.local|${MACHINE})([ ,]|$)" "${KNOWN_HOSTS}" > "${KNOWN_HOSTS}.tmp" || true
+    mv -f "${KNOWN_HOSTS}.tmp" "${KNOWN_HOSTS}"
+  fi
+  printf '%s.local,%s %s\n' "${MACHINE}" "${MACHINE}" "${HOST_KEY_FIELDS}" >> "${KNOWN_HOSTS}"
+  chown "${SSH_OWNER}" "${KNOWN_HOSTS}"
+  chmod 0600 "${KNOWN_HOSTS}"
+  log "Pinned ${MACHINE}.local SSH host key into junixsrv known_hosts."
 fi
 
 sync

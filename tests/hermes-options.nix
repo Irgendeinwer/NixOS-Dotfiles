@@ -162,6 +162,7 @@ assert enabledContainer.systemd.services.searx.serviceConfig.ProtectProc == "def
 # Enabled container stack: Hermes Agent + LiteLLM + Quota Aux + SSH Sandbox + SOPS
 assert enabledContainer.services.hermes-agent.enable;
 assert builtins.elem "hermes" enabledContainer.users.users.julian.extraGroups;
+assert enabledContainer.services.avahi.enable;
 assert enabledContainer.services.avahi.nssmdns4;
 assert enabledContainer.sops.secrets ? hermes_env;
 assert enabledContainer.sops.templates ? "hermes-ai-env";
@@ -210,6 +211,7 @@ assert serverHost.custom.services.hermes.enable;
 assert serverHost.services.matrix-continuwuity.enable;
 assert serverHost.services.searx.enable;
 assert serverHost.services.hermes-agent.enable;
+assert serverHost.sops.secrets ? hermes_env;
 assert serverHost.custom.services.portal.services.matrix.subdomain == "matrix";
 assert serverHost.custom.services.portal.services.hermes.icon == "bot";
 assert serverHost.custom.services.portal.services.searxng.badge == "127.0.0.1:8888";

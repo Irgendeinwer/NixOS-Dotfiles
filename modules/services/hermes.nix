@@ -389,7 +389,10 @@ in
     (lib.mkIf (cfg.enable && hasUpstreamModule) {
       users.users.${primaryUser}.extraGroups = [ "hermes" ];
 
-      services.avahi.nssmdns4 = lib.mkIf enableMdns (lib.mkDefault true);
+      services.avahi = lib.mkIf enableMdns {
+        enable = lib.mkDefault true;
+        nssmdns4 = lib.mkDefault true;
+      };
 
       sops.secrets =
         lib.optionalAttrs useSopsHermesEnv {

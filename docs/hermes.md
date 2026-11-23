@@ -12,9 +12,9 @@ Debian 12 host.
   Lightweight Rust + RocksDB Matrix homeserver (~30–50 MB RAM) behind `junixsrv`'s
   TLS reverse proxy. Federation, open registration, and external key-server
   lookups are disabled (`allow_federation = false`, `allow_registration = false`,
-  `trusted_servers = []`). Also serves `/.well-known/matrix/client` and
-  `https://100.110.103.47/_matrix/` so mobile Element clients over Tailscale need
-  no split-DNS or `/etc/hosts`.
+  `trusted_servers = []`). Also serves host-aware `/.well-known/matrix/client`
+  and `https://100.110.103.47/_matrix/` so mobile Element clients over Tailscale
+  stay on `https://100.110.103.47` without split-DNS or `/etc/hosts`.
 - **`Hermes Agent` (`services.hermes-agent`, `/var/lib/hermes/.hermes`):**
   Upstream `NousResearch/hermes-agent` (`minimal` + `matrix` E2EE extras) running
   on `junixsrv`. Connects over loopback (`http://127.0.0.1:6167`) as
@@ -22,9 +22,8 @@ Debian 12 host.
   `MATRIX_ALLOWED_USERS=@julian:junixsrv.internal`.
 - **Quota-aware LiteLLM routing (`http://127.0.0.1:4000/v1`):**
   - **Primary agent turns:** `gemini-4-hydrogen` (`x-litellm-session-id` sticky
-    prompt-cache affinity across the 10 pooled Google AI Studio keys = 1,000
-    RPD).
-  - **Overflow fallback:** `gemini-3.8-flash` (2,000 RPD) when primary RPD is
+    prompt-cache affinity across the 10 pooled Google AI Studio keys = 200 RPD).
+  - **Overflow fallback:** `gemini-3.8-flash` (200 RPD) when primary RPD is
     exhausted.
   - **All 14 `auxiliary.*` tasks** (`compression`, `title_generation`,
     `approval`, `curator`, `background_review`, `vision`, `mcp`, etc.): pinned to
@@ -67,10 +66,15 @@ printf 'MATRIX_PASSWORD=%s\n' "$bot_pw" > "$tmp/hermes.env"
 json_val="$(python3 -c 'import json, sys; print(json.dumps(sys.stdin.read()))' < "$tmp/hermes.env")"
 sops set secrets/junixsrv.yaml '["hermes_env"]' "$json_val"
 EOF
+
+git add secrets/junixsrv.yaml
+git commit -m "chore(secrets): add hermes_env for junixsrv"
+git push
 ```
 
 Also ensure `junixsrv`'s wildcard TLS certificate includes
-`DNS:*.junixsrv.internal` (already covered if generated with `docs/portal.md`).
+`DNS:*.junixsrv.internal` and `IP:100.110.103.47` (already covered if generated
+with `docs/portal.md`).
 
 ### 2. Deploy `junixsrv`
 
@@ -78,13 +82,14 @@ Rebuild `junixsrv` so `continuwuity.service`, `searx.service`, and
 `hermes-agent.service` start and generate `/var/lib/hermes/.ssh/id_hermes_box`:
 
 ```bash
-nixos-rebuild switch --flake .#junixsrv --target-host root@junixsrv.local
+nh os switch ~/dotfiles -H junixsrv --target-host root@junixsrv.local
 ```
 
 ### 3. Create `@julian` and `@hermes` accounts in Continuwuity
 
-Open registration remains disabled at all times. Provision both Matrix accounts
-directly through Continuwuity's offline admin command on `junixsrv`:
+Open registration remains disabled at all times. NixOS's `conduwuit` wrapper
+already passes `--config <continuwuity.toml>`; run all account commands in one
+shot ending with `--execute "server shutdown"`:
 
 ```bash
 ssh -t root@junixsrv.local 'bash -euo pipefail -c '\''
@@ -92,9 +97,11 @@ ssh -t root@junixsrv.local 'bash -euo pipefail -c '\''
   read -rsp "Choose Matrix password for @julian:junixsrv.internal: " julian_pw
   echo
   systemctl stop continuwuity.service
-  sudo -Hu continuwuity conduwuit --execute "users create julian $julian_pw"
-  sudo -Hu continuwuity conduwuit --execute "users make_user_admin julian"
-  sudo -Hu continuwuity conduwuit --execute "users create hermes $bot_pw"
+  sudo -Hu continuwuity conduwuit \
+    --execute "users create julian $julian_pw" \
+    --execute "users make_user_admin julian" \
+    --execute "users create hermes $bot_pw" \
+    --execute "server shutdown"
   systemctl start continuwuity.service
   systemctl restart hermes-agent.service
 '\'''
@@ -103,9 +110,10 @@ ssh -t root@junixsrv.local 'bash -euo pipefail -c '\''
 ### 4. Provision `hermes-box` on the Debian 12 `nspawn` host
 
 Copy `scripts/provision-hermes-box.sh` to the Debian 12 host that runs
-`junixsrv` and execute it as `root` (it auto-detects `MACVLAN=` from
-`/etc/systemd/nspawn/junixsrv.nspawn` and installs
-`/var/lib/machines/junixsrv/var/lib/hermes/.ssh/id_hermes_box.pub` automatically):
+`junixsrv` and execute it as `root` (it verifies Ubuntu's archive GPG key,
+auto-detects `MACVLAN=` from `/etc/systemd/nspawn/junixsrv.nspawn`, installs
+`id_hermes_box.pub`, and pins `hermes-box.local`'s SSH host key into
+`junixsrv`'s `/var/lib/hermes/.ssh/known_hosts`):
 
 ```bash
 scp scripts/provision-hermes-box.sh root@<debian-host>:/root/
@@ -127,11 +135,13 @@ ssh root@junixsrv.local \
   homeserver**, enter `https://matrix.junixsrv.internal`, sign in as `julian`,
   and start a direct chat with `@hermes:junixsrv.internal`.
 - **Android (`MobileF6` over Tailscale):**
-  Install `certs/junix-local-root-ca.pem` in Android *Settings → Security →
-  Encryption & credentials → Install a certificate → CA certificate*. In
-  **Element Classic** or **Element X**, set the custom homeserver URL to
-  `https://100.110.103.47` (proxied via `/_matrix/` on the default portal vhost,
-  requiring zero mobile DNS configuration) and sign in as `julian`.
+  Install `assets/junix-ca.pem` in Android *Settings → Security → Encryption &
+  credentials → Install a certificate → CA certificate*. Set the custom
+  homeserver URL to `https://100.110.103.47` (`/.well-known/matrix/client`
+  returns `https://100.110.103.47` when queried by IP and `/_matrix/` proxies
+  directly to Continuwuity, requiring zero mobile DNS setup) and sign in as
+  `julian`. *(Prefer **Element Classic** on Android if **Element X**'s bundled
+  `rustls` verifier ignores user-installed Android CA certificates.)*
 
 ## Host CLI & diagnostics (`junixsrv`)
 
