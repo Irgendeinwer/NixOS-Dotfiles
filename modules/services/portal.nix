@@ -989,7 +989,10 @@ let
       icon = lib.mkOption {
         type = lib.types.nonEmptyStr;
         default = "globe";
-        description = "Built-in icon identifier (`music`, `sync`, `package`, `code`, `globe`, `tasks`, `calendar`).";
+        description = ''
+          Built-in icon identifier (`music`, `sync`, `package`, `code`, `globe`,
+          `tasks`, `calendar`, `chat`, `bot`).
+        '';
       };
 
       order = lib.mkOption {

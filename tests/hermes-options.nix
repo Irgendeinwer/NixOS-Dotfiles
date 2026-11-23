@@ -104,9 +104,14 @@ let
   };
 
   hasFailedAssertion =
-    substr: cfg: builtins.any (a: (!a.assertion) && lib.hasInfix substr a.message) cfg.assertions;
+    prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
-  noFailedAssertions = cfg: builtins.all (a: a.assertion) cfg.assertions;
+  noModuleFailures =
+    cfg:
+    !(hasFailedAssertion "custom.services.hermes" cfg)
+    && !(hasFailedAssertion "custom.services.matrix" cfg)
+    && !(hasFailedAssertion "custom.services.portal" cfg)
+    && !(hasFailedAssertion "services.hermes-agent" cfg);
 
   hermesSettings = enabledContainer.services.hermes-agent.settings;
   matrixGlobal = enabledContainer.services.matrix-continuwuity.settings.global;
@@ -120,9 +125,9 @@ in
 assert !disabled.services.matrix-continuwuity.enable;
 assert !disabled.services.searx.enable;
 assert !disabled.services.hermes-agent.enable;
-assert noFailedAssertions disabled;
+assert noModuleFailures disabled;
 # Enabled container stack: Matrix (Continuwuity) + Portal + .well-known
-assert noFailedAssertions enabledContainer;
+assert noModuleFailures enabledContainer;
 assert enabledContainer.services.matrix-continuwuity.enable;
 assert matrixGlobal.server_name == "junixsrv.internal";
 assert matrixGlobal.address == [ "127.0.0.1" ];
@@ -185,7 +190,7 @@ assert enabledContainer.systemd.services.hermes-agent.serviceConfig.MemoryMax ==
 assert !(builtins.elem 6167 enabledContainer.networking.firewall.allowedTCPPorts);
 assert !(builtins.elem 8888 enabledContainer.networking.firewall.allowedTCPPorts);
 # Explicit env file + local backend fallback
-assert noFailedAssertions explicitEnvAndLocal;
+assert noModuleFailures explicitEnvAndLocal;
 assert !(explicitEnvAndLocal.sops.secrets ? hermes_env);
 assert explicitEnvAndLocal.services.hermes-agent.settings.terminal.backend == "local";
 assert

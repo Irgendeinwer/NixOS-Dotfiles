@@ -1,7 +1,17 @@
 "use strict";
 
 (() => {
-  const BUILTIN_ICONS = new Set(["music", "sync", "package", "code", "globe", "tasks", "calendar"]);
+  const BUILTIN_ICONS = new Set([
+    "music",
+    "sync",
+    "package",
+    "code",
+    "globe",
+    "tasks",
+    "calendar",
+    "chat",
+    "bot",
+  ]);
 
   const state = {
     config: null,
