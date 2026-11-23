@@ -41,8 +41,8 @@ json_quote() {
 }
 
 printf 'VIKUNJA_SERVICE_SECRET=%s\n' "$(openssl rand -hex 32)" > "$tmp/vikunja.env"
-# Prompts interactively for your Radicale CalDAV password (bcrypt cost 12):
-htpasswd -nbBC 12 irgendeinwer > "$tmp/radicale.htpasswd"
+# Prompts interactively on /dev/tty for your Radicale CalDAV password (bcrypt cost 12):
+htpasswd -nBC 12 irgendeinwer > "$tmp/radicale.htpasswd"
 
 sops set secrets/junixsrv.yaml '["vikunja_env"]' "$(json_quote "$tmp/vikunja.env")"
 sops set secrets/junixsrv.yaml '["radicale_htpasswd"]' "$(json_quote "$tmp/radicale.htpasswd")"
