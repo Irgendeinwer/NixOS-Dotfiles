@@ -134,12 +134,14 @@ in
           port = [ cfg.port ];
           max_request_size = cfg.maxRequestSize;
           allow_registration = cfg.allowRegistration;
-          registration_token_file = cfg.registrationTokenFile;
           allow_encryption = true;
           allow_federation = false;
           allow_announcements_check = false;
           trusted_servers = [ ];
           well_known.client = publicBaseUrl;
+        }
+        // lib.optionalAttrs (cfg.registrationTokenFile != null) {
+          registration_token_file = cfg.registrationTokenFile;
         };
       };
 
