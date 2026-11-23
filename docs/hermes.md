@@ -100,12 +100,12 @@ already passes `--config <continuwuity.toml>`; run all account commands in one
 shot ending with `--execute "server shutdown"`:
 
 ```bash
-ssh -t root@junixsrv.local '
-  set -euo pipefail
+ssh -t root@junixsrv.local 'exec bash -euo pipefail -c '\''
   bot_pw="$(sed -n "s/^MATRIX_PASSWORD=//p" /run/secrets/hermes_env)"
   read -rsp "Choose Matrix password for @irgendeinwer:junixsrv.internal (no spaces/quotes): " user_pw
   echo
-  if [[ -z "$user_pw" || "$user_pw" =~ [[:space:]\"\\] || "$user_pw" == *"'\''"* ]]; then
+  sq="$(printf "\\047")"
+  if [[ -z "$user_pw" || "$user_pw" =~ [[:space:]\"\\] || "$user_pw" == *"$sq"* ]]; then
     echo "error: password must be non-empty and contain no whitespace, quotes, or backslashes" >&2
     exit 1
   fi
@@ -119,7 +119,7 @@ ssh -t root@junixsrv.local '
   trap - EXIT
   systemctl start continuwuity.service
   systemctl restart hermes-agent.service
-'
+'\'''
 ```
 
 ### 4. Provision `hermes-box` on the Debian 12 `nspawn` host
