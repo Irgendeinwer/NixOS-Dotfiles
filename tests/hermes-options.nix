@@ -24,7 +24,7 @@ let
             type = lib.types.str;
             default = "julian";
           };
-          users.users.julian = {
+          config.users.users.julian = {
             isNormalUser = true;
             home = "/home/julian";
           };
