@@ -204,8 +204,8 @@ assert serverHost.services.hermes-agent.enable;
 assert serverHost.custom.services.portal.services.matrix.subdomain == "matrix";
 assert serverHost.custom.services.portal.services.hermes.icon == "bot";
 assert serverHost.custom.services.portal.services.searxng.badge == "127.0.0.1:8888";
-assert
-  builtins.elem "matrix.junixsrv.internal" desktopHost.custom.system.remoteBuilder.extraHostAliases;
+assert builtins.elem "matrix.junixsrv.internal"
+  desktopHost.custom.system.remoteBuilder.extraHostAliases;
 assert laptopHost.custom.services.tailscale.peers."matrix.junixsrv.internal" == "100.110.103.47";
 pkgs.runCommand "hermes-options"
   {
