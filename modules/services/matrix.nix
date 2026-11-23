@@ -21,24 +21,27 @@ let
   wellKnownDynamicJson = ''{"m.homeserver":{"base_url":"$junix_matrix_base_url"}}'';
   wellKnownBody = if cfg.mobileMatrixPath then wellKnownDynamicJson else wellKnownClientJson;
 
+  matrixProxyConfig = ''
+    client_max_body_size ${toString cfg.maxRequestSize};
+    proxy_read_timeout 600s;
+    proxy_send_timeout 600s;
+    proxy_buffering off;
+  '';
+
   matrixExtraLocations = {
     "= /.well-known/matrix/client".extraConfig = ''
       default_type application/json;
       add_header Access-Control-Allow-Origin "*" always;
       add_header Cache-Control "public, max-age=3600" always;
+      ${lib.optionalString cfg.mobileMatrixPath ''add_header Vary "Host" always;''}
       return 200 '${wellKnownBody}';
     '';
   }
   // lib.optionalAttrs cfg.mobileMatrixPath {
     "/_matrix/" = {
-      proxyPass = "http://127.0.0.1:${toString cfg.port}/_matrix/";
+      proxyPass = "http://127.0.0.1:${toString cfg.port}";
       proxyWebsockets = true;
-      extraConfig = ''
-        client_max_body_size 64M;
-        proxy_read_timeout 600s;
-        proxy_send_timeout 600s;
-        proxy_buffering off;
-      '';
+      extraConfig = matrixProxyConfig;
     };
   };
 in
@@ -114,12 +117,7 @@ in
           subdomain = lib.mkDefault cfg.subdomain;
           proxyPass = lib.mkDefault "http://127.0.0.1:${toString cfg.port}";
           path = lib.mkDefault "/_matrix/client/versions";
-          extraProxyConfig = lib.mkDefault ''
-            client_max_body_size 64M;
-            proxy_read_timeout 600s;
-            proxy_send_timeout 600s;
-            proxy_buffering off;
-          '';
+          extraProxyConfig = lib.mkDefault matrixProxyConfig;
           systemdUnit = lib.mkDefault "continuwuity.service";
           order = lib.mkDefault 18;
         };
@@ -139,7 +137,7 @@ in
             default "${publicBaseUrl}";
             "~*^${domainPattern}(?::[0-9]+)?$" "${publicBaseUrl}";
             "~*^${subPattern}(?::[0-9]+)?$" "${publicBaseUrl}";
-            "~^(?<junix_matrix_req_host>[A-Za-z0-9._:-]+)$" "${portalScheme}://$junix_matrix_req_host";
+            "~^(?<junix_matrix_req_host>[][A-Za-z0-9._:-]+)$" "${portalScheme}://$junix_matrix_req_host";
           }
         '';
 
