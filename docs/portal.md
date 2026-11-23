@@ -10,10 +10,21 @@ Root CA (`assets/junix-ca.pem`) and a single private flake input
 - **Nginx + static Gruvbox frontend (`modules/services/portal.nix`):**
   Colors are derived from `custom.theme.palette`, and static assets are served
   with a strict `Content-Security-Policy` (`script-src 'self'; style-src 'self'`).
-  Direct-port service cards (`navidrome` on `:4533/app/`, `harmonia` on `:5000`)
-  resolve against `window.location.hostname` in the browser so opening
-  `https://junixsrv.local/` uses LAN mDNS while `https://junixsrv.internal/`
-  uses Tailscale.
+  User-facing web apps (`navidrome`) bind strictly to `127.0.0.1` and are
+  exposed over HTTPS `:443` via dedicated subdomain virtual hosts
+  (`https://music.junixsrv.internal`). Direct-port infrastructure cards
+  (`harmonia` on `:5000`) resolve against `window.location.hostname`.
+- **Unified LAN + Tailscale hostname aliases:**
+  `junixos` maps `junixsrv.internal` and `*.junixsrv.internal` to `junixsrv`'s
+  discovered LAN IPv4 address via `custom.system.remoteBuilder.extraHostAliases`
+  (`remote-builder-mdns.py`), while `junixbook` maps the exact same hostnames
+  to `100.110.103.47` via `custom.services.tailscale.peers`. Both machines use
+  identical `https://*.junixsrv.internal` URLs seamlessly.
+- **Mobile raw-IP HTTPS paths (`MobileF6`):**
+  Because Android lacks per-app `/etc/hosts` without MagicDNS, the default
+  `https://100.110.103.47` virtual host also proxies `/music/rest/` +
+  `/music/share/` to Navidrome (configure Symfonium/Tempo server URL as
+  `https://100.110.103.47/music`).
 - **Internal-only Syncthing card:**
   Syncthing's GUI stays bound to `127.0.0.1:8384` and is not reverse-proxied.
   Its card displays live `syncthing.service` health and a one-click SSH tunnel
@@ -101,8 +112,11 @@ accepts the first matching deploy key offered on `github.com`:
 ## Bootstrapping and rotating the local Root CA
 
 `modules/nixos/pki.nix` trusts `assets/junix-ca.pem` system-wide on every NixOS
-host (`security.pki.certificateFiles`), and `modules/home-manager/zen-browser.nix`
-installs it into Zen Browser via `policies.Certificates`. Keep the Root CA
+host (`security.pki.certificateFiles`), `modules/home-manager/zen-browser.nix`
+installs it into Zen Browser via `policies.Certificates`, and
+`modules/home-manager/pki.nix` seeds `~/.pki/nssdb` via `certutil` so
+Chromium/Electron apps (such as Feishin pointed at
+`https://music.junixsrv.internal`) trust HTTPS automatically. Keep the Root CA
 private key in `secrets/pki.yaml` (encrypted strictly to `*user_julian` in
 `.sops.yaml`, so no host key can decrypt it and `secrets/users/julian.yaml`
 stays reserved for `user_ssh_key`).
@@ -137,7 +151,7 @@ cat > "$ca_tmp/portal-ext.cnf" <<'EXT'
 basicConstraints = critical, CA:FALSE
 keyUsage = critical, digitalSignature
 extendedKeyUsage = serverAuth
-subjectAltName = DNS:junixsrv.local, DNS:junixsrv.internal, DNS:junixsrv, IP:100.110.103.47
+subjectAltName = DNS:*.junixsrv.internal, DNS:junixsrv.internal, DNS:junixsrv.local, DNS:junixsrv, IP:100.110.103.47
 EXT
 
 openssl x509 -req -in "$ca_tmp/portal.csr" \

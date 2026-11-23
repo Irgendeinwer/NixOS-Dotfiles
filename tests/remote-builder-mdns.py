@@ -217,6 +217,29 @@ class HostsFileTests(unittest.TestCase):
         self.assertEqual(mdns.pick_ip({(2, "169.254.1.1"): None}), "169.254.1.1")
         self.assertIsNone(mdns.pick_ip({}))
 
+    def test_extra_aliases_are_written_deduplicated_and_validated(self):
+        aliased = mdns.HostsFile(
+            "junixsrv.local.",
+            self.static,
+            self.output,
+            self.state,
+            aliases=[
+                "junixsrv.internal",
+                "music.junixsrv.internal.",
+                "tasks.junixsrv.internal",
+                "junixsrv.internal",
+            ],
+        )
+        aliased.sync("192.0.2.9")
+        self.assertEqual(
+            self.output.read_text(),
+            "127.0.0.1 localhost\n"
+            "192.0.2.9 junixsrv.local junixsrv.internal music.junixsrv.internal tasks.junixsrv.internal # remote-builder-mdns\n",
+        )
+        for bad in ("", "localhost", "bad host", "bad\nhost", "bad#comment"):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                mdns.HostsFile("junixsrv.local", aliases=[bad])
+
 
 class CallbackTests(unittest.TestCase):
     def test_ctypes_callback_exception_reaches_failure_handler(self):

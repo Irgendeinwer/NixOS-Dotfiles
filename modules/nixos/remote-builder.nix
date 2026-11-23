@@ -45,16 +45,32 @@ let
   builderKeyFile =
     if builtins.pathExists userSecretsFile then userSecretsFile else ../../secrets/common.yaml;
   avahiLibDir = "${lib.getLib pkgs.avahi}/lib";
+  validHostAlias =
+    name:
+    let
+      cleaned = normalizeSshHost name;
+    in
+    cleaned != ""
+    && lib.toLower cleaned != "localhost"
+    && builtins.match "[A-Za-z0-9]([A-Za-z0-9._-]{0,251}[A-Za-z0-9])?" cleaned != null;
+  normalizedAliases = lib.unique (map normalizeSshHost cfg.extraHostAliases);
+  aliasArgs = lib.concatMap (alias: [
+    "--alias"
+    alias
+  ]) normalizedAliases;
 
   # Nix/Lix bypass nss-mdns. Both activation and the Avahi subscriber use
   # the same helper and lock to update /etc/hosts and its cached address.
   mdnsHostsSync = ./scripts/remote-builder-mdns.py;
-  syncCommand = lib.escapeShellArgs [
-    "${pkgs.python3}/bin/python3"
-    "${mdnsHostsSync}"
-    "--host"
-    targetHost
-  ];
+  syncCommand = lib.escapeShellArgs (
+    [
+      "${pkgs.python3}/bin/python3"
+      "${mdnsHostsSync}"
+      "--host"
+      targetHost
+    ]
+    ++ aliasArgs
+  );
   mdnsDependencies = {
     after = [ "remote-builder-mdns.service" ];
     wants = [ "remote-builder-mdns.service" ];
@@ -78,6 +94,21 @@ in
       type = lib.types.str;
       default = "junixsrv.local";
       description = "Hostname or IP address of the remote Nix build server.";
+    };
+
+    extraHostAliases = lib.mkOption {
+      type = lib.types.listOf lib.types.nonEmptyStr;
+      default = [ ];
+      example = [
+        "junixsrv.internal"
+        "music.junixsrv.internal"
+        "tasks.junixsrv.internal"
+      ];
+      description = ''
+        Additional hostnames mapped to the resolved Avahi mDNS IPv4 address of
+        `host` in `/etc/hosts` so internal HTTPS virtual hosts work over LAN
+        without running a dedicated split-DNS server.
+      '';
     };
 
     hostPublicKey = lib.mkOption {
@@ -140,6 +171,10 @@ in
       {
         assertion = tailscaleTarget == null || tailscaleTarget != targetHost;
         message = "custom.system.remoteBuilder: tailscaleHost must differ from host (${targetHost}) so LAN and Tailscale cache priorities remain distinct.";
+      }
+      {
+        assertion = lib.all validHostAlias cfg.extraHostAliases;
+        message = "custom.system.remoteBuilder: extraHostAliases must be valid non-localhost hostnames without whitespace.";
       }
     ];
 

@@ -100,6 +100,10 @@
       remoteBuilder = {
         enable = true;
         offload = false;
+        extraHostAliases = [
+          "junixsrv.internal"
+          "music.junixsrv.internal"
+        ];
       };
     };
 

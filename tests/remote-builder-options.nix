@@ -46,6 +46,14 @@ let
     resolved = false;
     lix = true;
     host = "junixsrv.local.";
+    extraConfig.custom.system.remoteBuilder.extraHostAliases = [
+      "junixsrv.internal"
+      "music.junixsrv.internal."
+    ];
+  };
+  invalidAlias = evalRemoteBuilder {
+    resolved = false;
+    extraConfig.custom.system.remoteBuilder.extraHostAliases = [ "localhost" ];
   };
   avahiCache = evalRemoteBuilder {
     resolved = false;
@@ -109,6 +117,7 @@ let
   tsExtraSsh = tailscaleFallback.config.programs.ssh.extraConfig;
   tsSshConfig = pkgs.writeText "remote-builder-ts-ssh.conf" tsExtraSsh;
   tsExtraHosts = tailscaleFallback.config.programs.ssh.knownHosts."junixsrv.local".extraHostNames;
+  lixSyncScript = avahiLix.config.system.activationScripts.remoteBuilderHosts.text;
 in
 assert disabled.config.nix.buildMachines == [ ];
 assert !(builtins.elem cacheUrl disabled.config.nix.settings.substituters);
@@ -132,6 +141,9 @@ assert builtins.elem "100.64.0.10" tsExtraHosts;
 assert builtins.elem tailscaleIpv6Url tailscaleIpv6.config.nix.settings.substituters;
 assert hasFailedAssertion missingTailscaleHost;
 assert hasFailedAssertion duplicateTailscaleHost;
+assert hasFailedAssertion invalidAlias;
+assert lib.hasInfix "--alias junixsrv.internal" lixSyncScript;
+assert lib.hasInfix "--alias music.junixsrv.internal" lixSyncScript;
 assert offloading.config.nix.distributedBuilds;
 assert builtins.length offloading.config.nix.buildMachines == 1;
 assert (builtins.head offloading.config.nix.buildMachines).hostName == "junixsrv.local";

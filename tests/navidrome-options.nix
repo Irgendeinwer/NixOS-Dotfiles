@@ -59,6 +59,13 @@ let
     };
   };
 
+  reverseProxied = evalNavidrome {
+    custom.services.navidrome = {
+      enable = true;
+      reverseProxy.enable = true;
+    };
+  };
+
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
@@ -90,15 +97,19 @@ assert externalLibrary.services.navidrome.settings.Address == "[::]";
 assert externalLibrary.services.navidrome.settings.Port == 4534;
 assert externalLibrary.systemd.services.navidrome.serviceConfig.ProtectHome == true;
 assert hasFailedAssertion "custom.services.navidrome.musicFolder:" relativeFolder;
+assert !reverseProxied.services.navidrome.openFirewall;
+assert reverseProxied.services.navidrome.settings.Address == "127.0.0.1";
+assert !(builtins.elem 4533 reverseProxied.networking.firewall.allowedTCPPorts);
 assert desktopHost.services.jellyfin.enable;
 assert !desktopHost.services.navidrome.enable;
 assert !laptopHost.services.jellyfin.enable;
 assert !laptopHost.services.navidrome.enable;
 assert !serverHost.services.jellyfin.enable;
 assert serverHost.services.navidrome.enable;
-assert serverHost.services.navidrome.settings.Address == "0.0.0.0";
+assert serverHost.custom.services.navidrome.reverseProxy.enable;
+assert serverHost.services.navidrome.settings.Address == "127.0.0.1";
 assert serverHost.services.navidrome.settings.MusicFolder == "/home/julian/music";
-assert builtins.elem 4533 serverHost.networking.firewall.allowedTCPPorts;
+assert !(builtins.elem 4533 serverHost.networking.firewall.allowedTCPPorts);
 assert !serverHost.systemd.services.navidrome.serviceConfig.PrivateUsers;
 assert serverHost.systemd.services.navidrome.serviceConfig.ProtectHome == "tmpfs";
 pkgs.runCommand "navidrome-host-options" { } ''

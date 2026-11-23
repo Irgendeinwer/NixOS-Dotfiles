@@ -1,7 +1,7 @@
 "use strict";
 
 (() => {
-  const BUILTIN_ICONS = new Set(["music", "sync", "package", "code", "globe"]);
+  const BUILTIN_ICONS = new Set(["music", "sync", "package", "code", "globe", "tasks", "calendar"]);
 
   const state = {
     config: null,
@@ -104,6 +104,14 @@
   function resolveServiceLink(svc) {
     const hostname = window.location.hostname || "localhost";
     const urlHost = formatHostForUrl(hostname);
+    if (svc.vhost) {
+      const path = svc.path || "/";
+      const scheme = svc.scheme || (window.location.protocol === "https:" ? "https" : "http");
+      return {
+        href: `${scheme}://${svc.vhost}${path}`,
+        display: `${svc.vhost}${path}`
+      };
+    }
     if (svc.location) {
       return { href: svc.location, display: svc.location };
     }

@@ -76,7 +76,10 @@
       tailscale = {
         enable = true;
         mtu = 1180;
-        peers."junixsrv.internal" = "100.110.103.47";
+        peers = {
+          "junixsrv.internal" = "100.110.103.47";
+          "music.junixsrv.internal" = "100.110.103.47";
+        };
       };
       syncthing.enable = true;
       playerctl.enable = true;

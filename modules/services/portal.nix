@@ -44,9 +44,11 @@ let
   ];
 
   validProjectName = name: builtins.match "[a-z0-9][a-z0-9_-]{0,22}" name != null;
+  validSubdomain = name: builtins.match "[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?" name != null;
 
   activeServices = lib.filterAttrs (_: s: s.enable) cfg.services;
   activeProjects = lib.filterAttrs (_: prj: prj.enable) cfg.projects;
+  subdomainServices = lib.filterAttrs (_: s: s.subdomain != null) activeServices;
 
   projectLocation = name: prj: if prj.location != null then prj.location else "/${name}/";
   projectUnit =
@@ -77,10 +79,11 @@ let
       hintCommand
       location
       port
-      scheme
       path
       url
       ;
+    vhost = if s.subdomain != null then "${s.subdomain}.${cfg.domainSuffix}" else null;
+    scheme = if s.subdomain != null then (if cfg.tls.enable then "https" else "http") else s.scheme;
   }) activeServices;
 
   projectCards = lib.mapAttrsToList (name: prj: {
@@ -96,6 +99,7 @@ let
     systemdUnit = projectUnit name prj;
     hintCommand = null;
     location = projectLocation name prj;
+    vhost = null;
     port = null;
     scheme = "https";
     path = "/";
@@ -106,10 +110,15 @@ let
 
   proxiedServiceLocations = lib.mapAttrs' (
     _: s:
-    lib.nameValuePair s.location {
-      proxyPass = s.proxyPass;
-      proxyWebsockets = s.proxyWebsockets;
-    }
+    lib.nameValuePair s.location (
+      {
+        proxyPass = s.proxyPass;
+        proxyWebsockets = s.proxyWebsockets;
+      }
+      // lib.optionalAttrs (s.extraProxyConfig != "") {
+        extraConfig = s.extraProxyConfig;
+      }
+    )
   ) (lib.filterAttrs (_: s: s.proxyPass != null && s.location != null) activeServices);
 
   proxiedProjectLocations = lib.mapAttrs' (
@@ -120,11 +129,33 @@ let
     }
   ) activeProjects;
 
+  subdomainVirtualHosts = lib.mapAttrs' (
+    _: s:
+    lib.nameValuePair "${s.subdomain}.${cfg.domainSuffix}" {
+      forceSSL = cfg.tls.enable;
+      sslCertificate = lib.mkIf cfg.tls.enable tlsCertPath;
+      sslCertificateKey = lib.mkIf cfg.tls.enable tlsKeyPath;
+      extraConfig = lib.optionalString cfg.tls.enable ''
+        ssl_stapling off;
+      '';
+      locations."/" = {
+        proxyPass = s.proxyPass;
+        proxyWebsockets = s.proxyWebsockets;
+      }
+      // lib.optionalAttrs (s.extraProxyConfig != "") {
+        extraConfig = s.extraProxyConfig;
+      };
+    }
+  ) subdomainServices;
+
   allProxyLocations =
     map (s: s.location) (
       builtins.filter (s: s.proxyPass != null && s.location != null) (builtins.attrValues activeServices)
     )
-    ++ lib.mapAttrsToList projectLocation activeProjects;
+    ++ lib.mapAttrsToList projectLocation activeProjects
+    ++ builtins.attrNames cfg.extraLocations;
+
+  allSubdomains = map (s: s.subdomain) (builtins.attrValues subdomainServices);
 
   managedProjects = lib.filterAttrs (_: prj: prj.execStart != null) activeProjects;
 
@@ -205,6 +236,28 @@ let
         <circle cx="12" cy="12" r="9" stroke="${p.purple}" stroke-width="1.7"/>
         <line x1="3.4" y1="12" x2="20.6" y2="12" stroke="${p.purple}" stroke-width="1.5"/>
         <path d="M12 3a13.8 13.8 0 0 1 3.6 9 13.8 13.8 0 0 1-3.6 9 13.8 13.8 0 0 1-3.6-9A13.8 13.8 0 0 1 12 3z" stroke="${p.fg0}" stroke-width="1.5"/>
+      </svg>
+    '';
+    tasks = pkgs.writeText "portal-icon-tasks.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="${p.bg0}" stroke="${p.green}" stroke-width="1.6"/>
+        <polyline points="7.5 10.2 9.4 12.1 12.8 8.4" stroke="${p.green}" stroke-width="1.8"/>
+        <line x1="14.8" y1="10.3" x2="17.2" y2="10.3" stroke="${p.fg0}" stroke-width="1.6"/>
+        <circle cx="9.2" cy="15.5" r="1.2" fill="${p.yellow}"/>
+        <line x1="12.6" y1="15.5" x2="17.2" y2="15.5" stroke="${p.grey1}" stroke-width="1.6"/>
+      </svg>
+    '';
+    calendar = pkgs.writeText "portal-icon-calendar.svg" ''
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3.5" y="5" width="17" height="15.5" rx="3.5" fill="${p.bg0}" stroke="${p.orange}" stroke-width="1.6"/>
+        <line x1="8" y1="3.2" x2="8" y2="6.6" stroke="${p.fg0}" stroke-width="1.7"/>
+        <line x1="16" y1="3.2" x2="16" y2="6.6" stroke="${p.fg0}" stroke-width="1.7"/>
+        <line x1="3.8" y1="9.6" x2="20.2" y2="9.6" stroke="${p.orange}" stroke-width="1.5"/>
+        <circle cx="8.6" cy="13.6" r="1.3" fill="${p.yellow}"/>
+        <circle cx="12" cy="13.6" r="1.3" fill="${p.aqua}"/>
+        <circle cx="15.4" cy="13.6" r="1.3" fill="${p.grey1}"/>
+        <circle cx="8.6" cy="17" r="1.3" fill="${p.grey1}"/>
+        <circle cx="12" cy="17" r="1.3" fill="${p.green}"/>
       </svg>
     '';
   };
@@ -878,6 +931,8 @@ let
     ln -s ${iconSvgs.package} "$out/icons/package.svg"
     ln -s ${iconSvgs.code} "$out/icons/code.svg"
     ln -s ${iconSvgs.globe} "$out/icons/globe.svg"
+    ln -s ${iconSvgs.tasks} "$out/icons/tasks.svg"
+    ln -s ${iconSvgs.calendar} "$out/icons/calendar.svg"
   '';
 
   serviceSubmodule = lib.types.submodule {
@@ -914,7 +969,7 @@ let
       icon = lib.mkOption {
         type = lib.types.nonEmptyStr;
         default = "globe";
-        description = "Built-in icon identifier (`music`, `sync`, `package`, `code`, `globe`).";
+        description = "Built-in icon identifier (`music`, `sync`, `package`, `code`, `globe`, `tasks`, `calendar`).";
       };
 
       order = lib.mkOption {
@@ -938,6 +993,16 @@ let
         '';
       };
 
+      subdomain = lib.mkOption {
+        type = lib.types.nullOr lib.types.nonEmptyStr;
+        default = null;
+        example = "music";
+        description = ''
+          Dedicated Nginx virtual host prefix (`<subdomain>.<domainSuffix>`)
+          reverse-proxying `/` to `proxyPass` with the portal TLS certificate.
+        '';
+      };
+
       location = lib.mkOption {
         type = lib.types.nullOr lib.types.nonEmptyStr;
         default = null;
@@ -947,13 +1012,19 @@ let
       proxyPass = lib.mkOption {
         type = lib.types.nullOr lib.types.nonEmptyStr;
         default = null;
-        description = "Optional upstream URL for Nginx `proxy_pass` at `location`.";
+        description = "Optional upstream URL for Nginx `proxy_pass` at `location` or `subdomain`.";
       };
 
       proxyWebsockets = lib.mkOption {
         type = lib.types.bool;
         default = true;
         description = "Forward WebSocket upgrade headers when `proxyPass` is set.";
+      };
+
+      extraProxyConfig = lib.mkOption {
+        type = lib.types.lines;
+        default = "";
+        description = "Additional Nginx directives appended to the proxied location block.";
       };
 
       port = lib.mkOption {
@@ -1123,6 +1194,19 @@ in
       description = "Additional server names served by the portal virtual host.";
     };
 
+    domainSuffix = lib.mkOption {
+      type = lib.types.nonEmptyStr;
+      default = "${config.networking.hostName}.internal";
+      defaultText = lib.literalExpression ''"<hostName>.internal"'';
+      description = "Base domain suffix appended to `services.<name>.subdomain` virtual hosts.";
+    };
+
+    extraLocations = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = { };
+      description = "Additional Nginx location blocks attached to the default portal virtual host.";
+    };
+
     statusPort = lib.mkOption {
       type = lib.types.port;
       default = 18080;
@@ -1181,41 +1265,82 @@ in
   config = lib.mkMerge [
     # Default service cards when the matching repository services are enabled on the host.
     {
-      custom.services.portal.services = {
-        navidrome = lib.mkIf (config.custom.services.navidrome.enable or false) {
-          title = lib.mkDefault "Navidrome";
-          description = lib.mkDefault "Self-hosted music streaming server and Subsonic API";
-          category = lib.mkDefault "Media & Sync";
-          badge = lib.mkDefault "TCP ${toString (config.custom.services.navidrome.port or 4533)}";
-          icon = lib.mkDefault "music";
-          port = lib.mkDefault (config.custom.services.navidrome.port or 4533);
-          path = lib.mkDefault "/app/";
-          systemdUnit = lib.mkDefault "navidrome.service";
-          order = lib.mkDefault 10;
+      custom.services.portal = {
+        services = {
+          navidrome =
+            let
+              navCfg = config.custom.services.navidrome or { };
+              navPort = navCfg.port or 4533;
+              navProxied = (navCfg.reverseProxy.enable or false) && cfg.enable;
+            in
+            lib.mkIf (navCfg.enable or false) {
+              title = lib.mkDefault "Navidrome";
+              description = lib.mkDefault "Self-hosted music streaming server and Subsonic API";
+              category = lib.mkDefault "Media & Sync";
+              badge = lib.mkDefault (if navProxied then "HTTPS · Subsonic" else "TCP ${toString navPort}");
+              icon = lib.mkDefault "music";
+              subdomain = lib.mkIf navProxied (lib.mkDefault (navCfg.reverseProxy.subdomain or "music"));
+              proxyPass = lib.mkIf navProxied (lib.mkDefault "http://127.0.0.1:${toString navPort}");
+              extraProxyConfig = lib.mkIf navProxied (
+                lib.mkDefault ''
+                  proxy_buffering off;
+                  client_max_body_size 32M;
+                ''
+              );
+              port = lib.mkIf (!navProxied) (lib.mkDefault navPort);
+              path = lib.mkDefault "/app/";
+              systemdUnit = lib.mkDefault "navidrome.service";
+              order = lib.mkDefault 10;
+            };
+
+          syncthing = lib.mkIf (config.custom.services.syncthing.enable or false) {
+            title = lib.mkDefault "Syncthing";
+            description = lib.mkDefault "P2P folder sync; web GUI bound to loopback only";
+            category = lib.mkDefault "Media & Sync";
+            badge = lib.mkDefault "127.0.0.1:8384";
+            icon = lib.mkDefault "sync";
+            systemdUnit = lib.mkDefault "syncthing.service";
+            hintCommand = lib.mkDefault "ssh -N -L 8384:127.0.0.1:8384 ${user}@{host}";
+            order = lib.mkDefault 20;
+          };
+
+          harmonia = lib.mkIf (config.custom.services.buildServer.enable or false) {
+            title = lib.mkDefault "Harmonia Cache";
+            description = lib.mkDefault "Signed Nix binary cache serving pre-built host closures";
+            category = lib.mkDefault "Infrastructure";
+            badge = lib.mkDefault "TCP 5000";
+            icon = lib.mkDefault "package";
+            port = lib.mkDefault 5000;
+            path = lib.mkDefault "/nix-cache-info";
+            systemdUnit = lib.mkDefault "harmonia.service";
+            order = lib.mkDefault 30;
+          };
         };
 
-        syncthing = lib.mkIf (config.custom.services.syncthing.enable or false) {
-          title = lib.mkDefault "Syncthing";
-          description = lib.mkDefault "P2P folder sync; web GUI bound to loopback only";
-          category = lib.mkDefault "Media & Sync";
-          badge = lib.mkDefault "127.0.0.1:8384";
-          icon = lib.mkDefault "sync";
-          systemdUnit = lib.mkDefault "syncthing.service";
-          hintCommand = lib.mkDefault "ssh -N -L 8384:127.0.0.1:8384 ${user}@{host}";
-          order = lib.mkDefault 20;
-        };
-
-        harmonia = lib.mkIf (config.custom.services.buildServer.enable or false) {
-          title = lib.mkDefault "Harmonia Cache";
-          description = lib.mkDefault "Signed Nix binary cache serving pre-built host closures";
-          category = lib.mkDefault "Infrastructure";
-          badge = lib.mkDefault "TCP 5000";
-          icon = lib.mkDefault "package";
-          port = lib.mkDefault 5000;
-          path = lib.mkDefault "/nix-cache-info";
-          systemdUnit = lib.mkDefault "harmonia.service";
-          order = lib.mkDefault 30;
-        };
+        extraLocations =
+          let
+            navCfg = config.custom.services.navidrome or { };
+            navPort = navCfg.port or 4533;
+            enableMobileSubsonic =
+              cfg.enable
+              && (navCfg.enable or false)
+              && (navCfg.reverseProxy.enable or false)
+              && (navCfg.reverseProxy.mobileSubsonicPath or false);
+          in
+          lib.mkIf enableMobileSubsonic {
+            "/music/rest/" = {
+              proxyPass = "http://127.0.0.1:${toString navPort}/rest/";
+              extraConfig = ''
+                proxy_buffering off;
+              '';
+            };
+            "/music/share/" = {
+              proxyPass = "http://127.0.0.1:${toString navPort}/share/";
+              extraConfig = ''
+                proxy_buffering off;
+              '';
+            };
+          };
       };
     }
 
@@ -1234,18 +1359,31 @@ in
             s:
             let
               targets =
-                lib.optional (s.location != null) "location"
+                lib.optional (s.subdomain != null) "subdomain"
+                ++ lib.optional (s.location != null) "location"
                 ++ lib.optional (s.port != null) "port"
                 ++ lib.optional (s.url != null) "url";
             in
-            (s.proxyPass != null -> s.location != null) && builtins.length targets <= 1
+            (s.proxyPass != null -> (s.location != null || s.subdomain != null))
+            && (s.subdomain != null -> (s.proxyPass != null && validSubdomain s.subdomain))
+            && builtins.length targets <= 1
           ) (builtins.attrValues activeServices);
-          message = "custom.services.portal.services: each entry may set at most one of location, port, or url, and proxyPass requires location.";
+          message = "custom.services.portal.services: each entry may set at most one of subdomain, location, port, or url; subdomain must be a valid DNS label with proxyPass set.";
+        }
+        {
+          assertion = builtins.length allSubdomains == builtins.length (lib.unique allSubdomains);
+          message = "custom.services.portal.services: duplicate subdomain across active services.";
         }
         {
           assertion = lib.all (
             loc:
-            lib.hasPrefix "/" loc && !(lib.hasPrefix "/icons/" loc) && !(builtins.elem loc reservedLocations)
+            let
+              norm = lib.removePrefix "= " loc;
+            in
+            lib.hasPrefix "/" norm
+            && !(lib.hasPrefix "/icons/" norm)
+            && !(builtins.elem norm reservedLocations)
+            && !(builtins.elem loc reservedLocations)
           ) allProxyLocations;
           message = "custom.services.portal: proxied service/project locations must start with '/' and not collide with reserved portal paths.";
         }
@@ -1323,37 +1461,41 @@ in
         recommendedOptimisation = lib.mkDefault true;
         recommendedGzipSettings = lib.mkDefault true;
 
-        virtualHosts.${cfg.serverName} = {
-          default = true;
-          inherit (cfg) serverAliases;
-          forceSSL = cfg.tls.enable;
-          sslCertificate = lib.mkIf cfg.tls.enable tlsCertPath;
-          sslCertificateKey = lib.mkIf cfg.tls.enable tlsKeyPath;
-          root = "${webRoot}";
-          extraConfig = lib.optionalString cfg.tls.enable ''
-            ssl_stapling off;
-          '';
-          locations = {
-            "/" = {
-              index = "index.html";
-              tryFiles = "$uri $uri/ =404";
-              extraConfig = ''
-                add_header X-Content-Type-Options "nosniff" always;
-                add_header X-Frame-Options "DENY" always;
-                add_header Referrer-Policy "no-referrer" always;
-                add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self';" always;
-              '';
-            };
-            "= /api/status" = {
-              proxyPass = "http://127.0.0.1:${toString cfg.statusPort}/api/status";
-              extraConfig = ''
-                add_header X-Content-Type-Options "nosniff" always;
-              '';
-            };
-          }
-          // proxiedServiceLocations
-          // proxiedProjectLocations;
-        };
+        virtualHosts = {
+          ${cfg.serverName} = {
+            default = true;
+            inherit (cfg) serverAliases;
+            forceSSL = cfg.tls.enable;
+            sslCertificate = lib.mkIf cfg.tls.enable tlsCertPath;
+            sslCertificateKey = lib.mkIf cfg.tls.enable tlsKeyPath;
+            root = "${webRoot}";
+            extraConfig = lib.optionalString cfg.tls.enable ''
+              ssl_stapling off;
+            '';
+            locations = {
+              "/" = {
+                index = "index.html";
+                tryFiles = "$uri $uri/ =404";
+                extraConfig = ''
+                  add_header X-Content-Type-Options "nosniff" always;
+                  add_header X-Frame-Options "DENY" always;
+                  add_header Referrer-Policy "no-referrer" always;
+                  add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self';" always;
+                '';
+              };
+              "= /api/status" = {
+                proxyPass = "http://127.0.0.1:${toString cfg.statusPort}/api/status";
+                extraConfig = ''
+                  add_header X-Content-Type-Options "nosniff" always;
+                '';
+              };
+            }
+            // cfg.extraLocations
+            // proxiedServiceLocations
+            // proxiedProjectLocations;
+          };
+        }
+        // subdomainVirtualHosts;
       };
 
       systemd.services = {

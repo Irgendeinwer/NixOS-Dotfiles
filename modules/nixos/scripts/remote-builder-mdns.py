@@ -4,6 +4,7 @@ import fcntl
 import functools
 import ipaddress
 import os
+import re
 import socket
 import sys
 import tempfile
@@ -11,6 +12,15 @@ import time
 import traceback
 from contextlib import contextmanager
 from pathlib import Path
+
+HOSTNAME_RE = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,251}[A-Za-z0-9.])?$")
+
+
+def validate_hostname(name: str) -> str:
+    cleaned = name.strip().rstrip(".")
+    if not cleaned or cleaned.lower() == "localhost" or not HOSTNAME_RE.match(cleaned):
+        raise ValueError(f"invalid hostname: {name!r}")
+    return cleaned
 
 AVAHI_IF_UNSPEC = -1
 AVAHI_PROTO_INET = 0
@@ -58,8 +68,14 @@ class HostsFile:
         static_hosts=Path("/etc/static/hosts"),
         hosts=Path("/etc/hosts"),
         state_dir=Path("/run/remote-builder"),
+        aliases=(),
     ):
-        self.host = host
+        primary = validate_hostname(host)
+        seen = {primary: None}
+        for alias in aliases:
+            seen[validate_hostname(alias)] = None
+        self.host = primary
+        self.names = tuple(seen.keys())
         self.static_hosts = Path(static_hosts)
         self.hosts = Path(hosts)
         self.state_dir = Path(state_dir)
@@ -105,8 +121,9 @@ class HostsFile:
         base = self.static_hosts.read_text(encoding="utf-8")
         if base and not base.endswith("\n"):
             base += "\n"
+        names = " ".join(self.names)
         desired = (
-            f"{base}{ip} {self.host} # remote-builder-mdns\n"
+            f"{base}{ip} {names} # remote-builder-mdns\n"
             if ip is not None
             else base
         )
@@ -162,12 +179,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Keep one mDNS host in /etc/hosts")
     parser.add_argument("--host", required=True)
     parser.add_argument(
+        "--alias",
+        action="append",
+        default=[],
+        help="Additional hostname mapped to the same resolved IPv4 address",
+    )
+    parser.add_argument(
         "--restore", action="store_true", help="Restore cached state during activation"
     )
     parser.add_argument("--avahi-common", default="libavahi-common.so.3")
     parser.add_argument("--avahi-client", default="libavahi-client.so.3")
     args = parser.parse_args()
-    hosts = HostsFile(args.host)
+    hosts = HostsFile(args.host, aliases=args.alias)
     if args.restore:
         hosts.restore()
         return 0

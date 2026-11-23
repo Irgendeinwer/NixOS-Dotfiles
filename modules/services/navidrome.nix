@@ -5,6 +5,7 @@
 }:
 let
   cfg = config.custom.services.navidrome;
+  portalEnabled = config.custom.services.portal.enable or false;
   musicOwner = config.custom.services.syncthing.user or config.custom.user;
   musicUnderHome = cfg.musicFolder == "/home" || lib.hasPrefix "/home/" cfg.musicFolder;
   underSyncUserHome = lib.hasPrefix "/home/${musicOwner}/" cfg.musicFolder;
@@ -15,15 +16,46 @@ in
   options.custom.services.navidrome = {
     enable = lib.mkEnableOption "Navidrome music server";
 
+    reverseProxy = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = portalEnabled;
+        defaultText = lib.literalExpression "config.custom.services.portal.enable or false";
+        description = ''
+          Bind Navidrome to loopback (`127.0.0.1`) and expose it over HTTPS via
+          the portal's Nginx reverse proxy (`https://<subdomain>.<domainSuffix>`)
+          instead of opening raw TCP port 4533 on the network.
+        '';
+      };
+
+      subdomain = lib.mkOption {
+        type = lib.types.nonEmptyStr;
+        default = "music";
+        description = "Subdomain prefix under `custom.services.portal.domainSuffix` for the Navidrome virtual host.";
+      };
+
+      mobileSubsonicPath = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Also proxy `/music/rest/` and `/music/share/` on the default portal
+          vhost so mobile Subsonic clients (e.g. Symfonium over a raw Tailscale
+          IP without `/etc/hosts`) can connect to `https://<ip>/music`.
+        '';
+      };
+    };
+
     openFirewall = lib.mkOption {
       type = lib.types.bool;
-      default = true;
+      default = !cfg.reverseProxy.enable;
+      defaultText = lib.literalExpression "!config.custom.services.navidrome.reverseProxy.enable";
       description = "Open the Navidrome HTTP port in the firewall.";
     };
 
     host = lib.mkOption {
       type = lib.types.nonEmptyStr;
-      default = "0.0.0.0";
+      default = if cfg.reverseProxy.enable then "127.0.0.1" else "0.0.0.0";
+      defaultText = lib.literalExpression ''if reverseProxy.enable then "127.0.0.1" else "0.0.0.0"'';
       description = "Address for Navidrome to listen on.";
     };
 

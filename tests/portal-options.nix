@@ -142,10 +142,39 @@ let
     };
   };
 
+  duplicateSubdomain = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      services = {
+        one = {
+          title = "One";
+          subdomain = "dup";
+          proxyPass = "http://127.0.0.1:19001";
+        };
+        two = {
+          title = "Two";
+          subdomain = "dup";
+          proxyPass = "http://127.0.0.1:19002";
+        };
+      };
+    };
+  };
+
+  subdomainWithoutProxy = evalPortal {
+    custom.services.portal = {
+      enable = true;
+      services.badsub = {
+        title = "BadSub";
+        subdomain = "bad";
+      };
+    };
+  };
+
   hasFailedAssertion =
     prefix: cfg: lib.any (a: !a.assertion && lib.hasPrefix prefix a.message) cfg.assertions;
 
   vhost = httpsSops.services.nginx.virtualHosts.junixsrv;
+  musicVhost = httpsSops.services.nginx.virtualHosts."music.junixsrv.internal";
   studySvc = httpsSops.systemd.services.portal-project-study-tracker;
   httpVhost = httpOnly.services.nginx.virtualHosts.junixsrv;
   serverHost = self.nixosConfigurations.junixsrv.config;
@@ -167,10 +196,16 @@ assert httpsSops.sops.secrets.portal_tls_cert.mode == "0400";
 assert builtins.elem "nginx.service" httpsSops.sops.secrets.portal_tls_cert.reloadUnits;
 assert vhost.locations."= /api/status".proxyPass == "http://127.0.0.1:18080/api/status";
 assert vhost.locations."/study-tracker/".proxyPass == "http://127.0.0.1:18090/";
+assert vhost.locations."/music/rest/".proxyPass == "http://127.0.0.1:4533/rest/";
+assert vhost.locations."/music/share/".proxyPass == "http://127.0.0.1:4533/share/";
 assert lib.hasInfix "Content-Security-Policy" vhost.locations."/".extraConfig;
 assert !(lib.hasInfix "Content-Security-Policy" vhost.extraConfig);
-assert httpsSops.custom.services.portal.services.navidrome.port == 4533;
+assert httpsSops.custom.services.portal.services.navidrome.port == null;
+assert httpsSops.custom.services.portal.services.navidrome.subdomain == "music";
+assert httpsSops.custom.services.portal.services.navidrome.proxyPass == "http://127.0.0.1:4533";
 assert httpsSops.custom.services.portal.services.navidrome.path == "/app/";
+assert musicVhost.forceSSL;
+assert musicVhost.locations."/".proxyPass == "http://127.0.0.1:4533";
 # Syncthing stays internal-only (unexposed on Nginx and direct ports).
 assert httpsSops.custom.services.portal.services.syncthing.port == null;
 assert httpsSops.custom.services.portal.services.syncthing.location == null;
@@ -202,11 +237,14 @@ assert hasFailedAssertion "custom.services.portal.projects:" portCollision;
 assert hasFailedAssertion "custom.services.portal.projects:" stripPrefixNoSlash;
 assert hasFailedAssertion "custom.services.portal.projects:" unmanagedPortDup;
 assert hasFailedAssertion "custom.services.portal.services:" multiTargetService;
+assert hasFailedAssertion "custom.services.portal.services:" duplicateSubdomain;
+assert hasFailedAssertion "custom.services.portal.services:" subdomainWithoutProxy;
 assert serverHost.services.nginx.enable;
 assert serverVhost.forceSSL;
 assert builtins.elem 80 serverHost.networking.firewall.allowedTCPPorts;
 assert builtins.elem 443 serverHost.networking.firewall.allowedTCPPorts;
-assert serverHost.custom.services.portal.services.navidrome.port == 4533;
+assert serverHost.custom.services.portal.services.navidrome.subdomain == "music";
+assert serverHost.custom.services.portal.services.navidrome.proxyPass == "http://127.0.0.1:4533";
 assert serverHost.custom.services.portal.services.harmonia.port == 5000;
 assert serverHost.custom.services.portal.services.syncthing.port == null;
 assert serverHost.custom.services.portal.services.syncthing.location == null;
@@ -217,6 +255,8 @@ pkgs.runCommand "portal-host-options" { } ''
   test -f ${serverVhost.root}/portal-config.json
   test -f ${serverVhost.root}/favicon.svg
   test -f ${serverVhost.root}/icons/music.svg
+  test -f ${serverVhost.root}/icons/tasks.svg
+  test -f ${serverVhost.root}/icons/calendar.svg
   test -f ${serverVhost.root}/icons/sync.svg
   test -f ${serverVhost.root}/icons/package.svg
   test -f ${serverVhost.root}/icons/code.svg
