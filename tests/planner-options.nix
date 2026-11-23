@@ -92,8 +92,13 @@ let
   laptopHome = laptopHost.home-manager.users.${laptopHost.custom.user};
   desktopDaemonUnit = desktopHome.systemd.user.services.junix-plan-daemon.Unit;
   desktopPlanSource = "${desktopHome.xdg.configFile."junix-plan/config.json".source}";
-  desktopPlanJson = builtins.fromJSON desktopHome.xdg.configFile."junix-plan/config.json".text;
-  laptopPlanJson = builtins.fromJSON laptopHome.xdg.configFile."junix-plan/config.json".text;
+  readPlanJson =
+    home:
+    builtins.fromJSON (
+      builtins.unsafeDiscardStringContext home.xdg.configFile."junix-plan/config.json".text
+    );
+  desktopPlanJson = readPlanJson desktopHome;
+  laptopPlanJson = readPlanJson laptopHome;
 in
 assert !disabled.services.vikunja.enable;
 assert !disabled.services.radicale.enable;
