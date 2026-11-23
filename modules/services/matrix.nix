@@ -17,6 +17,27 @@ let
   wellKnownClientJson = builtins.toJSON {
     "m.homeserver".base_url = publicBaseUrl;
   };
+
+  matrixExtraLocations = {
+    "= /.well-known/matrix/client".extraConfig = ''
+      default_type application/json;
+      add_header Access-Control-Allow-Origin "*" always;
+      add_header Cache-Control "public, max-age=3600" always;
+      return 200 '${wellKnownClientJson}';
+    '';
+  }
+  // lib.optionalAttrs cfg.mobileMatrixPath {
+    "/_matrix/" = {
+      proxyPass = "http://127.0.0.1:${toString cfg.port}/_matrix/";
+      proxyWebsockets = true;
+      extraConfig = ''
+        client_max_body_size 64M;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_buffering off;
+      '';
+    };
+  };
 in
 {
   options.custom.services.matrix = {
@@ -100,30 +121,7 @@ in
           order = lib.mkDefault 18;
         };
 
-        extraLocations = lib.mkIf (portalEnabled && cfg.enable) (
-          {
-            "= /.well-known/matrix/client" = {
-              extraConfig = ''
-                default_type application/json;
-                add_header Access-Control-Allow-Origin "*" always;
-                add_header Cache-Control "public, max-age=3600" always;
-                return 200 '${wellKnownClientJson}';
-              '';
-            };
-          }
-          // lib.optionalAttrs cfg.mobileMatrixPath {
-            "/_matrix/" = {
-              proxyPass = "http://127.0.0.1:${toString cfg.port}/_matrix/";
-              proxyWebsockets = true;
-              extraConfig = ''
-                client_max_body_size 64M;
-                proxy_read_timeout 600s;
-                proxy_send_timeout 600s;
-                proxy_buffering off;
-              '';
-            };
-          }
-        );
+        extraLocations = lib.mkIf (portalEnabled && cfg.enable) matrixExtraLocations;
       };
     }
 

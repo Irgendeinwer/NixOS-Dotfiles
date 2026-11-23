@@ -242,13 +242,9 @@
           sopsModule = inputs.sops-nix.nixosModules.sops;
         };
         hermes-options = import ./tests/hermes-options.nix {
-          inherit
-            inputs
-            nixpkgs
-            pkgs
-            self
-            ;
+          inherit nixpkgs pkgs self;
           sopsModule = inputs.sops-nix.nixosModules.sops;
+          hermesModule = inputs.hermes-agent.nixosModules.default;
         };
         standalone-home = import ./tests/standalone-home.nix { inherit inputs pkgs; };
         theme-options = import ./tests/theme-options.nix { inherit nixpkgs pkgs self; };

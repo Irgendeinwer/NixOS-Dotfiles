@@ -84,6 +84,24 @@ let
     lib.optional (litellmCfg.enable or false) "litellm.service"
     ++ lib.optional cfg.searx.enable "searx.service"
     ++ lib.optional (cfg.matrix.enable && localMatrixEnabled) "continuwuity.service";
+
+  enableMdns = cfg.ssh.enable && lib.hasSuffix ".local" cfg.ssh.host;
+  searxTunnelCmd =
+    "ssh -N -L ${toString cfg.searx.port}:127.0.0.1:${toString cfg.searx.port} "
+    + "${primaryUser}@{host}";
+  sshEnvironmentHint =
+    "Terminal commands run over SSH inside hermes-box (Ubuntu 26.04.1 LTS resolute, "
+    + "cwd ${cfg.ssh.remoteCwd}) with passwordless sudo apt, uv, pip, npm, and git.";
+  sshKeygenPreStart = lib.mkBefore ''
+    install -d -m 0700 "${stateDir}/.ssh"
+    if [ ! -s "${defaultSshKeyPath}" ]; then
+      ${pkgs.openssh}/bin/ssh-keygen -q -t ed25519 -N "" \
+        -C "hermes@${config.networking.hostName}" \
+        -f "${defaultSshKeyPath}"
+    fi
+    chmod 0600 "${defaultSshKeyPath}"
+    chmod 0644 "${defaultSshKeyPath}.pub"
+  '';
 in
 {
   imports = lib.optional hasUpstreamModule inputs.hermes-agent.nixosModules.default;
@@ -303,10 +321,7 @@ in
           badge = lib.mkDefault "127.0.0.1:${toString cfg.searx.port}";
           icon = lib.mkDefault "globe";
           systemdUnit = lib.mkDefault "searx.service";
-          hintCommand = lib.mkDefault (
-            "ssh -N -L ${toString cfg.searx.port}:127.0.0.1:${toString cfg.searx.port} "
-            + "${primaryUser}@{host}"
-          );
+          hintCommand = lib.mkDefault searxTunnelCmd;
           order = lib.mkDefault 36;
         };
 
@@ -374,9 +389,7 @@ in
     (lib.mkIf (cfg.enable && hasUpstreamModule) {
       users.users.${primaryUser}.extraGroups = [ "hermes" ];
 
-      services.avahi.nssmdns4 = lib.mkIf (cfg.ssh.enable && lib.hasSuffix ".local" cfg.ssh.host) (
-        lib.mkDefault true
-      );
+      services.avahi.nssmdns4 = lib.mkIf enableMdns (lib.mkDefault true);
 
       sops.secrets =
         lib.optionalAttrs useSopsHermesEnv {
@@ -403,18 +416,7 @@ in
       systemd.services.hermes-agent = {
         after = afterUnits;
         wants = afterUnits;
-        preStart = lib.mkIf (cfg.ssh.enable && cfg.ssh.privateKeyFile == null) (
-          lib.mkBefore ''
-            install -d -m 0700 "${stateDir}/.ssh"
-            if [ ! -s "${defaultSshKeyPath}" ]; then
-              ${pkgs.openssh}/bin/ssh-keygen -q -t ed25519 -N "" \
-                -C "hermes@${config.networking.hostName}" \
-                -f "${defaultSshKeyPath}"
-            fi
-            chmod 0600 "${defaultSshKeyPath}"
-            chmod 0644 "${defaultSshKeyPath}.pub"
-          ''
-        );
+        preStart = lib.mkIf (cfg.ssh.enable && cfg.ssh.privateKeyFile == null) sshKeygenPreStart;
         serviceConfig = {
           MemoryHigh = "2G";
           MemoryMax = "3G";
@@ -422,88 +424,83 @@ in
       };
     })
 
-    (lib.optionalAttrs hasUpstreamModule (
-      lib.mkIf cfg.enable {
-        services.hermes-agent = {
-          enable = true;
-          inherit (cfg) package;
-          inherit stateDir;
-          addToSystemPackages = lib.mkDefault true;
-          extraPackages = [ pkgs.openssh ];
+    (lib.optionalAttrs hasUpstreamModule {
+      services.hermes-agent = lib.mkIf cfg.enable {
+        enable = true;
+        inherit (cfg) package;
+        inherit stateDir;
+        addToSystemPackages = lib.mkDefault true;
+        extraPackages = [ pkgs.openssh ];
 
-          environment =
-            lib.optionalAttrs cfg.searx.enable {
-              SEARXNG_URL = "http://127.0.0.1:${toString cfg.searx.port}";
-            }
-            // lib.optionalAttrs cfg.matrix.enable {
-              MATRIX_HOMESERVER = cfg.matrix.homeserverUrl;
-              MATRIX_USER_ID = "@${cfg.matrix.botLocalpart}:${matrixServerName}";
-              MATRIX_ALLOWED_USERS = lib.concatStringsSep "," cfg.matrix.allowedUsers;
-              MATRIX_DEVICE_ID = cfg.matrix.deviceId;
-              MATRIX_AUTO_THREAD = lib.boolToString cfg.matrix.autoThread;
-              MATRIX_DM_AUTO_THREAD = lib.boolToString cfg.matrix.dmAutoThread;
-            };
-
-          environmentFiles =
-            lib.optional tavilyEnabled config.sops.templates."hermes-ai-env".path
-            ++ lib.optional (hermesEnvPath != null) hermesEnvPath;
-
-          settings = {
-            providers.litellm = {
-              api = cfg.llm.baseUrl;
-              transport = "chat_completions";
-              session_affinity_header = "x-litellm-session-id";
-              models = {
-                ${cfg.llm.primaryModel} = modelMeta;
-                ${cfg.llm.fallbackModel} = modelMeta;
-                ${cfg.llm.auxiliaryModel} = modelMeta;
-              };
-            };
-
-            model = {
-              provider = "custom:litellm";
-              default = cfg.llm.primaryModel;
-              base_url = cfg.llm.baseUrl;
-              context_length = cfg.llm.contextLength;
-              supports_vision = true;
-            };
-
-            fallback_providers = [
-              {
-                provider = "custom:litellm";
-                model = cfg.llm.fallbackModel;
-                base_url = cfg.llm.baseUrl;
-              }
-            ];
-
-            auxiliary = auxiliaryConfig;
-
-            web = {
-              search_backend = if cfg.searx.enable then "searxng" else "";
-              extract_backend = if tavilyEnabled then "tavily" else "";
-              keyless_fallback = true;
-              keyless_rescue = true;
-            };
-
-            terminal = {
-              backend = if cfg.ssh.enable then "ssh" else "local";
-              ssh_host = cfg.ssh.host;
-              ssh_user = cfg.ssh.user;
-              ssh_port = cfg.ssh.port;
-              ssh_key = sshKeyPath;
-              ssh_persistent = true;
-              persistent_shell = true;
-              cwd = if cfg.ssh.enable then cfg.ssh.remoteCwd else "${stateDir}/workspace";
-              inherit (cfg.ssh) timeout;
-            };
-
-            agent.environment_hint = lib.mkIf cfg.ssh.enable (
-              "Terminal commands run over SSH inside hermes-box (Ubuntu 26.04.1 LTS resolute, "
-              + "cwd ${cfg.ssh.remoteCwd}) with passwordless sudo apt, uv, pip, npm, and git."
-            );
+        environment =
+          lib.optionalAttrs cfg.searx.enable {
+            SEARXNG_URL = "http://127.0.0.1:${toString cfg.searx.port}";
+          }
+          // lib.optionalAttrs cfg.matrix.enable {
+            MATRIX_HOMESERVER = cfg.matrix.homeserverUrl;
+            MATRIX_USER_ID = "@${cfg.matrix.botLocalpart}:${matrixServerName}";
+            MATRIX_ALLOWED_USERS = lib.concatStringsSep "," cfg.matrix.allowedUsers;
+            MATRIX_DEVICE_ID = cfg.matrix.deviceId;
+            MATRIX_AUTO_THREAD = lib.boolToString cfg.matrix.autoThread;
+            MATRIX_DM_AUTO_THREAD = lib.boolToString cfg.matrix.dmAutoThread;
           };
+
+        environmentFiles =
+          lib.optional tavilyEnabled config.sops.templates."hermes-ai-env".path
+          ++ lib.optional (hermesEnvPath != null) hermesEnvPath;
+
+        settings = {
+          providers.litellm = {
+            api = cfg.llm.baseUrl;
+            transport = "chat_completions";
+            session_affinity_header = "x-litellm-session-id";
+            models = {
+              ${cfg.llm.primaryModel} = modelMeta;
+              ${cfg.llm.fallbackModel} = modelMeta;
+              ${cfg.llm.auxiliaryModel} = modelMeta;
+            };
+          };
+
+          model = {
+            provider = "custom:litellm";
+            default = cfg.llm.primaryModel;
+            base_url = cfg.llm.baseUrl;
+            context_length = cfg.llm.contextLength;
+            supports_vision = true;
+          };
+
+          fallback_providers = [
+            {
+              provider = "custom:litellm";
+              model = cfg.llm.fallbackModel;
+              base_url = cfg.llm.baseUrl;
+            }
+          ];
+
+          auxiliary = auxiliaryConfig;
+
+          web = {
+            search_backend = if cfg.searx.enable then "searxng" else "";
+            extract_backend = if tavilyEnabled then "tavily" else "";
+            keyless_fallback = true;
+            keyless_rescue = true;
+          };
+
+          terminal = {
+            backend = if cfg.ssh.enable then "ssh" else "local";
+            ssh_host = cfg.ssh.host;
+            ssh_user = cfg.ssh.user;
+            ssh_port = cfg.ssh.port;
+            ssh_key = sshKeyPath;
+            ssh_persistent = true;
+            persistent_shell = true;
+            cwd = if cfg.ssh.enable then cfg.ssh.remoteCwd else "${stateDir}/workspace";
+            inherit (cfg.ssh) timeout;
+          };
+
+          agent.environment_hint = lib.mkIf cfg.ssh.enable sshEnvironmentHint;
         };
-      }
-    ))
+      };
+    })
   ];
 }

@@ -42,11 +42,9 @@ let
       ];
     }).config;
 
-  mockHermesInput = {
-    hermes-agent = {
-      nixosModules.default = hermesModule;
-      packages.${system}.minimal = lib.makeOverridable (_: pkgs.hello) { };
-    };
+  mockHermesInput.hermes-agent = {
+    nixosModules.default = hermesModule;
+    packages.${system}.minimal = lib.makeOverridable (_: pkgs.hello) { };
   };
 
   evalHermes = evalHermesWithInputs mockHermesInput;
@@ -119,12 +117,10 @@ let
   desktopHost = self.nixosConfigurations.junixos.config;
   laptopHost = self.nixosConfigurations.junixbook.config;
 in
-# Disabled baseline
 assert !disabled.services.matrix-continuwuity.enable;
 assert !disabled.services.searx.enable;
 assert !disabled.services.hermes-agent.enable;
 assert noFailedAssertions disabled;
-
 # Enabled container stack: Matrix (Continuwuity) + Portal + .well-known
 assert noFailedAssertions enabledContainer;
 assert enabledContainer.services.matrix-continuwuity.enable;
@@ -144,7 +140,6 @@ assert matrixVhost.locations."/".proxyPass == "http://127.0.0.1:6167";
 assert defaultVhost.locations ? "= /.well-known/matrix/client";
 assert defaultVhost.locations ? "/_matrix/";
 assert defaultVhost.locations."/_matrix/".proxyPass == "http://127.0.0.1:6167/_matrix/";
-
 # Enabled container stack: SearXNG loopback JSON search
 assert enabledContainer.services.searx.enable;
 assert !enabledContainer.services.searx.configureUwsgi;
@@ -155,7 +150,6 @@ assert builtins.elem "json" enabledContainer.services.searx.settings.search.form
 assert !enabledContainer.systemd.services.searx.serviceConfig.DynamicUser;
 assert !enabledContainer.systemd.services.searx.serviceConfig.PrivateUsers;
 assert enabledContainer.systemd.services.searx.serviceConfig.ProtectProc == "default";
-
 # Enabled container stack: Hermes Agent + LiteLLM + Quota Aux + SSH Sandbox + SOPS
 assert enabledContainer.services.hermes-agent.enable;
 assert builtins.elem "hermes" enabledContainer.users.users.julian.extraGroups;
@@ -190,7 +184,6 @@ assert hermesSettings.terminal.cwd == "/home/hermes/workspace";
 assert enabledContainer.systemd.services.hermes-agent.serviceConfig.MemoryMax == "3G";
 assert !(builtins.elem 6167 enabledContainer.networking.firewall.allowedTCPPorts);
 assert !(builtins.elem 8888 enabledContainer.networking.firewall.allowedTCPPorts);
-
 # Explicit env file + local backend fallback
 assert noFailedAssertions explicitEnvAndLocal;
 assert !(explicitEnvAndLocal.sops.secrets ? hermes_env);
@@ -198,12 +191,10 @@ assert explicitEnvAndLocal.services.hermes-agent.settings.terminal.backend == "l
 assert
   explicitEnvAndLocal.services.hermes-agent.environment.MATRIX_HOMESERVER
   == "https://matrix.junixsrv.internal";
-
 # Guard assertions
 assert hasFailedAssertion "custom.services.hermes:" missingUpstream;
 assert hasFailedAssertion "custom.services.hermes.matrix:" emptyAllowedUsers;
 assert hasFailedAssertion "custom.services.matrix:" openRegistrationNoToken;
-
 # Real host wiring across junixsrv, junixos, and junixbook
 assert serverHost.custom.services.matrix.enable;
 assert serverHost.custom.services.hermes.enable;
@@ -216,7 +207,6 @@ assert serverHost.custom.services.portal.services.searxng.badge == "127.0.0.1:88
 assert
   builtins.elem "matrix.junixsrv.internal" desktopHost.custom.system.remoteBuilder.extraHostAliases;
 assert laptopHost.custom.services.tailscale.peers."matrix.junixsrv.internal" == "100.110.103.47";
-
 pkgs.runCommand "hermes-options"
   {
     nativeBuildInputs = [
