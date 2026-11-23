@@ -212,6 +212,12 @@ assert serverHost.services.matrix-continuwuity.enable;
 assert serverHost.services.searx.enable;
 assert serverHost.services.hermes-agent.enable;
 assert serverHost.sops.secrets ? hermes_env;
+assert lib.all (
+  dep:
+  (dep.pname or "") != "patchelf"
+  || lib.versionAtLeast (dep.version or "0") "0.18"
+  || dep.drvPath == pkgs.patchelf.drvPath
+) (serverHost.custom.services.hermes.package.hermesNpmLib.pnpm.nativeBuildInputs or [ ]);
 assert serverHost.custom.services.portal.services.matrix.subdomain == "matrix";
 assert serverHost.custom.services.portal.services.hermes.icon == "bot";
 assert serverHost.custom.services.portal.services.searxng.badge == "127.0.0.1:8888";

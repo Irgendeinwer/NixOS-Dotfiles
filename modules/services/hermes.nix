@@ -44,11 +44,40 @@ let
     else
       null;
 
+  # NousResearch/hermes-agent's nix/pm-packages.nix unconditionally applies a
+  # NixOS/patchelf#674 patch targeting patchelf 0.19.2, which fails on 0.15.2
+  # after nixpkgs reverted 0.19.2 (NixOS/nixpkgs#577387).
+  pmPackagesFile =
+    if hasUpstreamModule && inputs.hermes-agent ? outPath then
+      "${inputs.hermes-agent}/nix/pm-packages.nix"
+    else
+      null;
+  needsPatchelfWorkaround =
+    lib.versionAtLeast pkgs.patchelf.version "0.18" && lib.versionOlder pkgs.patchelf.version "0.19.3";
+  pmPackagesOverride =
+    lib.optionalAttrs (pmPackagesFile != null && builtins.pathExists pmPackagesFile)
+      {
+        pmPackages = lib.filterAttrs (_: lib.isDerivation) (
+          pkgs.callPackage pmPackagesFile (
+            lib.optionalAttrs
+              (!needsPatchelfWorkaround && (builtins.functionArgs (import pmPackagesFile)) ? patchelf)
+              {
+                patchelf = pkgs.patchelf // {
+                  overrideAttrs = _: pkgs.patchelf;
+                };
+              }
+          )
+        );
+      };
+
   defaultPackage =
     if hasUpstreamModule then
-      inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.minimal.override {
-        extraDependencyGroups = [ "matrix" ];
-      }
+      inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.minimal.override (
+        {
+          extraDependencyGroups = [ "matrix" ];
+        }
+        // pmPackagesOverride
+      )
     else
       pkgs.emptyDirectory;
 
