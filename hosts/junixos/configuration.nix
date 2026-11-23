@@ -103,6 +103,8 @@
         extraHostAliases = [
           "junixsrv.internal"
           "music.junixsrv.internal"
+          "tasks.junixsrv.internal"
+          "cal.junixsrv.internal"
         ];
       };
     };
@@ -153,6 +155,7 @@
       browsers.enable = true;
       messaging.enable = true;
       media.enable = true;
+      planner.enable = true;
       flexing.enable = true;
       office.enable = true;
     };

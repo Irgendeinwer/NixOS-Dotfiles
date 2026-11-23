@@ -245,6 +245,8 @@ assert builtins.elem 80 serverHost.networking.firewall.allowedTCPPorts;
 assert builtins.elem 443 serverHost.networking.firewall.allowedTCPPorts;
 assert serverHost.custom.services.portal.services.navidrome.subdomain == "music";
 assert serverHost.custom.services.portal.services.navidrome.proxyPass == "http://127.0.0.1:4533";
+assert serverHost.custom.services.portal.services.vikunja.subdomain == "tasks";
+assert serverHost.custom.services.portal.services.radicale.subdomain == "cal";
 assert serverHost.custom.services.portal.services.harmonia.port == 5000;
 assert serverHost.custom.services.portal.services.syncthing.port == null;
 assert serverHost.custom.services.portal.services.syncthing.location == null;

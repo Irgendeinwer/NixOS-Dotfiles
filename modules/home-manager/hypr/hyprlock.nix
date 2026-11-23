@@ -10,6 +10,11 @@ let
   # Same gate as hyprland.nix: skip when another compositor is in use
   hyprlandEnabled =
     if osConfig != null then (osConfig.custom.desktop.hyprland.enable or false) else true;
+  plannerEnabled =
+    if osConfig != null then
+      (osConfig.custom.desktop.planner.enable or false)
+    else
+      (config.custom.desktop.planner.enable or true);
   p = config.custom.theme.palette;
   inherit (import ../../theme/lib.nix { inherit lib; }) hex rgb rgba;
 
@@ -196,6 +201,17 @@ let
     fi
   '';
 
+  # Top-Center: Planner Agenda Pill (<0.5ms tmpfs read, updated by junix-plan-daemon)
+  topAgendaScript = pkgs.writeShellScript "hyprlock-agenda" ''
+    CACHE_DIR="''${XDG_RUNTIME_DIR:-/run/user/$(${pkgs.coreutils}/bin/id -u)}"
+    STATUS_FILE="$CACHE_DIR/junix-plan-lock.txt"
+    if [ -s "$STATUS_FILE" ]; then
+      ${pkgs.coreutils}/bin/head -n 1 "$STATUS_FILE"
+    else
+      echo "󰄬  Clear schedule"
+    fi
+  '';
+
   # Instant Caps Lock status
   capsLockScript = pkgs.writeShellScript "hyprlock-capslock" ''
     if ${pkgs.gnugrep}/bin/grep -q 1 /sys/class/leds/*capslock*/brightness 2>/dev/null; then
@@ -264,7 +280,23 @@ lib.mkIf hyprlandEnabled {
           halign = "right";
           valign = "top";
         }
+      ]
+      ++ lib.optional plannerEnabled {
+        # Top-Center: Day Engine Agenda Pill (fits between Top-Left 272px and Top-Right 240px on 1280px+)
+        monitor = "";
+        size = "620, 44";
+        color = rgba p.bg_dim "0.82";
+        rounding = 12;
+        border_size = 1;
+        border_color = rgba p.accent "0.45";
+        shadow_passes = 0;
+        zindex = 0;
 
+        position = "0, -40";
+        halign = "center";
+        valign = "top";
+      }
+      ++ [
         # Bottom-Left: Media Hub (420px width)
         {
           monitor = "";
@@ -353,7 +385,23 @@ lib.mkIf hyprlandEnabled {
           halign = "right";
           valign = "top";
         }
+      ]
+      ++ lib.optional plannerEnabled {
+        # --- TOP-CENTER AGENDA CARD ---
+        monitor = "";
+        text = "cmd[update:15000] ${topAgendaScript}";
+        text_align = "center";
+        color = rgb p.fg0;
+        font_size = 12;
+        font_family = "Fira Code Nerd Font Bold";
+        shadow_passes = 0;
+        zindex = 1;
 
+        position = "0, -53";
+        halign = "center";
+        valign = "top";
+      }
+      ++ [
         # --- CENTER HERO: CLOCK & DATE ---
         {
           monitor = "";

@@ -27,6 +27,10 @@ assert home.gtk.enable && home.qt.enable && home.programs.kitty.enable;
 assert home.programs.rofi.enable && home.services.mako.enable;
 assert home.wayland.windowManager.hyprland.enable;
 assert lib.hasInfix ''output = ""'' home.wayland.windowManager.hyprland.extraConfig;
+assert lib.hasInfix "rofi --capture" home.wayland.windowManager.hyprland.extraConfig;
+assert lib.hasInfix "pulse" home.wayland.windowManager.hyprland.extraConfig;
+assert home.xdg.configFile ? "junix-plan/config.json";
+assert home.systemd.user.services ? junix-plan-daemon;
 assert home.programs.zen-browser.enable && home.programs.zen-browser.profiles == { };
 assert builtins.length home.custom.theme.palette.ansi == 16;
 assert lib.hasInfix "/calm/" (

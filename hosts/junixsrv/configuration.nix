@@ -45,6 +45,9 @@
       };
       syncthing.enable = true;
       navidrome.enable = true;
+      # Requires `vikunja_env` and `radicale_htpasswd` in secrets/junixsrv.yaml;
+      # see docs/planner.md.
+      planner.enable = true;
       # HTTPS landing page (:443, redirecting :80); see docs/portal.md.
       portal.enable = true;
       buildServer = {

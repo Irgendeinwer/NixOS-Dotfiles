@@ -74,5 +74,6 @@ Evaluating the flake needs SSH access to the private `wallpaper` and
 - [Application data](docs/zen-browser.md) — Zen profile adoption and backups.
 - [Tailscale](docs/tailscale.md) — private access to `junixsrv` on the LAN and remotely.
 - [Server portal & PKI](docs/portal.md) — HTTPS overview dashboard, custom scripts and private Root CA.
+- [Planner & Day Engine](docs/planner.md) — Vikunja, Radicale CalDAV and barless Hyprland planner HUD.
 - [Recovery](docs/recovery.md) — reinstall and recovery steps.
 - [Agent guide](AGENTS.md) — repository-specific guidance for coding agents.

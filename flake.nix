@@ -197,6 +197,12 @@
           mkdir -p "$out"
         '';
 
+        plan-engine = pkgs.runCommand "plan-engine-tests" { nativeBuildInputs = [ pkgs.python3 ]; } ''
+          export JUNIX_PLAN_HELPER=${./pkgs/scripts/plan.py}
+          python3 -B ${./tests/plan.py}
+          mkdir -p "$out"
+        '';
+
         container-options = import ./tests/container-options.nix {
           inherit nixpkgs pkgs system;
         };
@@ -219,6 +225,10 @@
         syncthing-options = import ./tests/syncthing-options.nix { inherit nixpkgs pkgs self; };
         navidrome-options = import ./tests/navidrome-options.nix { inherit nixpkgs pkgs self; };
         portal-options = import ./tests/portal-options.nix {
+          inherit nixpkgs pkgs self;
+          sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+        planner-options = import ./tests/planner-options.nix {
           inherit nixpkgs pkgs self;
           sopsModule = inputs.sops-nix.nixosModules.sops;
         };

@@ -149,6 +149,8 @@ assert laptopHost.custom.system.remoteBuilder.host == "junixsrv.local";
 assert laptopHost.custom.system.remoteBuilder.tailscaleHost == "junixsrv.internal";
 assert builtins.elem "junixsrv.internal" laptopHost.networking.hosts."100.110.103.47";
 assert builtins.elem "music.junixsrv.internal" laptopHost.networking.hosts."100.110.103.47";
+assert builtins.elem "tasks.junixsrv.internal" laptopHost.networking.hosts."100.110.103.47";
+assert builtins.elem "cal.junixsrv.internal" laptopHost.networking.hosts."100.110.103.47";
 assert builtins.elem "junixsrv.internal" laptopKnownHosts;
 assert builtins.elem "100.110.103.47" laptopKnownHosts;
 assert builtins.elem "http://junixsrv.internal:5000?priority=50" laptopSubstituters;

@@ -16,6 +16,12 @@ let
   messagingEnabled =
     if osConfig != null then (osConfig.custom.desktop.messaging.enable or false) else true;
   soundEnabled = if osConfig != null then (osConfig.custom.desktop.sound.enable or false) else true;
+  plannerEnabled =
+    if osConfig != null then
+      (osConfig.custom.desktop.planner.enable or false)
+    else
+      (config.custom.desktop.planner.enable or true);
+  scripts = pkgs.custom or (import ../../../pkgs/scripts { inherit lib pkgs; });
   # Frosted desktop layers, opt-in per host (the laptop skips the cost)
   layerBlur =
     if osConfig != null then (osConfig.custom.desktop.hyprland.layerBlur or false) else false;
@@ -42,6 +48,12 @@ let
   wlCopy = "${pkgs.wl-clipboard}/bin/wl-copy";
   notifySend = "${pkgs.libnotify}/bin/notify-send";
   hyprshot = "${pkgs.hyprshot}/bin/hyprshot";
+  planBin = "${scripts.plan}/bin/plan";
+  timePulseCmd =
+    if plannerEnabled then
+      ''"${planBin} pulse"''
+    else
+      ''[[${notifySend} -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"]]'';
 
   # Power menu (shellchecked at build time by writeShellApplication)
   powerMenu = lib.getExe (
@@ -314,6 +326,10 @@ lib.mkIf hyprlandEnabled {
       -- App shortcuts
       hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd("${kitty}"))
       hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("${rofi} -show drun -show-icons"))
+      ${lib.optionalString plannerEnabled ''
+        hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("${planBin} rofi"))
+        hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("${planBin} rofi --capture"))
+      ''}
       hl.bind(mainMod .. " + D", hl.dsp.window.close())
       hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("${powerMenu}"))
       hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd("loginctl lock-session"))
@@ -331,7 +347,7 @@ lib.mkIf hyprlandEnabled {
       -- Utilities
       hl.bind("PRINT", hl.dsp.exec_cmd("${hyprshot} -m region --freeze -o ${config.programs.hyprshot.saveLocation}"))
       hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("${cliphist} list | ${rofi} -dmenu -theme-str 'window { width: 760px; height: 470px; } listview { columns: 1; lines: 10; fixed-height: false; } element { orientation: horizontal; children: [ element-text ]; padding: 10px 14px; } element-text { horizontal-align: 0.0; margin: 0px; }' | ${cliphist} decode | ${wlCopy}"))
-      hl.bind(mainMod .. " + T", hl.dsp.exec_cmd([[${notifySend} -t 3000 "$(date +%H):$(date +%M) Uhr" "$(date)"]]))
+      hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(${timePulseCmd}))
       hl.bind(mainMod .. " + N", toggle_dnd)
 
       -- Media, Volume & Brightness (swayosd: applies the change and shows an

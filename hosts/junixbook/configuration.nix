@@ -68,6 +68,7 @@
       browsers.enable = true;
       messaging.enable = true;
       media.enable = true;
+      planner.enable = true;
       flexing.enable = true;
       office.enable = true;
     };
@@ -79,6 +80,8 @@
         peers = {
           "junixsrv.internal" = "100.110.103.47";
           "music.junixsrv.internal" = "100.110.103.47";
+          "tasks.junixsrv.internal" = "100.110.103.47";
+          "cal.junixsrv.internal" = "100.110.103.47";
         };
       };
       syncthing.enable = true;

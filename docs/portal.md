@@ -10,9 +10,10 @@ Root CA (`assets/junix-ca.pem`) and a single private flake input
 - **Nginx + static Gruvbox frontend (`modules/services/portal.nix`):**
   Colors are derived from `custom.theme.palette`, and static assets are served
   with a strict `Content-Security-Policy` (`script-src 'self'; style-src 'self'`).
-  User-facing web apps (`navidrome`) bind strictly to `127.0.0.1` and are
-  exposed over HTTPS `:443` via dedicated subdomain virtual hosts
-  (`https://music.junixsrv.internal`). Direct-port infrastructure cards
+  User-facing web apps (`navidrome`, `vikunja`, `radicale`) bind strictly to
+  `127.0.0.1` and are exposed over HTTPS `:443` via dedicated subdomain virtual
+  hosts (`https://music.junixsrv.internal`, `https://tasks.junixsrv.internal`,
+  `https://cal.junixsrv.internal`). Direct-port infrastructure cards
   (`harmonia` on `:5000`) resolve against `window.location.hostname`.
 - **Unified LAN + Tailscale hostname aliases:**
   `junixos` maps `junixsrv.internal` and `*.junixsrv.internal` to `junixsrv`'s
@@ -24,7 +25,8 @@ Root CA (`assets/junix-ca.pem`) and a single private flake input
   Because Android lacks per-app `/etc/hosts` without MagicDNS, the default
   `https://100.110.103.47` virtual host also proxies `/music/rest/` +
   `/music/share/` to Navidrome (configure Symfonium/Tempo server URL as
-  `https://100.110.103.47/music`).
+  `https://100.110.103.47/music`) and `/cal/` (`X-Script-Name: /cal`) to
+  Radicale (configure DAVx5 base URL as `https://100.110.103.47/cal/`).
 - **Internal-only Syncthing card:**
   Syncthing's GUI stays bound to `127.0.0.1:8384` and is not reverse-proxied.
   Its card displays live `syncthing.service` health and a one-click SSH tunnel

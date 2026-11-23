@@ -63,4 +63,17 @@ in
     ];
     meta.description = "Archive-to-Opus music album importer and tagger";
   };
+
+  plan = mkPythonScript {
+    name = "plan";
+    src = ./plan.py;
+    runtimeInputs = with pkgs; [
+      libnotify
+      mako
+      rofi
+      swayosd
+      xdg-utils
+    ];
+    meta.description = "Offline-first Vikunja + Radicale planner, Rofi hub, and barless Hyprland HUD";
+  };
 }
