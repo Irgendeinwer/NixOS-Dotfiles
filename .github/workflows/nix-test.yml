@@ -55,7 +55,12 @@ jobs:
             desktop-options tailscale-options syncthing-options navidrome-options \
             portal-options planner-options hermes-options standalone-home theme-options \
             zen-options without-userns-filter; do
-            nix build ".#checks.x86_64-linux.$check" --no-link
+            if ! err="$(nix build ".#checks.x86_64-linux.$check" --no-link 2>&1)"; then
+              printf '%s\n' "$err" >&2
+              summary="$(printf '%s\n' "$err" | tail -n 25 | tr '\r\n' '  ')"
+              echo "::error title=check:$check::$summary"
+              exit 1
+            fi
           done
 
       - name: Evaluate junixos
