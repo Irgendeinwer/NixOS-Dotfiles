@@ -88,7 +88,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ "${EUID}" -eq 0 ]] || die "run as root on the Debian 12 systemd-nspawn host"
-[[ "${IMAGE_SIZE_GIB}" =~ ^[0-9]+$ ]] || die "--size must be a positive integer"
+[[ "${IMAGE_SIZE_GIB}" =~ ^[1-9][0-9]*$ ]] || die "--size must be a positive integer (>= 1)"
 
 if [[ -z "${MACVLAN_IFACE}" && -f "${JUNIXSRV_NSPAWN}" ]]; then
   MACVLAN_IFACE="$(awk -F= '/^[[:space:]]*MACVLAN[[:space:]]*=/ { gsub(/[[:space:]]/, "", $2); print $2; exit }' "${JUNIXSRV_NSPAWN}")"
@@ -135,39 +135,16 @@ apt-get install -y --no-install-recommends \
 UBUNTU_KEYRING="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
 UBUNTU_ARCHIVE_KEY_FPR="F6ECB3762474EDA9D21B7022871920D1991BC93C"
 
-ensure_ubuntu_keyring() {
-  if [[ -s "${UBUNTU_KEYRING}" ]] \
-    && gpg --batch --with-colons --show-keys "${UBUNTU_KEYRING}" 2>/dev/null \
-      | grep -Eq "^fpr:+${UBUNTU_ARCHIVE_KEY_FPR}:"; then
-    return 0
-  fi
-
-  log "Fetching and verifying Ubuntu Archive signing key (${UBUNTU_ARCHIVE_KEY_FPR})..."
-  local gpg_tmp
-  gpg_tmp="$(mktemp -d)"
-  chmod 0700 "${gpg_tmp}"
-  curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${UBUNTU_ARCHIVE_KEY_FPR}" \
-    | gpg --homedir "${gpg_tmp}" --batch --quiet --import
-  if ! gpg --homedir "${gpg_tmp}" --batch --with-colons --fingerprint "${UBUNTU_ARCHIVE_KEY_FPR}" \
-    | grep -Eq "^fpr:+${UBUNTU_ARCHIVE_KEY_FPR}:"; then
-    rm -rf "${gpg_tmp}"
-    die "fingerprint mismatch while verifying Ubuntu Archive signing key"
-  fi
-  install -d -m 0755 /usr/share/keyrings
-  gpg --homedir "${gpg_tmp}" --batch --export "${UBUNTU_ARCHIVE_KEY_FPR}" > "${UBUNTU_KEYRING}.tmp"
-  chmod 0644 "${UBUNTU_KEYRING}.tmp"
-  mv -f "${UBUNTU_KEYRING}.tmp" "${UBUNTU_KEYRING}"
-  rm -rf "${gpg_tmp}"
-}
-
-ensure_ubuntu_keyring
-
 IMAGE_PATH="/var/lib/machines/${MACHINE}.raw"
 MNT_DIR=""
 LOOP_DEV=""
+GPG_TMP=""
 
 cleanup() {
   set +e
+  if [[ -n "${GPG_TMP}" && -d "${GPG_TMP}" ]]; then
+    rm -rf "${GPG_TMP}"
+  fi
   if [[ -n "${MNT_DIR}" && -d "${MNT_DIR}" ]]; then
     for sub in dev/pts dev proc sys; do
       if mountpoint -q "${MNT_DIR}/${sub}"; then
@@ -184,6 +161,32 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
+
+ensure_ubuntu_keyring() {
+  if [[ -s "${UBUNTU_KEYRING}" ]] \
+    && gpg --batch --with-colons --show-keys "${UBUNTU_KEYRING}" 2>/dev/null \
+      | grep -Eq "^fpr:+${UBUNTU_ARCHIVE_KEY_FPR}:"; then
+    return 0
+  fi
+
+  log "Fetching and verifying Ubuntu Archive signing key (${UBUNTU_ARCHIVE_KEY_FPR})..."
+  GPG_TMP="$(mktemp -d)"
+  chmod 0700 "${GPG_TMP}"
+  curl -fsSL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x${UBUNTU_ARCHIVE_KEY_FPR}" \
+    | gpg --homedir "${GPG_TMP}" --batch --quiet --import
+  if ! gpg --homedir "${GPG_TMP}" --batch --with-colons --fingerprint "${UBUNTU_ARCHIVE_KEY_FPR}" \
+    | grep -Eq "^fpr:+${UBUNTU_ARCHIVE_KEY_FPR}:"; then
+    die "fingerprint mismatch while verifying Ubuntu Archive signing key"
+  fi
+  install -d -m 0755 /usr/share/keyrings
+  gpg --homedir "${GPG_TMP}" --batch --export "${UBUNTU_ARCHIVE_KEY_FPR}" > "${UBUNTU_KEYRING}.tmp"
+  chmod 0644 "${UBUNTU_KEYRING}.tmp"
+  mv -f "${UBUNTU_KEYRING}.tmp" "${UBUNTU_KEYRING}"
+  rm -rf "${GPG_TMP}"
+  GPG_TMP=""
+}
+
+ensure_ubuntu_keyring
 
 install -d -m 0755 /var/lib/machines /etc/systemd/nspawn
 
@@ -220,6 +223,16 @@ fi
 MNT_DIR="$(mktemp -d "/run/${MACHINE}-mnt.XXXXXX")"
 LOOP_DEV="$(losetup --find --show "${IMAGE_PATH}")"
 mount "${LOOP_DEV}" "${MNT_DIR}"
+
+if [[ "${NEED_BOOTSTRAP}" -eq 0 && ! -e "${MNT_DIR}/etc/os-release" ]]; then
+  log "Existing image is incomplete (missing /etc/os-release); re-bootstrapping..."
+  find "${MNT_DIR}" -mindepth 1 -maxdepth 1 ! -name 'lost+found' -exec rm -rf {} +
+  NEED_BOOTSTRAP=1
+fi
+
+if [[ "${NEED_BOOTSTRAP}" -eq 0 && "$(stat -c '%u' "${MNT_DIR}/etc")" != "0" ]]; then
+  die "${IMAGE_PATH} has UID-shifted ownership (no kernel idmapped mount support); re-run with --rebuild"
+fi
 
 if [[ "${NEED_BOOTSTRAP}" -eq 1 ]]; then
   DEBOOTSTRAP_SCRIPT="/usr/share/debootstrap/scripts/${SUITE}"
@@ -286,7 +299,14 @@ EOF
 
 log "Configuring packages, SSH, Avahi mDNS, and user 'hermes' inside ${MACHINE}..."
 rm -f "${MNT_DIR}/etc/resolv.conf"
-cp /etc/resolv.conf "${MNT_DIR}/etc/resolv.conf"
+if [[ -s /run/systemd/resolve/resolv.conf ]] && grep -qE '^nameserver[[:space:]]+127\.0\.0\.53' /etc/resolv.conf 2>/dev/null; then
+  cp /run/systemd/resolve/resolv.conf "${MNT_DIR}/etc/resolv.conf"
+else
+  cp /etc/resolv.conf "${MNT_DIR}/etc/resolv.conf"
+fi
+if ! awk '/^nameserver[[:space:]]+/ && $2 !~ /^(127\.|::1$)/ { found=1 } END { exit !found }' "${MNT_DIR}/etc/resolv.conf" 2>/dev/null; then
+  printf 'nameserver 9.9.9.9\nnameserver 149.112.112.112\n' > "${MNT_DIR}/etc/resolv.conf"
+fi
 
 chroot "${MNT_DIR}" /usr/bin/env DEBIAN_FRONTEND=noninteractive /bin/bash -euo pipefail <<'CHROOT_EOF'
 apt-get update -qq
@@ -438,4 +458,4 @@ machinectl enable "${MACHINE}"
 machinectl start "${MACHINE}"
 
 log "Container '${MACHINE}' started on MACVLAN=${MACVLAN_IFACE} (Ubuntu '${SUITE}')."
-log "Verify from junixsrv: sudo -u hermes ssh -i /var/lib/hermes/.ssh/id_hermes_box hermes@hermes-box.local uname -a"
+log "Verify from junixsrv: sudo -Hu hermes ssh -i /var/lib/hermes/.ssh/id_hermes_box hermes@hermes-box.local uname -a"

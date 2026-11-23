@@ -17,9 +17,11 @@ Debian 12 host.
   stay on `https://100.110.103.47` without split-DNS or `/etc/hosts`.
 - **`Hermes Agent` (`services.hermes-agent`, `/var/lib/hermes/.hermes`):**
   Upstream `NousResearch/hermes-agent` (`minimal` + `matrix` E2EE extras) running
-  on `junixsrv`. Connects over loopback (`http://127.0.0.1:6167`) as
-  `@hermes:junixsrv.internal` and responds exclusively to
-  `MATRIX_ALLOWED_USERS=@julian:junixsrv.internal`.
+  on `junixsrv` with `MATRIX_E2EE_MODE=required` (storing Olm/Megolm keys under
+  `/var/lib/hermes/.hermes/platforms/matrix/store/` and saving any bootstrapped
+  recovery key once at `/var/lib/hermes/.hermes/platforms/matrix/recovery-key.txt`).
+  Connects over loopback (`http://127.0.0.1:6167`) as `@hermes:junixsrv.internal`
+  and responds exclusively to `MATRIX_ALLOWED_USERS=@julian:junixsrv.internal`.
 - **Quota-aware LiteLLM routing (`http://127.0.0.1:4000/v1`):**
   - **Primary agent turns:** `gemini-4-hydrogen` (`x-litellm-session-id` sticky
     prompt-cache affinity across the 10 pooled Google AI Studio keys = 200 RPD).
@@ -33,7 +35,9 @@ Debian 12 host.
   - `web_search` → local loopback **SearXNG** JSON engine (`127.0.0.1:8888`,
     unlimited queries, zero external search API keys).
   - `web_extract` → **Tavily** (`TAVILY_API_KEY` injected via `sops.templates`
-    from `secrets/ai.yaml`) with automatic keyless fallback.
+    from `secrets/ai.yaml`), with external keyless search/extract fallback
+    disabled by default (`custom.services.hermes.web.keylessFallback = false`) so
+    transient errors never silently leak queries or URLs.
 - **Sibling Ubuntu 26.04.1 LTS (`resolute`) sandbox (`hermes-box`):**
   Hermes's `terminal` and file tools run over persistent multiplexed SSH
   (`hermes@hermes-box.local`, `/home/hermes/workspace`) inside a dedicated
@@ -43,7 +47,11 @@ Debian 12 host.
   `MemoryHigh=4G`, `MemoryMax=6G`, `TasksMax=2048`). `hermes-box` holds zero
   SOPS keys, zero host mounts, and zero `junixsrv` service credentials while
   giving Hermes standard FHS glibc compatibility (`sudo apt`, `uv`, `pip`, `npm`,
-  `build-essential`, `git`).
+  `build-essential`, `git`). *(Because `junixsrv` uses `MACVLAN` on the Debian
+  host and Linux `macvlan` isolates the parent host from `macvlan` guests,
+  `hermes-box` shares the LAN `MACVLAN` bridge so `junixsrv` can reach
+  `hermes-box.local` directly; treat `hermes-box` as LAN-adjacent rather than
+  network-airgapped.)*
 
 ## Server bootstrap (`junixsrv` + Debian 12 host)
 
@@ -92,19 +100,26 @@ already passes `--config <continuwuity.toml>`; run all account commands in one
 shot ending with `--execute "server shutdown"`:
 
 ```bash
-ssh -t root@junixsrv.local 'bash -euo pipefail -c '\''
+ssh -t root@junixsrv.local '
+  set -euo pipefail
   bot_pw="$(sed -n "s/^MATRIX_PASSWORD=//p" /run/secrets/hermes_env)"
-  read -rsp "Choose Matrix password for @julian:junixsrv.internal: " julian_pw
+  read -rsp "Choose Matrix password for @julian:junixsrv.internal (no spaces/quotes): " julian_pw
   echo
+  if [[ -z "$julian_pw" || "$julian_pw" =~ [[:space:]\"\\] || "$julian_pw" == *"'\''"* ]]; then
+    echo "error: password must be non-empty and contain no whitespace, quotes, or backslashes" >&2
+    exit 1
+  fi
+  trap "systemctl start continuwuity.service" EXIT
   systemctl stop continuwuity.service
   sudo -Hu continuwuity conduwuit \
     --execute "users create julian $julian_pw" \
     --execute "users make_user_admin julian" \
     --execute "users create hermes $bot_pw" \
     --execute "server shutdown"
+  trap - EXIT
   systemctl start continuwuity.service
   systemctl restart hermes-agent.service
-'\'''
+'
 ```
 
 ### 4. Provision `hermes-box` on the Debian 12 `nspawn` host
@@ -146,16 +161,17 @@ ssh root@junixsrv.local \
 ## Host CLI & diagnostics (`junixsrv`)
 
 Your `julian` account on `junixsrv` is in the `hermes` group with
-`HERMES_HOME=/var/lib/hermes/.hermes` pre-exported, so SSH sessions inspect and
-share the exact same sessions, memories, and skills as Matrix:
+`HERMES_HOME=/var/lib/hermes/.hermes` pre-exported (`UMask=0007`), so read-only
+inspection works directly as `julian`, while interactive TUI turns run as
+`hermes` so OpenSSH can read `/var/lib/hermes/.ssh/id_hermes_box` (`0600`):
 
 ```bash
-# Gateway health & active sessions:
+# Gateway health & active sessions (as julian):
 hermes status
 hermes sessions list
 
-# Interactive terminal UI sharing state with Matrix:
-hermes --tui
+# Interactive terminal UI sharing state + SSH key with Matrix:
+sudo -Hu hermes hermes --tui
 
 # Verify loopback SearXNG JSON metasearch:
 curl -fsS 'http://127.0.0.1:8888/search?q=nixos&format=json' | jq '.results[:2]'

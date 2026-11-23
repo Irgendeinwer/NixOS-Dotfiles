@@ -33,7 +33,7 @@ let
   sopsFile = ../../secrets + "/${config.networking.hostName}.yaml";
   hasHermesEnvInRepo =
     builtins.pathExists sopsFile
-    && builtins.match "(^|.*\n)hermes_env:.*" (builtins.readFile sopsFile) != null;
+    && lib.any (lib.hasPrefix "hermes_env:") (lib.splitString "\n" (builtins.readFile sopsFile));
   useSopsHermesEnv =
     cfg.enable && cfg.matrix.enable && cfg.environmentFile == null && cfg.useSopsSecret;
   hermesEnvPath =
@@ -115,11 +115,19 @@ let
     ++ lib.optional (cfg.matrix.enable && localMatrixEnabled) "continuwuity.service";
 
   enableMdns = cfg.ssh.enable && lib.hasSuffix ".local" cfg.ssh.host;
+  sshSandboxName = lib.removeSuffix ".local" cfg.ssh.host;
+  containerServiceOverrides = {
+    DynamicUser = lib.mkForce false;
+    PrivateUsers = lib.mkForce false;
+    ProtectProc = lib.mkForce "default";
+    ProtectHostname = lib.mkForce false;
+    ProtectClock = lib.mkForce false;
+  };
   searxTunnelCmd =
     "ssh -N -L ${toString cfg.searx.port}:127.0.0.1:${toString cfg.searx.port} "
     + "${primaryUser}@{host}";
   sshEnvironmentHint =
-    "Terminal commands run over SSH inside hermes-box (Ubuntu 26.04.1 LTS resolute, "
+    "Terminal commands run over SSH inside ${sshSandboxName} (Ubuntu 26.04.1 LTS resolute, "
     + "cwd ${cfg.ssh.remoteCwd}) with passwordless sudo apt, uv, pip, npm, and git.";
   sshKeygenPreStart = lib.mkBefore ''
     install -d -m 0700 "${stateDir}/.ssh"
@@ -127,6 +135,8 @@ let
       ${pkgs.openssh}/bin/ssh-keygen -q -t ed25519 -N "" \
         -C "hermes@${config.networking.hostName}" \
         -f "${defaultSshKeyPath}"
+    elif [ ! -s "${defaultSshKeyPath}.pub" ]; then
+      ${pkgs.openssh}/bin/ssh-keygen -y -f "${defaultSshKeyPath}" > "${defaultSshKeyPath}.pub"
     fi
     chmod 0600 "${defaultSshKeyPath}"
     chmod 0644 "${defaultSshKeyPath}.pub"
@@ -316,6 +326,19 @@ in
         description = "Stable Matrix device ID preserving E2EE state across restarts.";
       };
 
+      e2eeMode = lib.mkOption {
+        type = lib.types.enum [
+          "off"
+          "optional"
+          "required"
+        ];
+        default = "required";
+        description = ''
+          Matrix end-to-end encryption mode (`MATRIX_E2EE_MODE`). `"required"`
+          fails closed instead of silently downgrading encrypted rooms.
+        '';
+      };
+
       autoThread = lib.mkOption {
         type = lib.types.bool;
         default = true;
@@ -326,6 +349,18 @@ in
         type = lib.types.bool;
         default = false;
         description = "Keep 1:1 Matrix DMs linear unless explicitly threaded.";
+      };
+    };
+
+    web = {
+      keylessFallback = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = ''
+          Allow failed SearXNG or Tavily calls to fall back to external keyless
+          search/extraction providers (`web.keyless_fallback` / `web.keyless_rescue`).
+          Disabled by default to prevent silent query or URL leakage.
+        '';
       };
     };
   };
@@ -390,28 +425,27 @@ in
       };
 
       systemd.services = {
-        searx-init = lib.mkIf (cfg.searx.environmentFile == null) {
-          serviceConfig = {
-            StateDirectory = "searx";
-            StateDirectoryMode = "0700";
-          };
-          script = lib.mkBefore ''
-            secret_file=/var/lib/searx/secret_key
-            if [ ! -s "$secret_file" ]; then
-              umask 077
-              ${pkgs.openssl}/bin/openssl rand -hex 32 > "$secret_file"
-            fi
-            export SEARX_SECRET_KEY="$(cat "$secret_file")"
-          '';
-        };
+        searx-init = lib.mkMerge [
+          (lib.mkIf (cfg.searx.environmentFile == null) {
+            serviceConfig = {
+              StateDirectory = "searx";
+              StateDirectoryMode = "0700";
+            };
+            script = lib.mkBefore ''
+              secret_file=/var/lib/searx/secret_key
+              if [ ! -s "$secret_file" ]; then
+                umask 077
+                ${pkgs.openssl}/bin/openssl rand -hex 32 > "$secret_file"
+              fi
+              export SEARX_SECRET_KEY="$(cat "$secret_file")"
+            '';
+          })
+          (lib.mkIf isContainer {
+            serviceConfig = containerServiceOverrides;
+          })
+        ];
 
-        searx.serviceConfig = lib.mkIf isContainer {
-          DynamicUser = lib.mkForce false;
-          PrivateUsers = lib.mkForce false;
-          ProtectProc = lib.mkForce "default";
-          ProtectHostname = lib.mkForce false;
-          ProtectClock = lib.mkForce false;
-        };
+        searx.serviceConfig = lib.mkIf isContainer containerServiceOverrides;
       };
     })
 
@@ -468,14 +502,20 @@ in
           lib.optionalAttrs cfg.searx.enable {
             SEARXNG_URL = "http://127.0.0.1:${toString cfg.searx.port}";
           }
-          // lib.optionalAttrs cfg.matrix.enable {
-            MATRIX_HOMESERVER = cfg.matrix.homeserverUrl;
-            MATRIX_USER_ID = "@${cfg.matrix.botLocalpart}:${matrixServerName}";
-            MATRIX_ALLOWED_USERS = lib.concatStringsSep "," cfg.matrix.allowedUsers;
-            MATRIX_DEVICE_ID = cfg.matrix.deviceId;
-            MATRIX_AUTO_THREAD = lib.boolToString cfg.matrix.autoThread;
-            MATRIX_DM_AUTO_THREAD = lib.boolToString cfg.matrix.dmAutoThread;
-          };
+          // lib.optionalAttrs cfg.matrix.enable (
+            {
+              MATRIX_HOMESERVER = cfg.matrix.homeserverUrl;
+              MATRIX_USER_ID = "@${cfg.matrix.botLocalpart}:${matrixServerName}";
+              MATRIX_ALLOWED_USERS = lib.concatStringsSep "," cfg.matrix.allowedUsers;
+              MATRIX_DEVICE_ID = cfg.matrix.deviceId;
+              MATRIX_E2EE_MODE = cfg.matrix.e2eeMode;
+              MATRIX_AUTO_THREAD = lib.boolToString cfg.matrix.autoThread;
+              MATRIX_DM_AUTO_THREAD = lib.boolToString cfg.matrix.dmAutoThread;
+            }
+            // lib.optionalAttrs (cfg.matrix.e2eeMode != "off") {
+              MATRIX_RECOVERY_KEY_OUTPUT_FILE = "${stateDir}/.hermes/platforms/matrix/recovery-key.txt";
+            }
+          );
 
         environmentFiles =
           lib.optional tavilyEnabled config.sops.templates."hermes-ai-env".path
@@ -514,8 +554,8 @@ in
           web = {
             search_backend = if cfg.searx.enable then "searxng" else "";
             extract_backend = if tavilyEnabled then "tavily" else "";
-            keyless_fallback = true;
-            keyless_rescue = true;
+            keyless_fallback = cfg.web.keylessFallback;
+            keyless_rescue = cfg.web.keylessFallback;
           };
 
           terminal = {

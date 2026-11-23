@@ -159,6 +159,8 @@ assert !enabledContainer.services.searx.configureNginx;
 assert enabledContainer.services.searx.settings.server.bind_address == "127.0.0.1";
 assert enabledContainer.services.searx.settings.server.port == 8888;
 assert builtins.elem "json" enabledContainer.services.searx.settings.search.formats;
+assert !enabledContainer.systemd.services.searx-init.serviceConfig.DynamicUser;
+assert !enabledContainer.systemd.services.searx-init.serviceConfig.PrivateUsers;
 assert !enabledContainer.systemd.services.searx.serviceConfig.DynamicUser;
 assert !enabledContainer.systemd.services.searx.serviceConfig.PrivateUsers;
 assert enabledContainer.systemd.services.searx.serviceConfig.ProtectProc == "default";
@@ -178,6 +180,10 @@ assert
 assert
   enabledContainer.services.hermes-agent.environment.MATRIX_ALLOWED_USERS
   == "@julian:junixsrv.internal";
+assert enabledContainer.services.hermes-agent.environment.MATRIX_E2EE_MODE == "required";
+assert
+  enabledContainer.services.hermes-agent.environment.MATRIX_RECOVERY_KEY_OUTPUT_FILE
+  == "/var/lib/hermes/.hermes/platforms/matrix/recovery-key.txt";
 assert hermesSettings.providers.litellm.api == "http://127.0.0.1:4000/v1";
 assert hermesSettings.providers.litellm.session_affinity_header == "x-litellm-session-id";
 assert hermesSettings.model.provider == "custom:litellm";
@@ -190,6 +196,8 @@ assert hermesSettings.auxiliary.curator.model == "gemini-flash-lite";
 assert hermesSettings.auxiliary.background_review.model == "gemini-flash-lite";
 assert hermesSettings.web.search_backend == "searxng";
 assert hermesSettings.web.extract_backend == "tavily";
+assert !hermesSettings.web.keyless_fallback;
+assert !hermesSettings.web.keyless_rescue;
 assert hermesSettings.terminal.backend == "ssh";
 assert hermesSettings.terminal.ssh_host == "hermes-box.local";
 assert hermesSettings.terminal.ssh_user == "hermes";
