@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import base64
 import datetime as dt
+import fcntl
 import getpass
 import html
 import json
@@ -33,36 +34,46 @@ from zoneinfo import ZoneInfo
 ZERO_GO_PREFIXES = ("0001-", "0000-", "1970-01-01T00:00:00")
 META_TAG_RE = re.compile(r"<!--\s*junix-plan:(\{.*?\})\s*-->", re.DOTALL)
 EMPTY_HTML_P_RE = re.compile(r"<p>\s*</p>", re.IGNORECASE)
-WEEKDAY_MAP = {
+WEEKDAY_FULL_MAP = {
     "mon": 0,
     "monday": 0,
-    "mo": 0,
+    "montag": 0,
     "tue": 1,
     "tues": 1,
     "tuesday": 1,
-    "tu": 1,
-    "di": 1,
+    "dienstag": 1,
     "wed": 2,
     "wednesday": 2,
-    "we": 2,
-    "mi": 2,
+    "mittwoch": 2,
     "thu": 3,
     "thur": 3,
     "thurs": 3,
     "thursday": 3,
-    "th": 3,
-    "do": 3,
+    "donnerstag": 3,
     "fri": 4,
     "friday": 4,
-    "fr": 4,
+    "freitag": 4,
     "sat": 5,
     "saturday": 5,
-    "sa": 5,
+    "samstag": 5,
     "sun": 6,
     "sunday": 6,
+    "sonntag": 6,
+}
+WEEKDAY_SHORT_MAP = {
+    "mo": 0,
+    "tu": 1,
+    "di": 1,
+    "we": 2,
+    "mi": 2,
+    "th": 3,
+    "do": 3,
+    "fr": 4,
+    "sa": 5,
     "su": 6,
     "so": 6,
 }
+WEEKDAY_MAP = {**WEEKDAY_FULL_MAP, **WEEKDAY_SHORT_MAP}
 RRULE_DAY_MAP = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 6}
 PRIORITY_ALIASES = {
     "low": 1,
@@ -300,19 +311,42 @@ def encode_task_description(
     estimate_min: int | None,
     step_index: int | None,
     auto_slotted: bool = False,
+    auto_start: str | None = None,
+    auto_end: str | None = None,
 ) -> str:
-    meta: dict[str, int] = {}
+    meta: dict[str, Any] = {}
     if estimate_min and estimate_min > 0:
         meta["est"] = int(estimate_min)
     if step_index is not None and step_index > 0:
         meta["step"] = int(step_index)
     if auto_slotted:
         meta["auto"] = 1
+        if auto_start:
+            meta["auto_s"] = auto_start
+        if auto_end:
+            meta["auto_e"] = auto_end
     base = (clean_desc or "").strip()
     if not meta:
         return base
     tag = f"<!-- junix-plan:{json.dumps(meta, separators=(',', ':'))} -->"
     return f"{base}\n\n{tag}" if base else tag
+
+
+def _decode_task_meta_window(
+    raw_desc: str | None,
+) -> tuple[str | None, str | None]:
+    if not raw_desc:
+        return None, None
+    match = META_TAG_RE.search(raw_desc)
+    if not match:
+        return None, None
+    try:
+        meta = json.loads(match.group(1))
+        s_val = str(meta["auto_s"]) if meta.get("auto_s") else None
+        e_val = str(meta["auto_e"]) if meta.get("auto_e") else None
+        return s_val, e_val
+    except Exception:
+        return None, None
 
 
 def decode_task_description(
@@ -389,6 +423,49 @@ def parse_duration_token(token: str, require_tilde: bool = True) -> int | None:
         minutes += float(m.group("m"))
     res = int(round(minutes))
     return res if res > 0 else None
+
+
+def _next_is_clock_token(tokens: list[str], idx: int) -> bool:
+    if idx + 1 >= len(tokens):
+        return False
+    nxt = tokens[idx + 1]
+    return bool(TIME_RANGE_RE.match(nxt) or TIME_SINGLE_RE.match(nxt))
+
+
+def _is_meta_tail(tokens: list[str], start_idx: int, kind: str) -> bool:
+    """Return True if all tokens from start_idx onward are scheduling/metadata modifiers (not prose)."""
+    j = start_idx
+    seen_clock = False
+    while j < len(tokens):
+        t = tokens[j]
+        low = t.lower()
+        if low == "in" and j + 1 < len(tokens) and parse_duration_token(tokens[j + 1], require_tilde=False) is not None:
+            seen_clock = True
+            j += 2
+            continue
+        if parse_duration_token(t, require_tilde=(kind == "task" or not seen_clock)) is not None:
+            j += 1
+            continue
+        if t.startswith("!") and len(t) > 1:
+            bangs = t.lstrip("!")
+            if not bangs or (bangs.isdigit() and 1 <= int(bangs) <= 5) or bangs.lower() in PRIORITY_ALIASES:
+                j += 1
+                continue
+        if t.startswith("#") and len(t) > 1:
+            j += 1
+            continue
+        if kind == "event" and t.startswith("@") and len(t) > 1:
+            j += 1
+            continue
+        if kind == "event" and low in ("daily", "weekly", "biweekly", "monthly", "yearly"):
+            j += 1
+            continue
+        if TIME_RANGE_RE.match(t) or TIME_SINGLE_RE.match(t):
+            seen_clock = True
+            j += 1
+            continue
+        return False
+    return True
 
 
 def _resolve_weekday(base_date: dt.date, target_wd: int) -> dt.date:
@@ -508,23 +585,49 @@ def parse_quick_capture(
             i += 1
             continue
 
-        # Date keywords
-        if low in ("today", "heute"):
+        # Date keywords (only after at least one title word and when followed solely by metadata,
+        # preventing prose words like "+ Do laundry", "+ We need to go", "+ Check Sat receiver ~20m",
+        # or "+ Section 1.2. notes" from being eaten as dates!)
+        in_date_zone = bool(title_words) and _is_meta_tail(tokens, i + 1, kind)
+        has_date_prep = bool(title_words and title_words[-1].lower() in ("am", "on"))
+
+        if in_date_zone and low in ("today", "heute"):
+            if has_date_prep:
+                title_words.pop()
             chosen_date = ref.date()
             i += 1
             continue
-        if low in ("tomorrow", "tmr", "morgen"):
+        if in_date_zone and low in ("tomorrow", "tmr", "morgen"):
+            if has_date_prep:
+                title_words.pop()
             chosen_date = ref.date() + dt.timedelta(days=1)
             i += 1
             continue
-        if low == "übermorgen":
+        if in_date_zone and low == "übermorgen":
+            if has_date_prep:
+                title_words.pop()
             chosen_date = ref.date() + dt.timedelta(days=2)
             i += 1
             continue
-        if low in WEEKDAY_MAP:
-            chosen_date = _resolve_weekday(ref.date(), WEEKDAY_MAP[low])
+        if in_date_zone and low in WEEKDAY_FULL_MAP:
+            if has_date_prep:
+                title_words.pop()
+            chosen_date = _resolve_weekday(ref.date(), WEEKDAY_FULL_MAP[low])
             i += 1
             continue
+        if in_date_zone and low in WEEKDAY_SHORT_MAP:
+            # 2-letter codes ("do", "we", "so", "sa", ...) collide with common words unless anchored
+            # by a clock ("Do 14:00"), preposition ("am Do" / "on Fr"), or capitalized non-English code ("Fr", "Di", "Mi", "Mo", "Sa")
+            if (
+                _next_is_clock_token(tokens, i)
+                or has_date_prep
+                or (low not in ("do", "we", "so", "tu", "th", "su") and tok[0].isupper())
+            ):
+                if has_date_prep:
+                    title_words.pop()
+                chosen_date = _resolve_weekday(ref.date(), WEEKDAY_SHORT_MAP[low])
+                i += 1
+                continue
 
         m_iso = ISO_DATE_RE.match(tok)
         if m_iso:
@@ -532,6 +635,8 @@ def parse_quick_capture(
                 chosen_date = dt.date(
                     int(m_iso.group("y")), int(m_iso.group("m")), int(m_iso.group("d"))
                 )
+                if has_date_prep:
+                    title_words.pop()
                 i += 1
                 continue
             except ValueError:
@@ -539,17 +644,24 @@ def parse_quick_capture(
 
         m_de = DE_DATE_RE.match(tok)
         if m_de:
-            try:
-                yr_raw = m_de.group("y")
-                yr = ref.year if not yr_raw else int(yr_raw)
-                candidate = dt.date(yr, int(m_de.group("m")), int(m_de.group("d")))
-                if not yr_raw and candidate < ref.date():
-                    candidate = dt.date(yr + 1, candidate.month, candidate.day)
-                chosen_date = candidate
-                i += 1
-                continue
-            except ValueError:
-                pass
+            yr_raw = m_de.group("y")
+            has_two_digit_part = len(m_de.group("d")) == 2 or len(m_de.group("m")) == 2
+            if yr_raw or (
+                in_date_zone
+                and (_next_is_clock_token(tokens, i) or has_two_digit_part or has_date_prep)
+            ):
+                try:
+                    yr = ref.year if not yr_raw else int(yr_raw)
+                    candidate = dt.date(yr, int(m_de.group("m")), int(m_de.group("d")))
+                    if not yr_raw and candidate < ref.date():
+                        candidate = dt.date(yr + 1, candidate.month, candidate.day)
+                    if has_date_prep:
+                        title_words.pop()
+                    chosen_date = candidate
+                    i += 1
+                    continue
+                except ValueError:
+                    pass
 
         # Time range "14:00-15:30"
         m_rng = TIME_RANGE_RE.match(tok)
@@ -972,6 +1084,89 @@ def build_ics_document(
     return "\r\n".join(lines)
 
 
+def _rrule_occurrence_on_start_date(
+    ev: IcsEvent,
+    start_local: dt.datetime,
+    candidate_date: dt.date,
+    parts: dict[str, str],
+    until_dt: dt.datetime | None,
+    until_is_date: bool,
+    tz: ZoneInfo,
+) -> dt.datetime | None:
+    if candidate_date < start_local.date() or candidate_date in ev.exdates:
+        return None
+    if until_dt is not None and candidate_date > until_dt.date():
+        return None
+
+    freq = parts.get("FREQ", "")
+    interval = max(1, int(parts.get("INTERVAL", "1") or "1"))
+    count_limit = int(parts["COUNT"]) if "COUNT" in parts and parts["COUNT"].isdigit() else None
+    byday_tokens = [
+        tok[-2:] for tok in parts.get("BYDAY", "").split(",") if len(tok) >= 2 and tok[-2:] in RRULE_DAY_MAP
+    ]
+
+    matched = False
+    if freq == "DAILY":
+        days_diff = (candidate_date - start_local.date()).days
+        if days_diff % interval == 0:
+            if not byday_tokens or candidate_date.weekday() in [RRULE_DAY_MAP[d] for d in byday_tokens]:
+                if count_limit is None or (days_diff // interval) < count_limit:
+                    matched = True
+    elif freq == "WEEKLY":
+        allowed_wds = (
+            [RRULE_DAY_MAP[d] for d in byday_tokens]
+            if byday_tokens
+            else [start_local.weekday()]
+        )
+        start_week_monday = start_local.date() - dt.timedelta(days=start_local.weekday())
+        target_week_monday = candidate_date - dt.timedelta(days=candidate_date.weekday())
+        weeks_diff = (target_week_monday - start_week_monday).days // 7
+        if weeks_diff >= 0 and weeks_diff % interval == 0 and candidate_date.weekday() in allowed_wds:
+            if count_limit is not None:
+                occ = 0
+                cur = start_local.date()
+                while cur <= candidate_date and occ <= count_limit:
+                    w = ((cur - dt.timedelta(days=cur.weekday())) - start_week_monday).days // 7
+                    if w % interval == 0 and cur.weekday() in allowed_wds:
+                        occ += 1
+                    cur += dt.timedelta(days=1)
+                matched = occ <= count_limit
+            else:
+                matched = True
+    elif freq == "MONTHLY":
+        months_diff = (candidate_date.year - start_local.year) * 12 + (
+            candidate_date.month - start_local.month
+        )
+        if months_diff >= 0 and months_diff % interval == 0 and candidate_date.day == start_local.day:
+            if count_limit is None or (months_diff // interval) < count_limit:
+                matched = True
+    elif freq == "YEARLY":
+        years_diff = candidate_date.year - start_local.year
+        if (
+            years_diff >= 0
+            and years_diff % interval == 0
+            and (candidate_date.month, candidate_date.day) == (start_local.month, start_local.day)
+        ):
+            if count_limit is None or (years_diff // interval) < count_limit:
+                matched = True
+
+    if not matched:
+        return None
+
+    occ_start = dt.datetime(
+        candidate_date.year,
+        candidate_date.month,
+        candidate_date.day,
+        start_local.hour,
+        start_local.minute,
+        start_local.second,
+        tzinfo=tz,
+    )
+    if until_dt is not None and not until_is_date and occ_start > until_dt:
+        return None
+    return occ_start
+
+
 def expand_event_on_date(
     ev: IcsEvent, target_date: dt.date, tz: ZoneInfo
 ) -> list[tuple[dt.datetime, dt.datetime]]:
@@ -986,93 +1181,43 @@ def expand_event_on_date(
             return [(start_local, end_local)]
         return []
 
-    if target_date < start_local.date() or target_date in ev.exdates:
-        return []
-
     parts: dict[str, str] = {}
     for kv in ev.rrule.split(";"):
         if "=" in kv:
             k, v = kv.split("=", 1)
             parts[k.upper()] = v.upper()
 
-    freq = parts.get("FREQ", "")
-    interval = max(1, int(parts.get("INTERVAL", "1") or "1"))
     until_dt: dt.datetime | None = None
     until_is_date = False
     if "UNTIL" in parts:
         try:
             until_dt, until_is_date = parse_ics_datetime(parts["UNTIL"], {}, tz)
-            if target_date > until_dt.date():
-                return []
         except Exception:
             until_dt = None
 
-    count_limit = int(parts["COUNT"]) if "COUNT" in parts and parts["COUNT"].isdigit() else None
-    byday_tokens = [
-        tok[-2:] for tok in parts.get("BYDAY", "").split(",") if len(tok) >= 2 and tok[-2:] in RRULE_DAY_MAP
-    ]
-
-    matched = False
-    if freq == "DAILY":
-        days_diff = (target_date - start_local.date()).days
-        if days_diff % interval == 0:
-            if not byday_tokens or target_date.weekday() in [RRULE_DAY_MAP[d] for d in byday_tokens]:
-                if count_limit is None or (days_diff // interval) < count_limit:
-                    matched = True
-    elif freq == "WEEKLY":
-        allowed_wds = (
-            [RRULE_DAY_MAP[d] for d in byday_tokens]
-            if byday_tokens
-            else [start_local.weekday()]
+    # Check prior start dates as well when a timed recurring event spans across midnight
+    max_lookback_days = 0
+    if not ev.all_day:
+        end_offset_sec = (
+            start_local.hour * 3600
+            + start_local.minute * 60
+            + start_local.second
+            + duration.total_seconds()
         )
-        start_week_monday = start_local.date() - dt.timedelta(days=start_local.weekday())
-        target_week_monday = target_date - dt.timedelta(days=target_date.weekday())
-        weeks_diff = (target_week_monday - start_week_monday).days // 7
-        if weeks_diff >= 0 and weeks_diff % interval == 0 and target_date.weekday() in allowed_wds:
-            if count_limit is not None:
-                # Count exact matching occurrences up to target_date
-                occ = 0
-                cur = start_local.date()
-                while cur <= target_date and occ <= count_limit:
-                    w = ((cur - dt.timedelta(days=cur.weekday())) - start_week_monday).days // 7
-                    if w % interval == 0 and cur.weekday() in allowed_wds:
-                        occ += 1
-                    cur += dt.timedelta(days=1)
-                matched = occ <= count_limit
-            else:
-                matched = True
-    elif freq == "MONTHLY":
-        months_diff = (target_date.year - start_local.year) * 12 + (
-            target_date.month - start_local.month
+        if end_offset_sec > 86400:
+            max_lookback_days = min(7, int((end_offset_sec - 1) // 86400))
+
+    matches: list[tuple[dt.datetime, dt.datetime]] = []
+    for back in range(max_lookback_days, -1, -1):
+        cand_date = target_date - dt.timedelta(days=back)
+        occ_start = _rrule_occurrence_on_start_date(
+            ev, start_local, cand_date, parts, until_dt, until_is_date, tz
         )
-        if months_diff >= 0 and months_diff % interval == 0 and target_date.day == start_local.day:
-            if count_limit is None or (months_diff // interval) < count_limit:
-                matched = True
-    elif freq == "YEARLY":
-        years_diff = target_date.year - start_local.year
-        if (
-            years_diff >= 0
-            and years_diff % interval == 0
-            and (target_date.month, target_date.day) == (start_local.month, start_local.day)
-        ):
-            if count_limit is None or (years_diff // interval) < count_limit:
-                matched = True
-
-    if not matched:
-        return []
-
-    occ_start = dt.datetime(
-        target_date.year,
-        target_date.month,
-        target_date.day,
-        start_local.hour,
-        start_local.minute,
-        start_local.second,
-        tzinfo=tz,
-    )
-    if until_dt is not None and not until_is_date and occ_start > until_dt:
-        return []
-    return [(occ_start, occ_start + duration)]
+        if occ_start is not None:
+            occ_end = occ_start + duration
+            if occ_start < day_end and occ_end > day_begin:
+                matches.append((occ_start, occ_end))
+    return matches
 
 
 # ============================================================================
@@ -1150,27 +1295,35 @@ CREATE TABLE IF NOT EXISTS notified (
 
 
 class PlanStore:
+    SCHEMA_VERSION = 1
+
     def __init__(self, cfg: PlanConfig):
         self.cfg = cfg
         cfg.data_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+        is_new = not cfg.db_path.exists()
         self.conn = sqlite3.connect(str(cfg.db_path), timeout=10.0)
-        os.chmod(cfg.db_path, 0o600)
+        if is_new:
+            os.chmod(cfg.db_path, 0o600)
         self.conn.row_factory = sqlite3.Row
-        self.conn.execute("PRAGMA journal_mode=WAL;")
         self.conn.execute("PRAGMA foreign_keys=ON;")
-        self.conn.executescript(SCHEMA_SQL)
-        task_cols = {
-            r["name"]
-            for r in self.conn.execute("PRAGMA table_info(tasks)").fetchall()
-        }
-        if "auto_slotted" not in task_cols:
+        user_ver = int(self.conn.execute("PRAGMA user_version").fetchone()[0])
+        if user_ver < self.SCHEMA_VERSION:
+            os.chmod(cfg.db_path, 0o600)
+            self.conn.execute("PRAGMA journal_mode=WAL;")
+            self.conn.executescript(SCHEMA_SQL)
+            task_cols = {
+                r["name"]
+                for r in self.conn.execute("PRAGMA table_info(tasks)").fetchall()
+            }
+            if "auto_slotted" not in task_cols:
+                self.conn.execute(
+                    "ALTER TABLE tasks ADD COLUMN auto_slotted INTEGER NOT NULL DEFAULT 0"
+                )
             self.conn.execute(
-                "ALTER TABLE tasks ADD COLUMN auto_slotted INTEGER NOT NULL DEFAULT 0"
+                "INSERT OR IGNORE INTO focus (singleton, active) VALUES (1, 0)"
             )
-        self.conn.execute(
-            "INSERT OR IGNORE INTO focus (singleton, active) VALUES (1, 0)"
-        )
-        self.conn.commit()
+            self.conn.execute(f"PRAGMA user_version = {self.SCHEMA_VERSION}")
+            self.conn.commit()
 
     def close(self) -> None:
         self.conn.close()
@@ -1963,8 +2116,8 @@ class VikunjaClient:
                 {"other_task_id": child_id, "relation_kind": "subtask"},
             )
         except urllib.error.HTTPError as exc:
-            # 400/409 if relation already exists
-            if exc.code not in (400, 409):
+            # 400/409 if relation already exists, 404 if parent/child was deleted concurrently
+            if exc.code not in (400, 404, 409):
                 raise
 
 
@@ -2095,33 +2248,62 @@ class RadicaleClient:
         return results
 
 
+def _acquire_sync_lock(cfg: PlanConfig, timeout_sec: float = 25.0) -> int | None:
+    cfg.runtime_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
+    lock_path = cfg.runtime_dir / "junix-plan-sync.lock"
+    fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o600)
+    deadline = time.monotonic() + timeout_sec
+    while True:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return fd
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                os.close(fd)
+                return None
+            time.sleep(0.05)
+
+
 def sync_all(store: PlanStore, now: dt.datetime) -> dict[str, Any]:
     cfg = store.cfg
+    lock_fd = _acquire_sync_lock(cfg)
+    if lock_fd is None:
+        return {
+            "vikunja": "locked",
+            "radicale": "locked",
+            "errors": ["sync lock busy"],
+        }
+
     report: dict[str, Any] = {"vikunja": "skipped", "radicale": "skipped", "errors": []}
+    try:
+        if cfg.has_vikunja_creds:
+            try:
+                _sync_vikunja(store, VikunjaClient(cfg), now)
+                report["vikunja"] = "ok"
+            except Exception as exc:
+                report["vikunja"] = "error"
+                report["errors"].append(f"vikunja: {exc}")
 
-    if cfg.has_vikunja_creds:
+        if cfg.has_radicale_creds:
+            try:
+                _sync_radicale(store, RadicaleClient(cfg), now)
+                report["radicale"] = "ok"
+            except Exception as exc:
+                report["radicale"] = "error"
+                report["errors"].append(f"radicale: {exc}")
+
+        status_tag = "online" if not report["errors"] and (
+            report["vikunja"] == "ok" or report["radicale"] == "ok"
+        ) else ("offline" if report["errors"] else "local")
+        store.set_meta("last_sync_state", status_tag)
+        store.set_meta("last_sync_at", to_utc_iso(now) or "")
+        write_lock_status(store, now)
+        return report
+    finally:
         try:
-            _sync_vikunja(store, VikunjaClient(cfg), now)
-            report["vikunja"] = "ok"
-        except Exception as exc:
-            report["vikunja"] = "error"
-            report["errors"].append(f"vikunja: {exc}")
-
-    if cfg.has_radicale_creds:
-        try:
-            _sync_radicale(store, RadicaleClient(cfg), now)
-            report["radicale"] = "ok"
-        except Exception as exc:
-            report["radicale"] = "error"
-            report["errors"].append(f"radicale: {exc}")
-
-    status_tag = "online" if not report["errors"] and (
-        report["vikunja"] == "ok" or report["radicale"] == "ok"
-    ) else ("offline" if report["errors"] else "local")
-    store.set_meta("last_sync_state", status_tag)
-    store.set_meta("last_sync_at", to_utc_iso(now) or "")
-    write_lock_status(store, now)
-    return report
+            fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        finally:
+            os.close(lock_fd)
 
 
 def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> None:
@@ -2191,6 +2373,8 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
                 row["estimate_min"],
                 row["step_index"],
                 auto_slotted=bool(row["auto_slotted"]),
+                auto_start=row["start_at"],
+                auto_end=row["end_at"],
             ),
             "done": bool(row["done"]),
             "priority": int(row["priority"] or 0),
@@ -2209,7 +2393,17 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
             store.conn.commit()
         else:
             rid = int(row["remote_id"])
-            client.update_task(rid, payload)
+            try:
+                client.update_task(rid, payload)
+            except urllib.error.HTTPError as exc:
+                if exc.code == 404:
+                    # Task was deleted on Vikunja; drop orphaned local row instead of wedging sync
+                    store.conn.execute(
+                        "DELETE FROM tasks WHERE local_key = ?", (row["local_key"],)
+                    )
+                    store.conn.commit()
+                    continue
+                raise
             store.conn.execute(
                 "UPDATE tasks SET project_id = ?, dirty_op = NULL WHERE local_key = ?",
                 (int(pid), row["local_key"]),
@@ -2253,6 +2447,7 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
         clean_desc, est_min, step_idx, desc_auto = decode_task_description(
             rt.get("description")
         )
+        meta_auto_s, meta_auto_e = _decode_task_meta_window(rt.get("description"))
         pid = int(rt.get("project_id") or default_proj_id)
         pname = proj_by_id.get(pid, cfg_default_proj)
         due_iso = to_utc_iso(from_iso(rt.get("due_date"), store.cfg.tz))
@@ -2261,6 +2456,9 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
         updated_iso = to_utc_iso(from_iso(rt.get("updated"), store.cfg.tz)) or (
             to_utc_iso(now) or ""
         )
+        meta_matches_window = bool(
+            meta_auto_s and start_iso == meta_auto_s and end_iso == meta_auto_e
+        )
 
         existing = store.conn.execute(
             "SELECT local_key, estimate_min, step_index, start_at, end_at, auto_slotted FROM tasks WHERE remote_id = ?",
@@ -2268,10 +2466,20 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
         ).fetchone()
         if existing:
             window_unchanged = (existing["start_at"] == start_iso and existing["end_at"] == end_iso)
-            auto_flag = 1 if (desc_auto and (window_unchanged or bool(existing["auto_slotted"]) or start_iso is not None)) else 0
-            if existing["auto_slotted"] and not window_unchanged and start_iso is not None:
-                # User manually moved the time window in Vikunja Web UI -> treat as explicit pin!
+            web_ui_pinned = False
+            if start_iso is None:
                 auto_flag = 0
+            elif meta_auto_s is not None:
+                auto_flag = 1 if (desc_auto and meta_matches_window) else 0
+                if desc_auto and not meta_matches_window:
+                    web_ui_pinned = True
+            elif existing["auto_slotted"] and not window_unchanged:
+                auto_flag = 0
+                web_ui_pinned = True
+            elif not existing["auto_slotted"] and window_unchanged:
+                auto_flag = 0
+            else:
+                auto_flag = 1 if desc_auto else 0
             store.conn.execute(
                 """
                 UPDATE tasks
@@ -2287,6 +2495,7 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
                        end_at = ?,
                        auto_slotted = ?,
                        done = ?,
+                       dirty_op = CASE WHEN ? THEN 'upsert' ELSE dirty_op END,
                        updated_at = ?
                  WHERE remote_id = ?
                 """,
@@ -2303,11 +2512,15 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
                     end_iso,
                     auto_flag,
                     1 if rt.get("done") else 0,
+                    1 if web_ui_pinned else 0,
                     updated_iso,
                     rid,
                 ),
             )
         else:
+            init_auto = 0
+            if desc_auto and start_iso is not None:
+                init_auto = 1 if (meta_auto_s is None or meta_matches_window) else 0
             store.conn.execute(
                 """
                 INSERT INTO tasks (
@@ -2329,7 +2542,7 @@ def _sync_vikunja(store: PlanStore, client: VikunjaClient, now: dt.datetime) -> 
                     due_iso,
                     start_iso,
                     end_iso,
-                    1 if desc_auto else 0,
+                    init_auto,
                     1 if rt.get("done") else 0,
                     updated_iso,
                 ),
@@ -2808,19 +3021,34 @@ def opportunistic_background_sync(cfg: PlanConfig) -> None:
 # ============================================================================
 
 
+ROFI_MESSAGE_STYLE = (
+    "message { color: @fg1; padding: 10px 14px; border: 0px 4px 2px 4px; "
+    "border-color: @fg1; background-color: transparent; } "
+    "textbox { text-color: @fg1; background-color: transparent; }"
+)
+
 ROFI_THEME_MAIN = (
     "window { width: 860px; height: 560px; } "
     "listview { columns: 1; lines: 11; fixed-height: false; } "
     "element { orientation: horizontal; children: [ element-text ]; padding: 9px 14px; } "
     "element-text { horizontal-align: 0.0; margin: 0px; } "
-    "textbox { padding: 8px 14px; }"
+    + ROFI_MESSAGE_STYLE
 )
 
 ROFI_THEME_SUB = (
     "window { width: 620px; height: 340px; } "
     "listview { columns: 1; lines: 7; fixed-height: false; } "
     "element { orientation: horizontal; children: [ element-text ]; padding: 9px 14px; } "
-    "element-text { horizontal-align: 0.0; margin: 0px; }"
+    "element-text { horizontal-align: 0.0; margin: 0px; } "
+    + ROFI_MESSAGE_STYLE
+)
+
+ROFI_THEME_INPUT = (
+    "window { width: 780px; height: 185px; } "
+    "listview { lines: 0; padding: 0px; border: 0px; } "
+    "message { color: @fg1; padding: 10px 14px; border: 0px 4px 4px 4px; "
+    "border-color: @fg1; border-radius: 0px 0px 20px 20px; background-color: transparent; } "
+    "textbox { text-color: @fg1; background-color: transparent; }"
 )
 
 
@@ -2903,9 +3131,9 @@ def run_rofi_capture_only(store: PlanStore) -> int:
         [],
         mesg=(
             "<b>Tasks:</b> <tt>+ title tomorrow 16:00 ~45m !high #uni &gt;&gt; step 1 ~20m &gt;&gt; step 2 ~25m</tt>\n"
-            "<b>Events:</b> <tt>@ Dentist 24.11. 14:30-15:15 @Clinic weekly</tt>"
+            "<span alpha='80%'><b>Events:</b> <tt>@ Dentist 24.11. 14:30-15:15 @Clinic weekly</tt></span>"
         ),
-        theme_str="window { width: 780px; height: 180px; } listview { lines: 0; }",
+        theme_str=ROFI_THEME_INPUT,
     )
     typed = filt_text.strip() or sel_text.strip()
     if rc != 0 or not typed:
@@ -2946,7 +3174,7 @@ def run_rofi_hub(store: PlanStore) -> int:
         e_at = from_iso(focus["ends_at"], store.cfg.tz) or now
         rem_m = max(0, int(round((e_at - now).total_seconds() / 60.0)))
         banner_top = (
-            f"<b>🎯 FOCUS:</b> {html.escape(str(focus['title']))} — <b>{rem_m}m remaining</b>  •  Sync: {html.escape(sync_state)}"
+            f"<b>󰓾  FOCUS:</b> {html.escape(str(focus['title']))} — <b>{rem_m}m remaining</b>  •  Sync: {html.escape(sync_state)}"
         )
     elif plan.free_windows:
         fw_s, fw_e = plan.free_windows[0]
@@ -2954,15 +3182,15 @@ def run_rofi_hub(store: PlanStore) -> int:
         next_ev = next((b for b in plan.appointments if b.start > now), None)
         until_txt = f"until {next_ev.start:%H:%M} {html.escape(next_ev.title)}" if next_ev else "until end of day"
         banner_top = (
-            f"<b>⏱ {format_minutes_human(gap_m)} free</b> {until_txt}  •  "
+            f"<b>󰅐  {format_minutes_human(gap_m)} free</b> {until_txt}  •  "
             f"<b>{plan.open_count}</b> open  •  Sync: {html.escape(sync_state)}"
         )
     else:
-        banner_top = f"<b>📅 {now:%A, %d.%m.}</b>  •  <b>{plan.open_count}</b> open  •  Sync: {html.escape(sync_state)}"
+        banner_top = f"<b>󰃭  {now:%A, %d.%m.}</b>  •  <b>{plan.open_count}</b> open  •  Sync: {html.escape(sync_state)}"
 
     mesg = (
         f"{banner_top}\n"
-        "<span size='small'>Type <tt>+ task ~30m !high &gt;&gt; step1 ~15m</tt> or <tt>@ Event 14:00-15:00</tt>  •  "
+        "<span size='small' alpha='78%'>Type <tt>+ task ~30m !high &gt;&gt; step1 ~15m</tt> or <tt>@ Event 14:00-15:00</tt>  •  "
         "Enter: Done · Alt+1: Focus · Alt+2: +15m · Alt+3: Steps · Alt+4: Sync · Alt+Enter: Menu</span>"
     )
 
@@ -2970,10 +3198,10 @@ def run_rofi_hub(store: PlanStore) -> int:
 
     if focus["active"]:
         entries.append(
-            ("focus_done", "", "<b>✓ Complete Focus Step &amp; Mark Done</b>")
+            ("focus_done", "", "<b>󰄬  Complete Focus Step &amp; Mark Done</b>")
         )
-        entries.append(("focus_ext", "", "⏸ Extend Focus Session (+10m)"))
-        entries.append(("focus_stop", "", "✕ Stop Focus Session"))
+        entries.append(("focus_ext", "", "󰅐  Extend Focus Session (+10m)"))
+        entries.append(("focus_stop", "", "✕  Stop Focus Session"))
 
     # Merge today's appointments and auto-slotted steps chronologically
     timeline = sorted(plan.appointments + plan.slotted, key=lambda b: (b.start, 0 if b.kind == "event" else 1))
@@ -3019,12 +3247,12 @@ def run_rofi_hub(store: PlanStore) -> int:
             )
         )
 
-    entries.append(("capture_dialog", "", "➕ Quick-add task, steps, or appointment…"))
+    entries.append(("capture_dialog", "", "󰐕  Quick-add task, steps, or appointment…"))
     if plan.slotted:
-        entries.append(("commit_day", "", "📅 Commit today's auto-slotted times to Vikunja"))
-    entries.append(("sync", "", "🔄 Sync now with junixsrv"))
+        entries.append(("commit_day", "", "󰃭  Commit today's auto-slotted times to Vikunja"))
+    entries.append(("sync", "", "󰑐  Sync now with junixsrv"))
     if store.cfg.vikunja_url:
-        entries.append(("open_web", "", f"🌐 Open {html.escape(store.cfg.vikunja_url)}"))
+        entries.append(("open_web", "", f"󰖟  Open {html.escape(store.cfg.vikunja_url)}"))
 
     rc, idx, filt_text, sel_text = _rofi_prompt(
         "Day Plan",
@@ -3117,9 +3345,9 @@ def _prompt_decompose_steps(store: PlanStore, key: str, title: str) -> None:
         [],
         mesg=(
             f"Break <b>{html.escape(title)}</b> into ordered timed steps:\n"
-            "<tt>Read notes ~20m &gt;&gt; Draft solution ~40m &gt;&gt; Review ~15m</tt>"
+            "<span alpha='80%'><tt>Read notes ~20m &gt;&gt; Draft solution ~40m &gt;&gt; Review ~15m</tt></span>"
         ),
-        theme_str="window { width: 760px; height: 180px; } listview { lines: 0; }",
+        theme_str=ROFI_THEME_INPUT,
     )
     raw_steps = filt_steps.strip() or sel_steps.strip()
     if rc2 == 0 and raw_steps:
@@ -3137,12 +3365,12 @@ def _run_rofi_task_submenu(store: PlanStore, key: str) -> None:
         return
     est = int(row["estimate_min"] or store.cfg.default_estimate_minutes)
     actions = [
-        ("focus", f"▶ Start Focus Session ({est}m · auto-DND)"),
-        ("done", "✓ Mark Done"),
-        ("steps", "🧩 Decompose into timed steps…"),
-        ("snooze_15", "⏰ Snooze +15m"),
-        ("snooze_tmr", "🌅 Defer to Tomorrow 09:00"),
-        ("delete", "🗑 Delete Task"),
+        ("focus", f"󰓾  Start Focus Session ({est}m · auto-DND)"),
+        ("done", "󰄬  Mark Done"),
+        ("steps", "󰉻  Decompose into timed steps…"),
+        ("snooze_15", "󰅐  Snooze +15m"),
+        ("snooze_tmr", "󰖛  Defer to Tomorrow 09:00"),
+        ("delete", "󰧧  Delete Task"),
     ]
     rc, idx, _, _ = _rofi_prompt(
         str(row["title"])[:32],
@@ -3182,7 +3410,7 @@ def _run_rofi_task_submenu(store: PlanStore, key: str) -> None:
 
 
 def _run_rofi_event_submenu(store: PlanStore, uid: str) -> None:
-    actions = [("delete", "🗑 Delete Calendar Event")]
+    actions = [("delete", "󰧧  Delete Calendar Event")]
     rc, idx, _, _ = _rofi_prompt("Event", [a[1] for a in actions], theme_str=ROFI_THEME_SUB)
     if rc == 0 and idx == 0:
         now = now_local(store.cfg)
@@ -3281,7 +3509,8 @@ def _spawn_action_notification(
         ]
         for act_id, act_label in actions:
             cmd.append(f"--action={act_id}={act_label}")
-        cmd.extend([summary, body])
+        # Per FreeDesktop Notifications Spec, summary is plain text while body is Pango markup
+        cmd.extend([summary, html.escape(body)])
         proc_timeout = None if timeout_ms == 0 else max(30, int(timeout_ms / 1000) + 30)
         try:
             proc = subprocess.run(

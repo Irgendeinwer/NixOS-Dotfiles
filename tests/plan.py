@@ -620,6 +620,18 @@ class PlanEngineTests(unittest.TestCase):
         self.assertEqual(fired[0][1], "Due: Step one")
 
     def test_rofi_hub_inline_capture_and_alt_shortcuts(self) -> None:
+        for theme in (
+            plan_mod.ROFI_THEME_MAIN,
+            plan_mod.ROFI_THEME_SUB,
+            plan_mod.ROFI_THEME_INPUT,
+        ):
+            self.assertIn("text-color: @fg1", theme)
+        rasi = (
+            Path(__file__).resolve().parents[1]
+            / "modules/home-manager/rofi/layout.rasi"
+        ).read_text(encoding="utf-8")
+        self.assertIn("textbox {\n    text-color: @fg1;", rasi)
+
         t_key = self.store.add_captured_task(
             plan_mod.parse_quick_capture("+ Existing task ~25m", self.ref),
             self.ref,
@@ -1195,6 +1207,188 @@ class PlanEngineTests(unittest.TestCase):
 
         # Both tick 0 (initial startup) AND tick 1 (immediately upon new token, despite 3600s interval!) synced!
         self.assertEqual(sync_tokens_seen, ["", "tk_live"])
+
+    def test_english_prose_words_and_section_numbers_not_eaten_as_dates(self) -> None:
+        prose_cases = [
+            ("+ Do laundry", "Do laundry", None),
+            ("+ We need to go", "We need to go", None),
+            ("+ So far so good", "So far so good", None),
+            ("+ Finish it or so", "Finish it or so", None),
+            ("+ Check Sat receiver ~20m", "Check Sat receiver", 20),
+            ("+ Section 1.2. notes", "Section 1.2. notes", None),
+            ("+ Read section 1.2.", "Read section 1.2.", None),
+        ]
+        for raw, expected_title, expected_est in prose_cases:
+            with self.subTest(raw=raw):
+                cap = plan_mod.parse_quick_capture(raw, self.ref)
+                self.assertEqual(cap.title, expected_title)
+                self.assertIsNone(cap.due_at)
+                self.assertEqual(cap.estimate_min, expected_est)
+
+        # Genuine German and English date/weekday tokens still parse cleanly (self.ref = Fri 2026-11-20 -> next Fri = 2026-11-27)
+        c_fri = plan_mod.parse_quick_capture("+ Call landlord fri 10:00 ~15m !med #home", self.ref)
+        self.assertEqual(c_fri.title, "Call landlord")
+        self.assertEqual(c_fri.due_at, dt.datetime(2026, 11, 27, 10, 0, tzinfo=TZ))
+
+        c_do = plan_mod.parse_quick_capture("+ Abgabe am Do 18:00", self.ref)
+        self.assertEqual(c_do.title, "Abgabe")
+        self.assertEqual(c_do.due_at, dt.datetime(2026, 11, 26, 18, 0, tzinfo=TZ))
+
+        c_sa = plan_mod.parse_quick_capture("+ Putzen Sa", self.ref)
+        self.assertEqual(c_sa.title, "Putzen")
+        self.assertEqual(c_sa.due_at, dt.datetime(2026, 11, 21, 18, 0, tzinfo=TZ))
+
+        c_dent = plan_mod.parse_quick_capture("@ Dentist 24.11. 14:30-15:15 @Clinic weekly", self.ref)
+        self.assertEqual(c_dent.title, "Dentist")
+        self.assertEqual(c_dent.start_at, dt.datetime(2026, 11, 24, 14, 30, tzinfo=TZ))
+
+        c_exam = plan_mod.parse_quick_capture("@ Exam 1.2. 09:00", self.ref)
+        self.assertEqual(c_exam.title, "Exam")
+        self.assertEqual(c_exam.start_at, dt.datetime(2027, 2, 1, 9, 0, tzinfo=TZ))
+
+    def test_concurrent_sync_flock_404_update_recovery_and_webui_pin_persists_across_syncs(self) -> None:
+        mock_state = MockSyncState()
+
+        def slow_create_hook(method: str, path: str) -> None:
+            if method == "PUT" and path.endswith("/tasks"):
+                import time as _t
+
+                _t.sleep(0.08)
+
+        mock_state.on_request = slow_create_hook
+
+        class BoundHandler(MockPlannerHandler):
+            state = mock_state
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), BoundHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.shutdown)
+        self.addCleanup(server.server_close)
+
+        base_url = f"http://127.0.0.1:{server.server_port}"
+        self.cfg.vikunja_url = base_url
+        self.cfg.vikunja_token = "tk_sync_safe"
+
+        t_key = self.store.add_captured_task(
+            plan_mod.parse_quick_capture("+ Single remote task ~30m", self.ref),
+            self.ref,
+        )
+
+        # 1. Concurrent sync_all across two connections must serialize via flock and create ONLY 1 task
+        def worker_sync() -> dict:
+            st = plan_mod.PlanStore(self.cfg)
+            try:
+                return plan_mod.sync_all(st, self.ref)
+            finally:
+                st.close()
+
+        results: list[dict] = []
+        threads = [
+            threading.Thread(target=lambda: results.append(worker_sync()))
+            for _ in range(2)
+        ]
+        for th in threads:
+            th.start()
+        for th in threads:
+            th.join()
+
+        self.assertEqual(len(mock_state.tasks), 1)
+        rid = next(iter(mock_state.tasks.keys()))
+        mock_state.on_request = None
+
+        # 2. Commit auto-slotted window, drag in Vikunja Web UI, and verify auto_slotted=0 persists across Sync 1, 2, & 3
+        day = plan_mod.compute_day_plan(self.store, self.ref)
+        plan_mod.commit_day_plan(self.store, day, self.ref)
+        plan_mod.sync_all(self.store, self.ref)
+        self.assertEqual(self.store.get_task(t_key)["auto_slotted"], 1)
+
+        # Simulate Vikunja Web UI drag (updates start_date/end_date without touching description tag)
+        mock_state.tasks[rid]["start_date"] = "2026-11-20T16:00:00Z"
+        mock_state.tasks[rid]["end_date"] = "2026-11-20T16:30:00Z"
+        mock_state.tasks[rid]["updated"] = "2026-11-20T13:05:00Z"
+
+        for cycle in range(1, 4):
+            res = plan_mod.sync_all(self.store, self.ref + dt.timedelta(minutes=cycle))
+            self.assertEqual(res["errors"], [])
+            self.assertEqual(
+                self.store.get_task(t_key)["auto_slotted"],
+                0,
+                f"Task unpinned on sync cycle {cycle}!",
+            )
+        self.assertNotIn('"auto":1', mock_state.tasks[rid]["description"])
+
+        # 3. Remote deletion on Vikunja + local edit must recover cleanly from HTTP 404 on update_task
+        del mock_state.tasks[rid]
+        self.store.mark_task_done(t_key, self.ref + dt.timedelta(minutes=5), done=True)
+        res_404 = plan_mod.sync_all(self.store, self.ref + dt.timedelta(minutes=6))
+        self.assertEqual(res_404["errors"], [])
+        self.assertIsNone(self.store.get_task(t_key))
+
+    def test_recurring_overnight_spillover_mako_body_escape_and_schema_user_version(self) -> None:
+        # 1. Recurring Friday night event (22:00 -> Sat 02:00) spills onto Saturday
+        ics = (
+            "BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"
+            "BEGIN:VEVENT\r\n"
+            "UID:friday-night-ops\r\n"
+            "SUMMARY:Night Maintenance\r\n"
+            "DTSTART;TZID=Europe/Berlin:20261113T220000\r\n"
+            "DTEND;TZID=Europe/Berlin:20261114T020000\r\n"
+            "RRULE:FREQ=WEEKLY;BYDAY=FR\r\n"
+            "END:VEVENT\r\n"
+            "END:VCALENDAR\r\n"
+        )
+        self.store.import_ics_text(ics, self.ref)
+        day_sat = plan_mod.compute_day_plan(
+            self.store, dt.datetime(2026, 11, 21, 0, 30, tzinfo=TZ)
+        )
+        self.assertEqual(len(day_sat.appointments), 1)
+        self.assertEqual(
+            plan_mod._format_block_span(day_sat.appointments[0], day_sat.date, sep="-"),
+            "00:00-02:00",
+        )
+
+        # 2. _spawn_action_notification escapes Pango body while keeping summary plain text
+        seen_cmds: list[list[str]] = []
+
+        class SyncThread:
+            def __init__(self, target, daemon=True):
+                self._target = target
+
+            def start(self) -> None:
+                self._target()
+
+        def fake_run(cmd, **_kwargs):
+            seen_cmds.append(list(cmd))
+            proc = mock.MagicMock()
+            proc.stdout = ""
+            return proc
+
+        with (
+            mock.patch.object(plan_mod.shutil, "which", return_value="/usr/bin/notify-send"),
+            mock.patch.object(plan_mod.threading, "Thread", side_effect=SyncThread),
+            mock.patch.object(plan_mod.subprocess, "run", side_effect=fake_run),
+        ):
+            plan_mod._spawn_action_notification(
+                self.cfg,
+                "Due: Write <parser> & tests",
+                "R&D <core>  •  ~25m",
+                urgency="normal",
+                actions=[("done", "✓ Done")],
+                on_action=lambda _c: None,
+            )
+        self.assertEqual(seen_cmds[0][-2], "Due: Write <parser> & tests")
+        self.assertEqual(seen_cmds[0][-1], "R&amp;D &lt;core&gt;  •  ~25m")
+
+        # 3. PRAGMA user_version is set so reopening PlanStore skips executescript DDL
+        uv = self.store.conn.execute("PRAGMA user_version").fetchone()[0]
+        self.assertEqual(uv, plan_mod.PlanStore.SCHEMA_VERSION)
+        st2 = plan_mod.PlanStore(self.cfg)
+        self.addCleanup(st2.close)
+        self.assertEqual(
+            st2.conn.execute("PRAGMA user_version").fetchone()[0],
+            plan_mod.PlanStore.SCHEMA_VERSION,
+        )
 
 
 if __name__ == "__main__":
