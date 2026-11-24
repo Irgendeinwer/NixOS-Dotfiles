@@ -82,6 +82,12 @@
     return hostname;
   }
 
+  function isIpLiteral(hostname) {
+    if (!hostname) return false;
+    if (hostname.startsWith("[") || hostname.includes(":")) return true;
+    return /^(?:\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+  }
+
   function detectNetworkLabel(hostname) {
     if (hostname.endsWith(".local")) return "LAN mDNS";
     if (hostname.endsWith(".internal") || hostname.startsWith("100.")) return "Tailscale";
@@ -114,16 +120,25 @@
   function resolveServiceLink(svc) {
     const hostname = window.location.hostname || "localhost";
     const urlHost = formatHostForUrl(hostname);
+    const portSuffix = window.location.port ? `:${window.location.port}` : "";
+    const hostWithPort = `${urlHost}${portSuffix}`;
+    const rawIp = isIpLiteral(hostname);
     if (svc.vhost) {
+      if (rawIp && svc.fallbackPath) {
+        return {
+          href: svc.fallbackPath,
+          display: `${hostWithPort}${svc.fallbackPath}`
+        };
+      }
       const path = svc.path || "/";
       const scheme = svc.scheme || (window.location.protocol === "https:" ? "https" : "http");
       return {
         href: `${scheme}://${svc.vhost}${path}`,
-        display: `${svc.vhost}${path}`
+        display: rawIp ? `${svc.vhost}${path} (DNS)` : `${svc.vhost}${path}`
       };
     }
     if (svc.location) {
-      return { href: svc.location, display: svc.location };
+      return { href: svc.location, display: `${hostWithPort}${svc.location}` };
     }
     if (svc.port) {
       const path = svc.path || "/";

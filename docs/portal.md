@@ -24,12 +24,15 @@ Root CA (`assets/junix-ca.pem`) and a single private flake input
   identical `https://*.junixsrv.internal` URLs seamlessly.
 - **Mobile raw-IP HTTPS paths (`MobileF6`):**
   Because Android lacks per-app `/etc/hosts` without MagicDNS, the default
-  `https://100.110.103.47` virtual host also proxies `/music/rest/` +
-  `/music/share/` to Navidrome (configure Symfonium/Tempo server URL as
-  `https://100.110.103.47/music`), `/cal/` (`X-Script-Name: /cal`) to Radicale
-  (configure DAVx5 base URL as `https://100.110.103.47/cal/`), and `/_matrix/`
-  + `/.well-known/matrix/client` to Continuwuity (configure Element Android /
-  Element X homeserver URL as `https://100.110.103.47`).
+  `https://100.110.103.47` virtual host also proxies `/app/` + `/music/rest/` +
+  `/music/share/` to Navidrome (web player at `https://100.110.103.47/app/`,
+  Symfonium/Tempo server URL `https://100.110.103.47/music`), `/cal/`
+  (`X-Script-Name: /cal`) to Radicale (web UI at `https://100.110.103.47/cal/.web/`,
+  DAVx5 base URL `https://100.110.103.47/cal/`), and `/chat/` + `/_matrix/` +
+  `/.well-known/matrix/client` to Cinny & Continuwuity (Cinny PWA at
+  `https://100.110.103.47/chat/`, Element homeserver URL `https://100.110.103.47`).
+  When opened via an IP literal, portal cards adaptively link to these `:443`
+  `fallbackPath` routes instead of `.internal` subdomains.
 - **Internal-only Syncthing, LiteLLM, SearXNG, and Hermes Agent cards:**
   Syncthing's GUI (`127.0.0.1:8384`), LiteLLM (`127.0.0.1:4000`), SearXNG
   (`127.0.0.1:8888`), and Hermes Agent remain internal-only. Their cards display

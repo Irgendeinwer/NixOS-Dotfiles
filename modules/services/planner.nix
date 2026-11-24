@@ -154,6 +154,7 @@ in
             subdomain = lib.mkDefault cfg.radicale.subdomain;
             proxyPass = lib.mkDefault "http://127.0.0.1:${toString cfg.radicale.port}";
             path = lib.mkDefault "/.web/";
+            fallbackPath = lib.mkIf cfg.radicale.mobileCaldavPath (lib.mkDefault "/cal/.web/");
             systemdUnit = lib.mkDefault "radicale.service";
             order = lib.mkDefault 16;
           };

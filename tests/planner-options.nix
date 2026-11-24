@@ -132,6 +132,7 @@ assert calVhost.locations."/".proxyPass == "http://127.0.0.1:5232";
 assert defaultVhost.locations."= /cal".return == "308 /cal/";
 assert defaultVhost.locations."/cal/".proxyPass == "http://127.0.0.1:5232/";
 assert lib.hasInfix "X-Script-Name /cal" defaultVhost.locations."/cal/".extraConfig;
+assert enabledSops.custom.services.portal.services.radicale.fallbackPath == "/cal/.web/";
 assert !(builtins.hasAttr "vikunja_env" customFiles.sops.secrets);
 assert !(builtins.hasAttr "radicale_htpasswd" customFiles.sops.secrets);
 assert customFiles.services.vikunja.frontendScheme == "http";

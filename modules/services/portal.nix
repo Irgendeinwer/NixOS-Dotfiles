@@ -78,6 +78,7 @@ let
       systemdUnit
       hintCommand
       location
+      fallbackPath
       port
       path
       url
@@ -99,6 +100,7 @@ let
     systemdUnit = projectUnit name prj;
     hintCommand = null;
     location = projectLocation name prj;
+    fallbackPath = null;
     vhost = null;
     port = null;
     scheme = "https";
@@ -1045,6 +1047,17 @@ let
         description = "Portal subpath (starting with `/`) to link to and optionally reverse-proxy.";
       };
 
+      fallbackPath = lib.mkOption {
+        type = lib.types.nullOr lib.types.nonEmptyStr;
+        default = null;
+        example = "/chat/";
+        description = ''
+          Optional same-origin path on the default portal virtual host used
+          adaptively when the dashboard is opened via a raw IP address (for
+          example `https://100.110.103.47` on mobile devices without split-DNS).
+        '';
+      };
+
       proxyPass = lib.mkOption {
         type = lib.types.nullOr lib.types.nonEmptyStr;
         default = null;
@@ -1334,6 +1347,9 @@ in
               );
               port = lib.mkIf (!navProxied) (lib.mkDefault navPort);
               path = lib.mkDefault "/app/";
+              fallbackPath = lib.mkIf (navProxied && (navCfg.reverseProxy.mobileSubsonicPath or false)) (
+                lib.mkDefault "/app/"
+              );
               systemdUnit = lib.mkDefault "navidrome.service";
               order = lib.mkDefault 10;
             };
@@ -1389,20 +1405,39 @@ in
               && (navCfg.reverseProxy.enable or false)
               && (navCfg.reverseProxy.mobileSubsonicPath or false);
           in
-          lib.mkIf enableMobileSubsonic {
-            "/music/rest/" = {
-              proxyPass = "http://127.0.0.1:${toString navPort}/rest/";
-              extraConfig = ''
-                proxy_buffering off;
-              '';
-            };
-            "/music/share/" = {
-              proxyPass = "http://127.0.0.1:${toString navPort}/share/";
-              extraConfig = ''
-                proxy_buffering off;
-              '';
-            };
-          };
+          lib.mkIf enableMobileSubsonic (
+            let
+              navUpstream = "http://127.0.0.1:${toString navPort}";
+              mkNavProxy = {
+                proxyPass = navUpstream;
+                extraConfig = ''
+                  proxy_buffering off;
+                  client_max_body_size 32M;
+                '';
+              };
+            in
+            {
+              "= /app".return = "308 /app/";
+              "/app/" = mkNavProxy;
+              "/auth/" = mkNavProxy;
+              "/api/" = mkNavProxy;
+              "/rest/" = mkNavProxy;
+              "/share/" = mkNavProxy;
+              "/backgrounds/" = mkNavProxy;
+              "/music/rest/" = {
+                proxyPass = "${navUpstream}/rest/";
+                extraConfig = ''
+                  proxy_buffering off;
+                '';
+              };
+              "/music/share/" = {
+                proxyPass = "${navUpstream}/share/";
+                extraConfig = ''
+                  proxy_buffering off;
+                '';
+              };
+            }
+          );
       };
     }
 
@@ -1428,6 +1463,7 @@ in
             in
             (s.proxyPass != null -> (s.location != null || s.subdomain != null))
             && (s.webRoot != null -> s.subdomain != null)
+            && (s.fallbackPath != null -> lib.hasPrefix "/" s.fallbackPath)
             && (
               s.subdomain != null
               -> (((s.proxyPass != null) != (s.webRoot != null)) && validSubdomain s.subdomain)

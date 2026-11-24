@@ -103,12 +103,14 @@ let
     };
   };
 
-  badMobileHttpsPort = evalHermes {
+  mobileChatDisabled = evalHermes {
+    boot.isContainer = true;
+    custom.system.security.localCa.certificateFile = dummyCa;
     custom.services = {
       portal.enable = true;
       matrix = {
         enable = true;
-        webClient.mobileHttpsPort = 443;
+        webClient.mobileChatPath = false;
       };
     };
   };
@@ -176,7 +178,14 @@ assert lib.hasInfix "$junix_cinny_homeserver_list"
   matrixVhost.locations."= /config.json".extraConfig;
 assert lib.hasInfix "map $http_host $junix_cinny_homeserver_list"
   enabledContainer.services.nginx.appendHttpConfig;
-assert builtins.elem 8448 enabledContainer.networking.firewall.allowedTCPPorts;
+assert enabledContainer.custom.services.portal.services.matrix.fallbackPath == "/chat/";
+assert defaultVhost.locations."= /chat".return == "308 /chat/";
+assert defaultVhost.locations ? "= /chat/config.json";
+assert lib.hasInfix "$junix_cinny_homeserver_list"
+  defaultVhost.locations."= /chat/config.json".extraConfig;
+assert defaultVhost.locations."/chat/".tryFiles == "$uri /chat/index.html";
+assert !(mobileChatDisabled.services.nginx.virtualHosts.junixsrv.locations ? "/chat/");
+assert mobileChatDisabled.custom.services.portal.services.matrix.fallbackPath == null;
 assert defaultVhost.locations ? "= /.well-known/matrix/client";
 assert lib.hasInfix "$junix_matrix_base_url"
   defaultVhost.locations."= /.well-known/matrix/client".extraConfig;
@@ -196,7 +205,9 @@ assert noModuleFailures webClientDisabled;
 assert
   webClientDisabled.services.nginx.virtualHosts."matrix.junixsrv.internal".locations."/".proxyPass
   == "http://127.0.0.1:6167";
-assert !(builtins.elem 8448 webClientDisabled.networking.firewall.allowedTCPPorts);
+assert
+  webClientDisabled.custom.services.portal.services.matrix.fallbackPath == "/_matrix/client/versions";
+assert !(webClientDisabled.services.nginx.virtualHosts.junixsrv.locations ? "/chat/");
 # Enabled container stack: SearXNG loopback JSON search
 assert enabledContainer.services.searx.enable;
 assert !enabledContainer.services.searx.configureUwsgi;
@@ -261,7 +272,6 @@ assert
 assert hasFailedAssertion "custom.services.hermes:" missingUpstream;
 assert hasFailedAssertion "custom.services.hermes.matrix:" emptyAllowedUsers;
 assert hasFailedAssertion "custom.services.matrix:" openRegistrationNoToken;
-assert hasFailedAssertion "custom.services.matrix.webClient:" badMobileHttpsPort;
 # Real host wiring across junixsrv, junixos, and junixbook
 assert serverHost.custom.services.matrix.enable;
 assert serverHost.custom.services.hermes.enable;

@@ -70,13 +70,6 @@ let
     extraConfig = matrixProxyConfig;
   };
 
-  matrixExtraLocations = {
-    "= /.well-known/matrix/client" = wellKnownLocation;
-  }
-  // lib.optionalAttrs cfg.mobileMatrixPath {
-    "/_matrix/" = matrixApiLocation;
-  };
-
   cinnyStaticConf = {
     defaultHomeserver = 0;
     homeserverList = [ matrixHost ];
@@ -97,20 +90,97 @@ let
     conf = cinnyStaticConf;
   };
 
+  cinnyChatUnwrapped = pkgs.cinny-unwrapped.overrideAttrs (old: {
+    pname = "cinny-chat-unwrapped";
+    inherit (pkgs.cinny-unwrapped) npmDeps;
+    preBuild = (old.preBuild or "") + ''
+      substituteInPlace build.config.ts --replace-fail "base: '/'" "base: '/chat/'"
+    '';
+    postInstall = (old.postInstall or "") + ''
+      substituteInPlace "$out/index.html" \
+        --replace-quiet 'href="/manifest.json"' 'href="/chat/manifest.json"' \
+        --replace-quiet 'href="/chat/chat/manifest.json"' 'href="/chat/manifest.json"'
+    '';
+  });
+
+  defaultMobileCinnyPackage = pkgs.cinny.override {
+    pname = "cinny-chat";
+    cinny-unwrapped = cinnyChatUnwrapped;
+    conf = cinnyStaticConf;
+  };
+
+  cinnyMobileWebRoot = pkgs.runCommand "cinny-mobile-webroot" { } ''
+    mkdir -p "$out"
+    ln -s ${cfg.webClient.mobilePackage} "$out/chat"
+  '';
+
   cinnyDynamicConfigJson =
     ''{"defaultHomeserver":0,"homeserverList":$junix_cinny_homeserver_list,''
     + ''"allowCustomHomeservers":${lib.boolToString cfg.webClient.allowCustomHomeservers},''
     + ''"featuredCommunities":{"openAsDefault":false,"spaces":[],"rooms":[],"servers":[]},''
     + ''"hashRouter":{"enabled":false,"basename":"/"}}'';
 
-  mobileHttpsPort = cfg.webClient.mobileHttpsPort;
-  mobileHttpsActive =
+  mobileChatActive =
     portalMatrixEnabled
-    && portalTls
     && cfg.enable
     && cfg.webClient.enable
     && cfg.mobileMatrixPath
-    && mobileHttpsPort != null;
+    && cfg.webClient.mobileChatPath;
+
+  matrixExtraLocations = {
+    "= /.well-known/matrix/client" = wellKnownLocation;
+  }
+  // lib.optionalAttrs cfg.mobileMatrixPath {
+    "/_matrix/" = matrixApiLocation;
+  }
+  // lib.optionalAttrs mobileChatActive {
+    "= /chat".return = "308 /chat/";
+
+    "= /chat/config.json".extraConfig = ''
+      default_type application/json;
+      add_header Cache-Control "no-cache" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Vary "Host" always;
+      return 200 '${cinnyDynamicConfigJson}';
+    '';
+
+    "= /chat/sw.js" = {
+      root = "${cinnyMobileWebRoot}";
+      tryFiles = "/chat/sw.js =404";
+      extraConfig = ''
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options "nosniff" always;
+      '';
+    };
+
+    "/chat/assets/" = {
+      root = "${cinnyMobileWebRoot}";
+      tryFiles = "$uri =404";
+      extraConfig = ''
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        add_header X-Content-Type-Options "nosniff" always;
+      '';
+    };
+
+    "/chat/public/" = {
+      root = "${cinnyMobileWebRoot}";
+      tryFiles = "$uri =404";
+      extraConfig = ''
+        add_header X-Content-Type-Options "nosniff" always;
+      '';
+    };
+
+    "/chat/" = {
+      root = "${cinnyMobileWebRoot}";
+      tryFiles = "$uri /chat/index.html";
+      extraConfig = ''
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header Referrer-Policy "same-origin" always;
+      '';
+    };
+  };
 in
 {
   options.custom.services.matrix = {
@@ -190,34 +260,32 @@ in
         description = "Allow entering custom homeservers in Cinny's login server picker.";
       };
 
-      mobileHttpsPort = lib.mkOption {
-        type = lib.types.nullOr lib.types.port;
-        default = 8448;
+      mobileChatPath = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
         description = ''
-          Additional HTTPS port on the Matrix virtual host (`default_server`)
-          so mobile browsers over raw Tailscale IP (`https://<ip>:8448/`) can
-          install and use the self-hosted Cinny PWA without split-DNS. Set to
-          `null` to disable.
+          Also serve Cinny under `/chat/` on the default portal `:443` virtual
+          host so mobile browsers over raw Tailscale IP (`https://<ip>/chat/`)
+          can use and install the self-hosted Cinny PWA over TCP 443 without
+          split-DNS or extra Tailscale ACL ports.
         '';
+      };
+
+      mobilePackage = lib.mkOption {
+        type = lib.types.package;
+        default = defaultMobileCinnyPackage;
+        defaultText = lib.literalExpression "pkgs.cinny.override { cinny-unwrapped = ...; conf = ...; }";
+        description = "Static Cinny bundle compiled with `base = \"/chat/\"` for raw-IP mobile access on `:443`.";
       };
     };
   };
 
   config = lib.mkMerge [
     {
-      assertions =
-        lib.optional (cfg.enable && cfg.allowRegistration) {
-          assertion = cfg.registrationTokenFile != null;
-          message = "custom.services.matrix: allowRegistration requires registrationTokenFile.";
-        }
-        ++ lib.optional (cfg.enable && cfg.webClient.enable && mobileHttpsPort != null) {
-          assertion =
-            !(builtins.elem mobileHttpsPort [
-              80
-              443
-            ]);
-          message = "custom.services.matrix.webClient: mobileHttpsPort must not collide with ports 80 or 443.";
-        };
+      assertions = lib.optional (cfg.enable && cfg.allowRegistration) {
+        assertion = cfg.registrationTokenFile != null;
+        message = "custom.services.matrix: allowRegistration requires registrationTokenFile.";
+      };
 
       custom.services.portal = {
         services.matrix = lib.mkIf (portalEnabled && cfg.enable) (
@@ -236,6 +304,9 @@ in
                 badge = lib.mkDefault "HTTPS · Cinny";
                 webRoot = lib.mkDefault cfg.webClient.package;
                 path = lib.mkDefault "/";
+                fallbackPath = lib.mkIf (cfg.mobileMatrixPath && cfg.webClient.mobileChatPath) (
+                  lib.mkDefault "/chat/"
+                );
               }
             else
               {
@@ -243,6 +314,7 @@ in
                 badge = lib.mkDefault "HTTPS · Matrix";
                 proxyPass = lib.mkDefault "http://127.0.0.1:${toString cfg.port}";
                 path = lib.mkDefault "/_matrix/client/versions";
+                fallbackPath = lib.mkIf cfg.mobileMatrixPath (lib.mkDefault "/_matrix/client/versions");
                 extraProxyConfig = lib.mkDefault matrixProxyConfig;
               }
           )
@@ -253,10 +325,6 @@ in
     }
 
     (lib.mkIf cfg.enable {
-      networking.firewall.allowedTCPPorts = lib.mkIf (
-        mobileHttpsActive && (portalCfg.openFirewall or false)
-      ) [ mobileHttpsPort ];
-
       services.nginx = lib.mkIf portalEnabled {
         appendHttpConfig =
           let
@@ -283,41 +351,6 @@ in
           );
 
         virtualHosts.${matrixHost} = lib.mkIf portalMatrixEnabled {
-          listen = lib.mkIf mobileHttpsActive [
-            {
-              addr = "0.0.0.0";
-              port = 80;
-              ssl = false;
-            }
-            {
-              addr = "[::0]";
-              port = 80;
-              ssl = false;
-            }
-            {
-              addr = "0.0.0.0";
-              port = 443;
-              ssl = true;
-            }
-            {
-              addr = "[::0]";
-              port = 443;
-              ssl = true;
-            }
-            {
-              addr = "0.0.0.0";
-              port = mobileHttpsPort;
-              ssl = true;
-              extraParameters = [ "default_server" ];
-            }
-            {
-              addr = "[::0]";
-              port = mobileHttpsPort;
-              ssl = true;
-              extraParameters = [ "default_server" ];
-            }
-          ];
-
           locations = {
             "= /.well-known/matrix/client" = wellKnownLocation;
           }

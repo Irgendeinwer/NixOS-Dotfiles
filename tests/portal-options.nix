@@ -208,6 +208,10 @@ assert httpsSops.sops.secrets.portal_tls_cert.mode == "0400";
 assert builtins.elem "nginx.service" httpsSops.sops.secrets.portal_tls_cert.reloadUnits;
 assert vhost.locations."= /api/status".proxyPass == "http://127.0.0.1:18080/api/status";
 assert vhost.locations."/study-tracker/".proxyPass == "http://127.0.0.1:18090/";
+assert vhost.locations."= /app".return == "308 /app/";
+assert vhost.locations."/app/".proxyPass == "http://127.0.0.1:4533";
+assert vhost.locations."/api/".proxyPass == "http://127.0.0.1:4533";
+assert vhost.locations."/rest/".proxyPass == "http://127.0.0.1:4533";
 assert vhost.locations."/music/rest/".proxyPass == "http://127.0.0.1:4533/rest/";
 assert vhost.locations."/music/share/".proxyPass == "http://127.0.0.1:4533/share/";
 assert lib.hasInfix "Content-Security-Policy" vhost.locations."/".extraConfig;
@@ -216,6 +220,7 @@ assert httpsSops.custom.services.portal.services.navidrome.port == null;
 assert httpsSops.custom.services.portal.services.navidrome.subdomain == "music";
 assert httpsSops.custom.services.portal.services.navidrome.proxyPass == "http://127.0.0.1:4533";
 assert httpsSops.custom.services.portal.services.navidrome.path == "/app/";
+assert httpsSops.custom.services.portal.services.navidrome.fallbackPath == "/app/";
 assert musicVhost.forceSSL;
 assert musicVhost.locations."/".proxyPass == "http://127.0.0.1:4533";
 # Syncthing stays internal-only (unexposed on Nginx and direct ports).
