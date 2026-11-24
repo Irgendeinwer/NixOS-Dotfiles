@@ -61,5 +61,12 @@ lib.mkIf waylandEnabled {
         invisible = 0;
       };
     };
+
+    # Keep Dux Calendar silenced after all mode/urgency sections so even a
+    # manual UI toggle cannot duplicate `junix-plan-daemon` alerts.
+    extraConfig = ''
+      [app-name="Dux Calendar"]
+      invisible=1
+    '';
   };
 }

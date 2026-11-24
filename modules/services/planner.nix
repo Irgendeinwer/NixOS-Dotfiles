@@ -54,6 +54,16 @@ in
         description = "Subdomain prefix under `custom.services.portal.domainSuffix` for Vikunja.";
       };
 
+      mobileCaldavPath = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Also expose Vikunja's CalDAV (`VTODO`) endpoint under `/dav` and `/dav/`
+          on the default portal virtual host so mobile DAVx5 + Tasks.org clients
+          can sync via raw Tailscale IP (`https://<ip>/dav/`) without `/etc/hosts`.
+        '';
+      };
+
       enableRegistration = lib.mkOption {
         type = lib.types.bool;
         default = false;
@@ -160,15 +170,31 @@ in
           };
         };
 
-        extraLocations = lib.mkIf (portalEnabled && cfg.radicale.enable && cfg.radicale.mobileCaldavPath) {
-          "= /cal".return = "308 /cal/";
-          "/cal/" = {
-            proxyPass = "http://127.0.0.1:${toString cfg.radicale.port}/";
-            extraConfig = ''
-              proxy_set_header X-Script-Name /cal;
-            '';
-          };
-        };
+        extraLocations = lib.mkMerge [
+          (lib.mkIf (portalEnabled && cfg.radicale.enable && cfg.radicale.mobileCaldavPath) {
+            "= /cal".return = "308 /cal/";
+            "/cal/" = {
+              proxyPass = "http://127.0.0.1:${toString cfg.radicale.port}/";
+              extraConfig = ''
+                proxy_set_header X-Script-Name /cal;
+              '';
+            };
+          })
+          (lib.mkIf (portalEnabled && cfg.vikunja.enable && cfg.vikunja.mobileCaldavPath) {
+            "= /dav" = {
+              proxyPass = "http://127.0.0.1:${toString cfg.vikunja.port}";
+              extraConfig = ''
+                client_max_body_size 64M;
+              '';
+            };
+            "/dav/" = {
+              proxyPass = "http://127.0.0.1:${toString cfg.vikunja.port}";
+              extraConfig = ''
+                client_max_body_size 64M;
+              '';
+            };
+          })
+        ];
       };
     }
 
@@ -197,6 +223,7 @@ in
         frontendHostname = "${cfg.vikunja.subdomain}.${portalDomainSuffix}";
         environmentFiles = [ vikunjaEnvPath ];
         settings.service = {
+          enablecaldav = true;
           enablelinksharing = false;
           enabletaskattachments = true;
           enableregistration = cfg.vikunja.enableRegistration;

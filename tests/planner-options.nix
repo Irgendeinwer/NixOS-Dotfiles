@@ -59,7 +59,10 @@ let
       };
       planner = {
         enable = true;
-        vikunja.environmentFile = dummyEnv;
+        vikunja = {
+          environmentFile = dummyEnv;
+          mobileCaldavPath = false;
+        };
         radicale = {
           htpasswdFile = dummyHtpasswd;
           mobileCaldavPath = false;
@@ -99,6 +102,18 @@ let
     );
   desktopPlanJson = readPlanJson desktopHome;
   laptopPlanJson = readPlanJson laptopHome;
+  desktopDcalTheme = builtins.fromJSON (
+    builtins.unsafeDiscardStringContext desktopHome.xdg.configFile."dankcal/gruvbox-theme.json".text
+  );
+  noDcalHost =
+    (self.nixosConfigurations.junixos.extendModules {
+      modules = [
+        {
+          custom.desktop.planner.duxCalendar.enable = false;
+        }
+      ];
+    }).config;
+  noDcalHome = noDcalHost.home-manager.users.${noDcalHost.custom.user};
 in
 assert !disabled.services.vikunja.enable;
 assert !disabled.services.radicale.enable;
@@ -109,6 +124,7 @@ assert enabledSops.services.vikunja.address == "127.0.0.1";
 assert enabledSops.services.vikunja.port == 3456;
 assert enabledSops.services.vikunja.frontendScheme == "https";
 assert enabledSops.services.vikunja.frontendHostname == "tasks.junixsrv.internal";
+assert enabledSops.services.vikunja.settings.service.enablecaldav;
 assert !enabledSops.services.vikunja.settings.service.enableregistration;
 assert !enabledSops.services.vikunja.settings.service.enablelinksharing;
 assert enabledSops.services.vikunja.settings.service.maxitemsperpage == 200;
@@ -132,21 +148,39 @@ assert calVhost.locations."/".proxyPass == "http://127.0.0.1:5232";
 assert defaultVhost.locations."= /cal".return == "308 /cal/";
 assert defaultVhost.locations."/cal/".proxyPass == "http://127.0.0.1:5232/";
 assert lib.hasInfix "X-Script-Name /cal" defaultVhost.locations."/cal/".extraConfig;
+assert defaultVhost.locations."= /dav".proxyPass == "http://127.0.0.1:3456";
+assert defaultVhost.locations."/dav/".proxyPass == "http://127.0.0.1:3456";
+assert lib.hasInfix "client_max_body_size 64M;" defaultVhost.locations."/dav/".extraConfig;
 assert enabledSops.custom.services.portal.services.radicale.fallbackPath == "/cal/.web/";
 assert !(builtins.hasAttr "vikunja_env" customFiles.sops.secrets);
 assert !(builtins.hasAttr "radicale_htpasswd" customFiles.sops.secrets);
 assert customFiles.services.vikunja.frontendScheme == "http";
 assert !(builtins.hasAttr "/cal/" customFiles.services.nginx.virtualHosts.junixsrv.locations);
+assert !(builtins.hasAttr "/dav/" customFiles.services.nginx.virtualHosts.junixsrv.locations);
 assert hasFailedAssertion "custom.services.planner:" portCollision;
 assert serverHost.services.vikunja.enable && serverHost.services.radicale.enable;
+assert serverHost.services.nginx.virtualHosts.junixsrv.locations ? "/dav/";
 assert !(builtins.elem 3456 serverHost.networking.firewall.allowedTCPPorts);
 assert !(builtins.elem 5232 serverHost.networking.firewall.allowedTCPPorts);
 assert desktopHost.custom.desktop.planner.enable && laptopHost.custom.desktop.planner.enable;
+assert
+  desktopHost.custom.desktop.planner.duxCalendar.enable
+  && laptopHost.custom.desktop.planner.duxCalendar.enable;
 assert builtins.elem "tasks.junixsrv.internal" desktopAliases;
 assert builtins.elem "cal.junixsrv.internal" desktopAliases;
 assert builtins.elem "music.junixsrv.internal" desktopAliases;
 assert desktopHome.systemd.user.services ? junix-plan-daemon;
 assert laptopHome.systemd.user.services ? junix-plan-daemon;
+assert desktopHome.systemd.user.services ? dcal;
+assert laptopHome.systemd.user.services ? dcal;
+assert !(noDcalHome.systemd.user.services ? dcal);
+assert !(noDcalHome.xdg.configFile ? "dankcal/gruvbox-theme.json");
+assert !(lib.hasInfix "dcal toggle" noDcalHome.wayland.windowManager.hyprland.extraConfig);
+assert lib.hasInfix "dcal toggle" desktopHome.wayland.windowManager.hyprland.extraConfig;
+assert lib.hasInfix "[app-name=\"Dux Calendar\"]" desktopHome.services.mako.extraConfig;
+assert lib.hasInfix "invisible=1" desktopHome.services.mako.extraConfig;
+assert desktopDcalTheme.dark.surface == desktopHome.custom.theme.palette.bg0;
+assert desktopDcalTheme.dark.primary == desktopHome.custom.theme.palette.accent;
 assert desktopDaemonUnit.X-Restart-Triggers == [ desktopPlanSource ];
 assert desktopPlanJson.vikunja_url == "https://tasks.junixsrv.internal";
 assert desktopPlanJson.radicale_url == "https://cal.junixsrv.internal";

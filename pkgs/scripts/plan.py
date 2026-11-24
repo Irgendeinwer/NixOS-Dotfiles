@@ -2728,6 +2728,23 @@ def _run_quiet(cmd: list[str], timeout: float = 3.0) -> tuple[int, str]:
         return 1, ""
 
 
+def _spawn_detached(cmd: list[str]) -> bool:
+    exe = shutil.which(cmd[0])
+    if not exe:
+        return False
+    try:
+        subprocess.Popen(
+            [exe, *cmd[1:]],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+        return True
+    except Exception:
+        return False
+
+
 def is_mako_dnd_active() -> bool:
     rc, out = _run_quiet(["makoctl", "mode"])
     return rc == 0 and "do-not-disturb" in out.splitlines()
@@ -3259,6 +3276,8 @@ def run_rofi_hub(store: PlanStore) -> int:
     if plan.slotted:
         entries.append(("commit_day", "", "󰃭  Commit today's auto-slotted times to Vikunja"))
     entries.append(("sync", "", "󰑐  Sync now with junixsrv"))
+    if shutil.which("dcal"):
+        entries.append(("open_calendar", "", "󰃭  Open Dux Calendar (week / month grid)"))
     if store.cfg.vikunja_url:
         entries.append(("open_web", "", f"󰖟  Open {html.escape(store.cfg.vikunja_url)}"))
 
@@ -3326,6 +3345,8 @@ def run_rofi_hub(store: PlanStore) -> int:
             show_osd("Sync offline — changes queued locally")
         else:
             show_osd("Synced with junixsrv")
+    elif kind == "open_calendar":
+        _spawn_detached(["dcal", "show"])
     elif kind == "open_web":
         _run_quiet(["xdg-open", store.cfg.vikunja_url])
     elif kind == "task":
@@ -3844,8 +3865,105 @@ def cmd_agenda(store: PlanStore, as_json: bool = False) -> int:
     return 0
 
 
+def _add_dcal_caldav_account(
+    dcal_exe: str,
+    url: str,
+    username: str,
+    password: str,
+    display_name: str,
+    ca_cert: str = "",
+) -> tuple[bool, str]:
+    env = dict(os.environ)
+    if ca_cert and "SSL_CERT_FILE" not in env and not Path("/etc/ssl/certs/ca-certificates.crt").is_file():
+        env["SSL_CERT_FILE"] = ca_cert
+    try:
+        proc = subprocess.run(
+            [
+                dcal_exe,
+                "account",
+                "add",
+                "caldav",
+                "--url",
+                url,
+                "--username",
+                username,
+                "--name",
+                display_name,
+            ],
+            input=f"{password}\n",
+            capture_output=True,
+            text=True,
+            env=env,
+            timeout=15.0,
+            check=False,
+        )
+        if proc.returncode == 0:
+            return True, ""
+        detail = (proc.stderr or proc.stdout or "").strip()
+        # Strip any echoed prompt prefix from readPassword when stdin is a pipe
+        detail = re.sub(r"^Password:\s*", "", detail).strip()
+        return False, detail or f"exit {proc.returncode}"
+    except Exception as exc:
+        return False, str(exc)
+
+
+def _provision_dcal_accounts(cfg: PlanConfig) -> int:
+    dcal_exe = shutil.which("dcal")
+    if not dcal_exe:
+        return 0
+    rc = 0
+    if cfg.has_radicale_creds:
+        ok, err_msg = _add_dcal_caldav_account(
+            dcal_exe,
+            cfg.radicale_url,
+            cfg.radicale_user,
+            cfg.radicale_password,
+            "Junix Calendar",
+            ca_cert=cfg.ca_cert,
+        )
+        if ok:
+            print(f"Dux Calendar OK: synced Radicale ({cfg.radicale_url})")
+        else:
+            print(f"warning: Dux Calendar Radicale setup failed ({err_msg})", file=sys.stderr)
+            rc = 1
+    if cfg.has_vikunja_creds:
+        vk_dav_url = f"{cfg.vikunja_url.rstrip('/')}/dav/"
+        vk_user = cfg.radicale_user or getpass.getuser()
+        ok, err_msg = _add_dcal_caldav_account(
+            dcal_exe,
+            vk_dav_url,
+            vk_user,
+            cfg.vikunja_token,
+            "Junix Tasks",
+            ca_cert=cfg.ca_cert,
+        )
+        if ok:
+            print(f"Dux Calendar OK: synced Vikunja tasks ({vk_dav_url})")
+        else:
+            print(
+                f"note: Dux Calendar Vikunja CalDAV skipped ({err_msg}); "
+                "grant `caldav` scope on your Vikunja API token or create a CalDAV token "
+                "under Settings -> CalDAV if you also want VTODO tasks inside Dux Calendar.",
+                file=sys.stderr,
+            )
+    return rc
+
+
 def cmd_auth(cfg: PlanConfig, args: argparse.Namespace) -> int:
     cred_path = cfg.config_dir / "credentials.env"
+    if getattr(args, "dcal_only", False):
+        reloaded = load_config()
+        if not reloaded.has_radicale_creds and not reloaded.has_vikunja_creds:
+            print(
+                f"error: no saved credentials found in {cred_path}; run `plan auth` first.",
+                file=sys.stderr,
+            )
+            return 1
+        if not shutil.which("dcal"):
+            print("error: `dcal` (Dux Calendar) is not installed on PATH.", file=sys.stderr)
+            return 1
+        return _provision_dcal_accounts(reloaded)
+
     existing_creds = load_env_file(cred_path)
 
     vk_token = (
@@ -3922,6 +4040,8 @@ def cmd_auth(cfg: PlanConfig, args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
             rc = 1
+    if rc == 0:
+        _provision_dcal_accounts(reloaded)
     return rc
 
 
@@ -3983,6 +4103,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_auth.add_argument("--vikunja-token", default=None)
     p_auth.add_argument("--radicale-user", default=None)
     p_auth.add_argument("--radicale-password", default=None)
+    p_auth.add_argument(
+        "--dcal-only",
+        action="store_true",
+        help="Provision Dux Calendar CalDAV accounts from saved credentials without prompting",
+    )
 
     sub.add_parser("daemon", help="Run background sync, reminder, and Focus DND daemon")
     return p

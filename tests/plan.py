@@ -1400,6 +1400,72 @@ class PlanEngineTests(unittest.TestCase):
             plan_mod.PlanStore.SCHEMA_VERSION,
         )
 
+    def test_dcal_provisioning_and_rofi_calendar_launch(self) -> None:
+        # 1. _provision_dcal_accounts pipes passwords over stdin (never argv)
+        seen_calls: list[tuple[list[str], str]] = []
+
+        def fake_dcal_run(cmd, input="", **_kwargs):
+            seen_calls.append((list(cmd), input))
+            proc = mock.MagicMock()
+            proc.returncode = 0
+            proc.stdout = ""
+            proc.stderr = ""
+            return proc
+
+        auth_cfg = plan_mod.PlanConfig(
+            config_dir=self.cfg.config_dir,
+            data_dir=self.cfg.data_dir,
+            vikunja_url="https://tasks.junixsrv.internal",
+            vikunja_token="tk_secret_vikunja_token",
+            radicale_url="https://cal.junixsrv.internal",
+            radicale_user="irgendeinwer",
+            radicale_password="radicale_super_secret",
+            calendar_path="/irgendeinwer/personal/",
+            ca_cert="",
+            default_project="Inbox",
+            timezone="Europe/Berlin",
+            sync_interval_sec=180,
+            auto_dnd=True,
+            credentials_file="",
+        )
+        with (
+            mock.patch.object(plan_mod.shutil, "which", return_value="/usr/bin/dcal"),
+            mock.patch.object(plan_mod.subprocess, "run", side_effect=fake_dcal_run),
+        ):
+            rc = plan_mod._provision_dcal_accounts(auth_cfg)
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(seen_calls), 2)
+        self.assertIn("https://cal.junixsrv.internal", seen_calls[0][0])
+        self.assertNotIn("radicale_super_secret", seen_calls[0][0])
+        self.assertEqual(seen_calls[0][1], "radicale_super_secret\n")
+        self.assertIn("https://tasks.junixsrv.internal/dav/", seen_calls[1][0])
+        self.assertNotIn("tk_secret_vikunja_token", seen_calls[1][0])
+        self.assertEqual(seen_calls[1][1], "tk_secret_vikunja_token\n")
+
+        # 2. Rofi Day Hub exposes "Open Dux Calendar" when `dcal` is installed and spawns `dcal show`
+        spawned: list[list[str]] = []
+
+        def fake_which(name: str) -> str | None:
+            if name in ("dcal", "rofi"):
+                return f"/usr/bin/{name}"
+            return None
+
+        def fake_rofi_prompt(_prompt, rows, **_kwargs):
+            cal_idx = next(i for i, r in enumerate(rows) if "Open Dux Calendar" in r)
+            return (0, cal_idx, "", rows[cal_idx])
+
+        def fake_popen(cmd, **_kwargs):
+            spawned.append(list(cmd))
+            return mock.MagicMock()
+
+        with (
+            mock.patch.object(plan_mod.shutil, "which", side_effect=fake_which),
+            mock.patch.object(plan_mod, "_rofi_prompt", side_effect=fake_rofi_prompt),
+            mock.patch.object(plan_mod.subprocess, "Popen", side_effect=fake_popen),
+        ):
+            self.assertEqual(plan_mod.run_rofi_hub(self.store), 0)
+        self.assertEqual(spawned, [["/usr/bin/dcal", "show"]])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -10,12 +10,21 @@ barless Hyprland desktop.
   Handles quick to-dos, projects (`#uni`, `#home`, `Inbox`), priorities, due
   dates, Kanban/Gantt web views, and native parent/subtask step hierarchies
   (`relation_kind = "subtask"`). Self-registration and public link sharing are
-  disabled by default (`modules/services/planner.nix`).
+  disabled by default (`modules/services/planner.nix`). Its built-in CalDAV
+  `VTODO` server is also exposed at `https://100.110.103.47/dav/` so mobile
+  `DAVx5` + `Tasks.org` can sync tasks over Tailscale `:443` without
+  `/etc/hosts`.
 - **`Radicale` (`https://cal.junixsrv.internal`, `127.0.0.1:5232`):**
   Handles RFC 5545 `VEVENT` appointments, locations, recurring schedules
   (`RRULE` / `EXDATE`), and standards-compliant CalDAV sync (`bcrypt` htpasswd
   auth, per-user collection isolation). Also exposed at
   `https://100.110.103.47/cal/` (`X-Script-Name: /cal`) for mobile `DAVx5`.
+- **Dux Calendar (`pkgs.dux-calendar` / `dcal`, supervised on `quickshell`):**
+  Provides a native Wayland week/month/day/agenda/tasks GUI themed directly
+  from `custom.theme.palette` (`~/.config/dankcal/gruvbox-theme.json`). Built-in
+  Dux reminders are disabled in `~/.config/dankcal/ui-settings.json` and
+  guarded in Mako (`[app-name="Dux Calendar"] invisible=1`) so
+  `junix-plan-daemon` remains the single source of Mako alerts.
 - **Offline-first Day Engine (`pkgs/scripts/plan.py`):**
   Stores tasks, steps, appointments, focus state, and an idempotent write-back
   queue (`dirty_op`) in `~/.local/share/junix-plan/state.db` (SQLite WAL). Every
@@ -58,25 +67,30 @@ ssh -t root@junixsrv.local \
 ```
 
 4. Sign in at `https://tasks.junixsrv.internal`, open *Settings → API Tokens*,
-   and create a token with read/write permissions on **projects**, **tasks**, and
-   **task relations** for `plan`.
+   and create a token with read/write permissions on **projects**, **tasks**,
+   **task relations**, and **caldav** for `plan` (and optional Dux Calendar /
+   `DAVx5` task sync).
 
 ## Desktop & laptop setup (`junixos` / `junixbook`)
 
 Run `plan auth` once per machine to save `~/.config/junix-plan/credentials.env`
-(`0600`) and run an initial sync:
+(`0600`), register your CalDAV accounts in Dux Calendar (`dcal`), and run an
+initial sync:
 
 ```bash
 plan auth
 plan sync
+# If credentials.env already exists from an earlier setup, provision dcal alone:
+plan auth --dcal-only
 ```
 
 ### Barless Hyprland workflow
 
 | Shortcut / Command | Surface | Behavior |
 | :--- | :--- | :--- |
-| `SUPER + A` | **Rofi Day Hub** | Interactive timeline showing active Focus banner, free-gap summary, today's hard appointments, auto-slotted task steps (`[1/3]`, `~25m`), and open backlog. |
+| `SUPER + A` | **Rofi Day Hub** | Interactive timeline showing active Focus banner, free-gap summary, today's hard appointments, auto-slotted task steps (`[1/3]`, `~25m`), open backlog, and quick jump to Dux Calendar. |
 | `SUPER + SHIFT + A` | **Instant Capture** | Single-line natural-language popup (`+` task / `@` appointment) that commits immediately to SQLite and syncs in the background. |
+| `SUPER + C` | **Dux Calendar** | Toggles the Gruvbox-themed Quickshell week/month/agenda/tasks grid (`dcal toggle`). |
 | `SUPER + T` | **Pulse HUD** | Upgraded barless status check: shows clock, active Focus countdown, next appointment, next slotted step, and open count (uses `-a notify-send` so it displays even during manual DND). |
 | `hyprlock` (top-center) | **Agenda Pill** | Reads `$XDG_RUNTIME_DIR/junix-plan-lock.txt` in `<0.5ms` with zero network/Python latency on lock. |
 
@@ -111,8 +125,15 @@ plan sync
 
 ## Mobile setup (`MobileF6`)
 
-- **Calendar (`DAVx5`):** Add account with *Base URL and user name* →
-  `https://100.110.103.47/cal/`, username `irgendeinwer`, and your Radicale password.
-  All appointments sync bidirectionally with Android's native Calendar app.
+- **Calendar (`DAVx5` + `Fossify Calendar`):** Add a `DAVx5` account with
+  *Base URL and user name* → `https://100.110.103.47/cal/`, username
+  `irgendeinwer`, and your Radicale password. Appointments sync bidirectionally
+  with `Fossify Calendar`.
+- **Tasks (`DAVx5` + `Tasks.org`):** In `Tasks.org`, enable `DAVx5` integration
+  (*Settings →Synchronization → Add account → DAVx5*), then in `DAVx5` add a
+  second account with *Base URL and user name* → `https://100.110.103.47/dav/`,
+  username `irgendeinwer`, and a Vikunja CalDAV token (*Settings → CalDAV* in
+  Vikunja, or an API token with `caldav` read/write scope). Check your Vikunja
+  project lists under the **WebCAL / Tasks** tab in `DAVx5`.
 - **Music (`Symfonium` / `Tempo`):** Server URL `https://100.110.103.47/music`
   (Subsonic `/music/rest/` HTTPS proxy).

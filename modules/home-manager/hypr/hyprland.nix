@@ -21,6 +21,14 @@ let
       (osConfig.custom.desktop.planner.enable or false)
     else
       (config.custom.desktop.planner.enable or true);
+  duxCalendarEnabled =
+    plannerEnabled
+    && (
+      if osConfig != null then
+        (osConfig.custom.desktop.planner.duxCalendar.enable or true)
+      else
+        (config.custom.desktop.planner.duxCalendar.enable or true)
+    );
   scripts = pkgs.custom or (import ../../../pkgs/scripts { inherit lib pkgs; });
   # Frosted desktop layers, opt-in per host (the laptop skips the cost)
   layerBlur =
@@ -49,6 +57,11 @@ let
   notifySend = "${pkgs.libnotify}/bin/notify-send";
   hyprshot = "${pkgs.hyprshot}/bin/hyprshot";
   planBin = "${scripts.plan}/bin/plan";
+  dcalBin =
+    if (config.custom.desktop.planner.duxCalendar.package or null) != null then
+      lib.getExe config.custom.desktop.planner.duxCalendar.package
+    else
+      "dcal";
   timePulseCmd =
     if plannerEnabled then
       ''"${planBin} pulse"''
@@ -329,6 +342,9 @@ lib.mkIf hyprlandEnabled {
       ${lib.optionalString plannerEnabled ''
         hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("${planBin} rofi"))
         hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("${planBin} rofi --capture"))
+      ''}
+      ${lib.optionalString duxCalendarEnabled ''
+        hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("${dcalBin} toggle"))
       ''}
       hl.bind(mainMod .. " + D", hl.dsp.window.close())
       hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("${powerMenu}"))

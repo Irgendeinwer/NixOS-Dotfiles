@@ -84,5 +84,17 @@ in
         `plan auth` is used.
       '';
     };
+
+    duxCalendar = {
+      enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = ''
+          Install and run Dux Calendar (`dcal` + Quickshell UI) themed from
+          `custom.theme.palette`, with Dux's built-in reminders disabled so
+          `junix-plan-daemon` remains the sole Mako alert source.
+        '';
+      };
+    };
   };
 }
