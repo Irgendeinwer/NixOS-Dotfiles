@@ -130,10 +130,11 @@ plan auth --dcal-only
   `irgendeinwer`, and your Radicale password. Appointments sync bidirectionally
   with `Fossify Calendar`.
 - **Tasks (`DAVx5` + `Tasks.org`):** In `Tasks.org`, enable `DAVx5` integration
-  (*Settings →Synchronization → Add account → DAVx5*), then in `DAVx5` add a
-  second account with *Base URL and user name* → `https://100.110.103.47/dav/`,
+  (*Settings → Synchronization → Add account → DAVx5*), then in `DAVx5` add a
+  second account with *Base URL and user name* →
+  `https://100.110.103.47/dav/projects/` (`/dav/` also redirects here),
   username `irgendeinwer`, and a Vikunja CalDAV token (*Settings → CalDAV* in
-  Vikunja, or an API token with `caldav` read/write scope). Check your Vikunja
-  project lists under the **WebCAL / Tasks** tab in `DAVx5`.
+  Vikunja, or an API token with `caldav` read/write scope). Enable your Vikunja
+  project lists under the **CalDAV** tab in `DAVx5`.
 - **Music (`Symfonium` / `Tempo`):** Server URL `https://100.110.103.47/music`
   (Subsonic `/music/rest/` HTTPS proxy).

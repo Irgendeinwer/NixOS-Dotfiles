@@ -2162,8 +2162,42 @@ class RadicaleClient:
 
     def ensure_calendar_collection(self) -> str:
         col = self.collection_path
+        propfind_xml = (
+            '<?xml version="1.0" encoding="UTF-8" ?>'
+            '<D:propfind xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">'
+            "<D:prop><C:supported-calendar-component-set/></D:prop>"
+            "</D:propfind>"
+        ).encode("utf-8")
+        vevent_only_prop = (
+            "<C:supported-calendar-component-set>"
+            '<C:comp name="VEVENT"/>'
+            "</C:supported-calendar-component-set>"
+        )
         try:
-            self._request("PROPFIND", col, headers={"Depth": "0"})
+            _, _, prop_body = self._request(
+                "PROPFIND",
+                col,
+                body=propfind_xml,
+                headers={"Depth": "0", "Content-Type": "application/xml; charset=utf-8"},
+            )
+            # Restrict existing Radicale calendar collections to VEVENT so DAVx5
+            # does not also expose Junix Calendar as a VTODO list in Tasks.org.
+            if b"VTODO" in prop_body:
+                patch_xml = (
+                    '<?xml version="1.0" encoding="UTF-8" ?>'
+                    '<D:propertyupdate xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">'
+                    f"<D:set><D:prop>{vevent_only_prop}</D:prop></D:set>"
+                    "</D:propertyupdate>"
+                ).encode("utf-8")
+                try:
+                    self._request(
+                        "PROPPATCH",
+                        col,
+                        body=patch_xml,
+                        headers={"Content-Type": "application/xml; charset=utf-8"},
+                    )
+                except urllib.error.HTTPError:
+                    pass
             return col
         except urllib.error.HTTPError as exc:
             if exc.code != 404:
@@ -2173,6 +2207,7 @@ class RadicaleClient:
             '<C:mkcalendar xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">'
             "<D:set><D:prop>"
             "<D:displayname>Calendar</D:displayname>"
+            f"{vevent_only_prop}"
             "</D:prop></D:set></C:mkcalendar>"
         ).encode("utf-8")
         try:
@@ -2189,6 +2224,7 @@ class RadicaleClient:
                 "<D:set><D:prop>"
                 "<D:resourcetype><D:collection/><C:calendar/></D:resourcetype>"
                 "<D:displayname>Calendar</D:displayname>"
+                f"{vevent_only_prop}"
                 "</D:prop></D:set></D:mkcol>"
             ).encode("utf-8")
             self._request(
@@ -3927,7 +3963,7 @@ def _provision_dcal_accounts(cfg: PlanConfig) -> int:
             print(f"warning: Dux Calendar Radicale setup failed ({err_msg})", file=sys.stderr)
             rc = 1
     if cfg.has_vikunja_creds:
-        vk_dav_url = f"{cfg.vikunja_url.rstrip('/')}/dav/"
+        vk_dav_url = f"{cfg.vikunja_url.rstrip('/')}/dav/projects/"
         vk_user = cfg.radicale_user or getpass.getuser()
         ok, err_msg = _add_dcal_caldav_account(
             dcal_exe,

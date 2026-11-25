@@ -181,12 +181,14 @@ in
             };
           })
           (lib.mkIf (portalEnabled && cfg.vikunja.enable && cfg.vikunja.mobileCaldavPath) {
-            "= /dav" = {
-              proxyPass = "http://127.0.0.1:${toString cfg.vikunja.port}";
-              extraConfig = ''
-                client_max_body_size 64M;
-              '';
-            };
+            # Vikunja's EntryHandler at `/dav/` advertises `<D:principal/>` and
+            # `calendar-home-set = /dav/` in the same response, which causes
+            # DAVx5 to treat `/dav/` itself as the home-set and list 0 projects.
+            # Redirecting exact `/dav` and `/dav/` to `/dav/projects/` lands
+            # DAVx5 directly on the collection home-set while `/dav/principals/*`
+            # and `/dav/projects/*` proxy straight through.
+            "= /dav".return = "308 /dav/projects/";
+            "= /dav/".return = "308 /dav/projects/";
             "/dav/" = {
               proxyPass = "http://127.0.0.1:${toString cfg.vikunja.port}";
               extraConfig = ''

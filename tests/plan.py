@@ -1438,7 +1438,7 @@ class PlanEngineTests(unittest.TestCase):
         self.assertIn("https://cal.junixsrv.internal", seen_calls[0][0])
         self.assertNotIn("radicale_super_secret", seen_calls[0][0])
         self.assertEqual(seen_calls[0][1], "radicale_super_secret\n")
-        self.assertIn("https://tasks.junixsrv.internal/dav/", seen_calls[1][0])
+        self.assertIn("https://tasks.junixsrv.internal/dav/projects/", seen_calls[1][0])
         self.assertNotIn("tk_secret_vikunja_token", seen_calls[1][0])
         self.assertEqual(seen_calls[1][1], "tk_secret_vikunja_token\n")
 
