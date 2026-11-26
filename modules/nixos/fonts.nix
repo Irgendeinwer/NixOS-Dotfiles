@@ -23,6 +23,7 @@ in
         noto-fonts-cjk-sans
         noto-fonts-cjk-serif
         noto-fonts-color-emoji
+        roboto
         vegur
         quicksand
         nerd-fonts.fira-code
