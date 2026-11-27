@@ -22,9 +22,9 @@
       type = lib.types.bool;
       default = true;
       description = ''
-        Seed MissNix's SQLite `settings` table with dark mode and
-        `custom.theme.palette.accent` (`accent_preset = 7`) on first creation,
-        preserving any subsequent theme changes made in the UI.
+        Provide MissNix's initial dark mode and `custom.theme.palette.accent`
+        defaults via `MISSNIX_DEFAULT_*` environment variables, preserving any
+        subsequent theme changes saved in the UI.
       '';
     };
 

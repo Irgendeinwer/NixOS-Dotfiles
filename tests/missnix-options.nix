@@ -49,14 +49,17 @@ let
 in
 assert desktopHost.custom.desktop.missnix.enable;
 assert desktopHost.custom.desktop.missnix.musicDirs == [ "/home/irgendeinwer/music" ];
-assert desktopHost.custom.desktop.missnix.timer.enable;
-assert desktopHost.custom.desktop.missnix.timer.onCalendar == "daily";
+assert desktopHome.programs.missnix.enable;
+assert desktopHome.home.sessionVariables.MISSNIX_DEFAULT_DARK_MODE == "true";
+assert desktopHome.home.sessionVariables.MISSNIX_DEFAULT_ACCENT_HEX == "#E9B143";
 assert !laptopHost.custom.desktop.missnix.enable;
+assert !laptopHome.programs.missnix.enable;
 assert !serverHost.custom.desktop.missnix.enable;
 assert lib.any (p: (p.pname or "") == "missnix") desktopHome.home.packages;
 assert !(lib.any (p: (p.pname or "") == "missnix") laptopHome.home.packages);
 assert !(lib.any (p: (p.pname or "") == "missnix") serverHome.home.packages);
 assert desktopHome.systemd.user.services ? missnix-check;
+assert lib.hasInfix "--notify" desktopHome.systemd.user.services.missnix-check.Service.ExecStart;
 assert desktopHome.systemd.user.timers ? missnix-check;
 assert desktopHome.systemd.user.timers.missnix-check.Timer.Persistent;
 assert desktopHome.systemd.user.timers.missnix-check.Timer.OnCalendar == "daily";

@@ -204,11 +204,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795765052,
-        "narHash": "sha256-zSmvnxNk/DqFzzi6hIk1G66WHqNxLDHVysqh+9DZiwc=",
+        "lastModified": 1795795488,
+        "narHash": "sha256-tlK/XvOzsWyU3LCwjFylWgBnG/3qDyH9TDKPWXArNw0=",
         "owner": "Irgendeinwer",
         "repo": "MissNix",
-        "rev": "ed2c857094170a4ab617ec9d0c1467c80ba05da8",
+        "rev": "67b66cbe5e96c12d828d37a9b6cb4872c6be3ea5",
         "type": "github"
       },
       "original": {
