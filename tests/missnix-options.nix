@@ -59,7 +59,9 @@ assert lib.any (p: (p.pname or "") == "missnix") desktopHome.home.packages;
 assert !(lib.any (p: (p.pname or "") == "missnix") laptopHome.home.packages);
 assert !(lib.any (p: (p.pname or "") == "missnix") serverHome.home.packages);
 assert desktopHome.systemd.user.services ? missnix-check;
-assert lib.hasInfix "--notify" desktopHome.systemd.user.services.missnix-check.Service.ExecStart;
+assert lib.any (lib.hasInfix "--notify") (
+  lib.toList desktopHome.systemd.user.services.missnix-check.Service.ExecStart
+);
 assert desktopHome.systemd.user.timers ? missnix-check;
 assert desktopHome.systemd.user.timers.missnix-check.Timer.Persistent;
 assert desktopHome.systemd.user.timers.missnix-check.Timer.OnCalendar == "daily";
