@@ -156,6 +156,7 @@
       browsers.enable = true;
       messaging.enable = true;
       media.enable = true;
+      missnix.enable = true;
       planner.enable = true;
       flexing.enable = true;
       office.enable = true;

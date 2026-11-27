@@ -52,6 +52,11 @@
       };
     };
 
+    missnix = {
+      url = "github:Irgendeinwer/MissNix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     wallpaper = {
       url = "git+ssh://git@github.com/Irgendeinwer/wallpaper.git";
       flake = false;
@@ -84,6 +89,11 @@
 
       inherit (nixpkgs) lib;
       myOverlays = loadOverlays ./modules/overlays;
+      missnixOverlays =
+        if inputs ? missnix && inputs.missnix ? overlays.default then
+          [ inputs.missnix.overlays.default ]
+        else
+          [ ];
       hasPrivate = inputs ? private;
       privateOverlays =
         if hasPrivate && inputs.private ? overlays.default then
@@ -120,7 +130,7 @@
         nixpkgs.lib.nixosSystem {
           specialArgs = { inherit inputs; };
           modules = [
-            { nixpkgs.overlays = myOverlays ++ privateOverlays; }
+            { nixpkgs.overlays = myOverlays ++ missnixOverlays ++ privateOverlays; }
           ]
           ++ hostModules
           ++ privateNixosModulesFor name
@@ -152,6 +162,7 @@
       packages.${system} =
         customScripts
         // {
+          missnix = inputs.missnix.packages.${system}.default;
           without-userns = pkgs.callPackage ./pkgs/without-userns.nix { };
         }
         // (
@@ -240,6 +251,14 @@
         planner-options = import ./tests/planner-options.nix {
           inherit nixpkgs pkgs self;
           sopsModule = inputs.sops-nix.nixosModules.sops;
+        };
+        missnix-options = import ./tests/missnix-options.nix {
+          inherit
+            inputs
+            nixpkgs
+            pkgs
+            self
+            ;
         };
         hermes-options = import ./tests/hermes-options.nix {
           inherit nixpkgs pkgs self;

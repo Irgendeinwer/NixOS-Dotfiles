@@ -197,6 +197,26 @@
         "type": "github"
       }
     },
+    "missnix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795765052,
+        "narHash": "sha256-zSmvnxNk/DqFzzi6hIk1G66WHqNxLDHVysqh+9DZiwc=",
+        "owner": "Irgendeinwer",
+        "repo": "MissNix",
+        "rev": "ed2c857094170a4ab617ec9d0c1467c80ba05da8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Irgendeinwer",
+        "repo": "MissNix",
+        "type": "github"
+      }
+    },
     "nix-cachyos-kernel": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -405,6 +425,7 @@
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",
+        "missnix": "missnix",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
